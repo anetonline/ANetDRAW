@@ -308,6 +308,53 @@ static void select_command(AdEditor *e, char cmd) {
                 for (x = x0; x <= x1; x++) ad_surf_put(&s, x, y, e->brush, cur_attr(e));
             set_message(e, "Filled %dx%d with the brush", x1 - x0 + 1, y1 - y0 + 1);
             break;
+        case 'H':
+        case 'V': {
+            /* flip in place: glyphs are mirrored too (◄ becomes ►) */
+            AdClipboard tmp = { 0, 0, NULL };
+            if (!ad_clip_copy(&tmp, &e->canvas, x0, y0, x1, y1)) break;
+            if (cmd == 'H') ad_clip_flip_h(&tmp); else ad_clip_flip_v(&tmp);
+            ad_clip_paste(&s, &tmp, x0, y0, 0);
+            ad_clip_free(&tmp);
+            set_message(e, cmd == 'H' ? "Flipped left-right" : "Flipped upside-down");
+            e->anchored = 1;  /* keep the block marked for more */
+            return;
+        }
+        case 'S':
+            for (y = y0; y <= y1; y++)
+                for (x = x0; x <= x1; x++) {
+                    AdCell c = ad_canvas_get(&e->canvas, x, y);
+                    int f = AD_ATTR_FG(c.attr), b = AD_ATTR_BG(c.attr);
+                    ad_surf_put(&s, x, y, c.ch, AD_ATTR(b, e->canvas.ice ? f : (f & 7)));
+                }
+            set_message(e, "Swapped foreground and background");
+            e->anchored = 1;
+            return;
+        case 'N':
+            /* center each row's content between the block's edges */
+            for (y = y0; y <= y1; y++) {
+                int first = -1, last = -1, len, dst;
+                AdCell row[AD_CANVAS_MAX_W];
+                for (x = x0; x <= x1; x++) {
+                    AdCell c = ad_canvas_get(&e->canvas, x, y);
+                    row[x - x0] = c;
+                    if (!((c.ch == ' ' || c.ch == 0) && AD_ATTR_BG(c.attr) == 0)) {
+                        if (first < 0) first = x;
+                        last = x;
+                    }
+                }
+                if (first < 0) continue;
+                len = last - first + 1;
+                dst = x0 + ((x1 - x0 + 1) - len) / 2;
+                for (x = x0; x <= x1; x++) {
+                    int src = x - dst + first;
+                    if (src >= first && src <= last) ad_surf_put(&s, x, y, row[src - x0].ch, row[src - x0].attr);
+                    else ad_surf_put(&s, x, y, ' ', AD_BLANK_ATTR);
+                }
+            }
+            set_message(e, "Centered each row of the block");
+            e->anchored = 1;
+            return;
         case 'R':
             /* new colors, same drawing -- Colorize for a whole block */
             for (y = y0; y <= y1; y++)
@@ -768,8 +815,11 @@ static int menu_command(AdEditor *e, int local, char c);
 /* One Select-tool block command, from a key, the toolbox or the
    right-click menu: C copy, X cut, D delete, F fill with the brush,
    M move, P paste, A mark everything. */
-static void block_command(AdEditor *e, char cmd) {
+static void replace_color_dialog(AdEditor *e, int local);
+
+static void block_command(AdEditor *e, int local, char cmd) {
     if (cmd == 'P') { start_paste(e); return; }
+    if (cmd == 'L') { if (e->tool == AD_TOOL_SELECT && e->anchored) replace_color_dialog(e, local); return; }
     if (cmd == 'A') {
         if (e->tool != AD_TOOL_SELECT) set_tool(e, AD_TOOL_SELECT);
         select_all(e);
@@ -813,7 +863,7 @@ static int sidebar_click(AdEditor *e, int x, int y, int button, int local) {
             case HIT_HELP:     return help_screen(e, local);
             case HIT_HIDE:     toggle_sidebar(e); break;
             case HIT_TEXT:     font_tool(e, local); break;
-            case HIT_SEL:      block_command(e, (char)e->hits[i].arg); break;
+            case HIT_SEL:      block_command(e, local, (char)e->hits[i].arg); break;
             case HIT_MENU:     return menu_command(e, local, (char)e->hits[i].arg);
             case HIT_UNDO:     e->pending_undo = e->hits[i].arg ? 2 : 1; break;  /* run by the main loop */
             default: break;
@@ -992,6 +1042,7 @@ static int help_screen(AdEditor *e, int local) {
         "^T      tools menu             ^V  paste clipboard",
         "^T T    big text in TheDraw fonts (then place it)",
         "^T C    Colorize: drag to recolor, keeps the art",
+        "^D      insert / delete a line or column",
         "^K      color picker           ^G  character picker",
         "^Z ^Y   undo / redo",
         "Tab     tool option (pen, box style, fill mode...)",
@@ -1056,7 +1107,8 @@ static char block_menu(AdEditor *e, int local, int mx, int my) {
     static const struct { char key; const char *label; } ITEMS[] = {
         { 'C', "C  Copy" }, { 'X', "X  Cut" }, { 'P', "P  Paste" }, { 'D', "D  Delete" },
         { 'F', "F  Fill with brush" }, { 'R', "R  Recolor (keep art)" }, { 'M', "M  Move" },
-        { 'A', "A  Select all" } };
+        { 'H', "H  Flip left-right" }, { 'V', "V  Flip upside-down" }, { 'S', "S  Swap FG / BG" },
+        { 'L', "L  Replace a color..." }, { 'N', "N  Center each row" }, { 'A', "A  Select all" } };
     int n = (int)(sizeof(ITEMS) / sizeof(ITEMS[0])), width = 24, height = n + 2, sel = 0, i;
     int col0 = mx + 1, row0 = my;
     int marked = e->anchored && !e->pasting;
@@ -1069,7 +1121,7 @@ static char block_menu(AdEditor *e, int local, int mx, int my) {
         paint_all(e);
         frame(e, col0, row0, width, height, "Block");
         for (i = 0; i < n; i++) {
-            int ok = strchr("CXDFMR", ITEMS[i].key) ? marked : ITEMS[i].key == 'P' ? e->clip.cells != NULL : 1;
+            int ok = strchr("CXDFMRHVSLN", ITEMS[i].key) ? marked : ITEMS[i].key == 'P' ? e->clip.cells != NULL : 1;
             char line[32];
             snprintf(line, sizeof(line), " %-*s", width - 3, ITEMS[i].label);
             ad_screen_puts(&e->screen, col0 + 1, row0 + 1 + i, line,
@@ -1091,7 +1143,7 @@ static char block_menu(AdEditor *e, int local, int mx, int my) {
             char c = (char)(k.ch & ~0x20);
             for (i = 0; i < n; i++) {
                 if (ITEMS[i].key != c) continue;
-                if (strchr("CXDFMR", c) && !marked) break;
+                if (strchr("CXDFMRHVSLN", c) && !marked) break;
                 if (c == 'P' && !e->clip.cells) break;
                 ad_screen_full_redraw(&e->screen);
                 return c;
@@ -1100,6 +1152,172 @@ static char block_menu(AdEditor *e, int local, int mx, int my) {
     }
     ad_screen_full_redraw(&e->screen);
     return 0;
+}
+
+/* Select tool, L: every cell in the marked block that has one color gets
+   another -- in the foreground, the background, or both. */
+static void replace_color_dialog(AdEditor *e, int local) {
+    int from = e->fg, to = e->fg, where = 0, field = 0;  /* where: 0 fg, 1 bg, 2 both */
+    int width = 44, height = 10;
+    static const char *const WHERE[3] = { "foreground", "background", "fg and bg" };
+    if (!e->anchored) return;
+    for (;;) {
+        AdKey k;
+        int col0 = (e->screen.w - width) / 2, row0 = (e->view_h - height) / 2, i, r;
+        char buf[64];
+        if (row0 < 0) row0 = 0;
+        paint_all(e);
+        frame(e, col0, row0, width, height, "Replace a color");
+        for (r = 0; r < 2; r++) {
+            int cur = r ? to : from;
+            ad_screen_puts(&e->screen, col0 + 2, row0 + 2 + r * 2, r ? "Change to" : "Find     ",
+                           field == r ? AD_ATTR(0, 3) : POPUP_ATTR);
+            for (i = 0; i < 16; i++) {
+                ad_screen_put(&e->screen, col0 + 13 + i * 2, row0 + 2 + r * 2, 0xDB, AD_ATTR(i, 1));
+                ad_screen_put(&e->screen, col0 + 14 + i * 2, row0 + 2 + r * 2, 0xDB, AD_ATTR(i, 1));
+            }
+            ad_screen_put(&e->screen, col0 + 13 + cur * 2, row0 + 3 + r * 2, 0x1E, AD_ATTR(15, 1));
+        }
+        snprintf(buf, sizeof(buf), "In the %-10s  (W to switch)", WHERE[where]);
+        ad_screen_puts(&e->screen, col0 + 2, row0 + 6, buf, field == 2 ? AD_ATTR(0, 3) : POPUP_ATTR);
+        ad_screen_puts(&e->screen, col0 + 2, row0 + height - 1,
+                       " \x1b\x1a pick  Tab=next  Enter=replace  Esc ", POPUP_KEY);
+        ad_screen_flush(&e->screen, col0 + 13 + (field == 1 ? to : from) * 2, row0 + 2 + (field == 1 ? 2 : 0));
+        k = popup_key(e, local);
+        switch (k.kind) {
+            case AD_KEY_HANGUP: case AD_KEY_ESCAPE: ad_screen_full_redraw(&e->screen); return;
+            case AD_KEY_TAB: case AD_KEY_DOWN: field = (field + 1) % 3; break;
+            case AD_KEY_UP: field = (field + 2) % 3; break;
+            case AD_KEY_LEFT:
+                if (field == 0) from = (from + 15) % 16;
+                else if (field == 1) to = (to + 15) % 16;
+                else where = (where + 2) % 3;
+                break;
+            case AD_KEY_RIGHT:
+                if (field == 0) from = (from + 1) % 16;
+                else if (field == 1) to = (to + 1) % 16;
+                else where = (where + 1) % 3;
+                break;
+            case AD_KEY_CHAR:
+                if ((k.ch & ~0x20) == 'W') where = (where + 1) % 3;
+                break;
+            case AD_KEY_MOUSE:
+                if (k.mbutton == 2) { ad_screen_full_redraw(&e->screen); return; }
+                if (k.mbutton == 0 && k.mx >= col0 + 13 && k.mx < col0 + 45) {
+                    int c = (k.mx - col0 - 13) / 2;
+                    if (k.my == row0 + 2) { from = c; field = 0; }
+                    else if (k.my == row0 + 4) { to = c; field = 1; }
+                }
+                if (k.mbutton == 0 && k.my == row0 + 6) { where = (where + 1) % 3; field = 2; }
+                break;
+            case AD_KEY_ENTER: {
+                AdSurface s = surface(e, 1);
+                int x0, y0, x1, y1, x, y, n = 0;
+                sel_rect(e, &x0, &y0, &x1, &y1);
+                s.mirror = 0;
+                for (y = y0; y <= y1; y++)
+                    for (x = x0; x <= x1; x++) {
+                        AdCell c = ad_canvas_get(&e->canvas, x, y);
+                        int f = AD_ATTR_FG(c.attr), b = AD_ATTR_BG(c.attr);
+                        if (where != 1 && f == from) f = to;
+                        if (where != 0 && b == from) b = e->canvas.ice ? to : (to & 7);
+                        if (AD_ATTR(f, b) != c.attr) { ad_surf_put(&s, x, y, c.ch, AD_ATTR(f, b)); n++; }
+                    }
+                ad_screen_full_redraw(&e->screen);
+                set_message(e, "Replaced color %d with %d in %d cell%s", from, to, n, n == 1 ? "" : "s");
+                return;
+            }
+            default: break;
+        }
+    }
+}
+
+/* ------------------------------------------------------------ rows & columns */
+
+/* Last row the drawing uses: a sized canvas's bottom, else the lowest
+   row with anything on it (at least the cursor's). */
+static int used_bottom(const AdEditor *e) {
+    int ew, eh;
+    if (e->canvas.fixed) return e->canvas.h - 1;
+    ad_canvas_extent(&e->canvas, &ew, &eh);
+    return (eh > e->cy + 1 ? eh : e->cy + 1) - 1;
+}
+
+/* TheDraw's insert / delete line and column, at the cursor. Everything
+   goes through a committing surface, so it's one undo step. What moves
+   past a sized canvas's edge is gone; a growing canvas grows a row. */
+static void rows_cols(AdEditor *e, char op) {
+    AdSurface s = surface(e, 1);
+    int x, y, bottom = used_bottom(e), w = e->canvas.w;
+    s.mirror = 0;
+    switch (op) {
+        case 'I':  /* insert a line: rows move down */
+            if (!e->canvas.fixed && bottom + 1 < AD_CANVAS_MAX_H) bottom++;
+            for (y = bottom; y > e->cy; y--)
+                for (x = 0; x < w; x++) {
+                    AdCell c = ad_canvas_get(&e->canvas, x, y - 1);
+                    ad_surf_put(&s, x, y, c.ch, c.attr);
+                }
+            for (x = 0; x < w; x++) ad_surf_put(&s, x, e->cy, ' ', AD_BLANK_ATTR);
+            set_message(e, "Inserted a line at row %d", e->cy + 1);
+            break;
+        case 'Y':  /* delete the line: rows move up */
+            for (y = e->cy; y < bottom; y++)
+                for (x = 0; x < w; x++) {
+                    AdCell c = ad_canvas_get(&e->canvas, x, y + 1);
+                    ad_surf_put(&s, x, y, c.ch, c.attr);
+                }
+            for (x = 0; x < w; x++) ad_surf_put(&s, x, bottom, ' ', AD_BLANK_ATTR);
+            set_message(e, "Deleted row %d", e->cy + 1);
+            break;
+        case 'C':  /* insert a column: the rest moves right */
+            for (y = 0; y <= bottom; y++) {
+                for (x = w - 1; x > e->cx; x--) {
+                    AdCell c = ad_canvas_get(&e->canvas, x - 1, y);
+                    ad_surf_put(&s, x, y, c.ch, c.attr);
+                }
+                ad_surf_put(&s, e->cx, y, ' ', AD_BLANK_ATTR);
+            }
+            set_message(e, "Inserted a column at column %d", e->cx + 1);
+            break;
+        case 'X':  /* delete the column: the rest moves left */
+            for (y = 0; y <= bottom; y++) {
+                for (x = e->cx; x < w - 1; x++) {
+                    AdCell c = ad_canvas_get(&e->canvas, x + 1, y);
+                    ad_surf_put(&s, x, y, c.ch, c.attr);
+                }
+                ad_surf_put(&s, w - 1, y, ' ', AD_BLANK_ATTR);
+            }
+            set_message(e, "Deleted column %d", e->cx + 1);
+            break;
+        default:
+            break;
+    }
+}
+
+/* ^D: the rows & columns menu. */
+static void rows_cols_menu(AdEditor *e, int local) {
+    static const char *const LINES[] = {
+        "Lines & columns (at the cursor)",
+        "I Insert a line",
+        "Y Delete this line",
+        "C Insert a column",
+        "X Delete this column",
+        "",
+        "  Esc = cancel",
+    };
+    int n = (int)(sizeof(LINES) / sizeof(LINES[0]));
+    AdKey k;
+    paint_all(e);
+    popup(e, LINES, n, 38);
+    flush_at_cursor(e);
+    k = popup_key(e, local);
+    ad_screen_full_redraw(&e->screen);
+    if (k.kind == AD_KEY_MOUSE && k.mbutton == 0) {
+        int r = k.my - popup_row0(e, n);
+        if (r >= 1 && r <= 4) { k.kind = AD_KEY_CHAR; k.ch = LINES[r][0]; }
+    }
+    if (k.kind == AD_KEY_CHAR && strchr("IYCX", k.ch & ~0x20)) rows_cols(e, (char)(k.ch & ~0x20));
 }
 
 /* TheDraw-style color grid: foreground across, background down, each
@@ -2583,6 +2801,9 @@ static void handle_ctrl(AdEditor *e, char c, int local) {
         case 'W':
             toggle_sidebar(e);
             break;
+        case 'D':
+            rows_cols_menu(e, local);
+            break;
         case 'L':
             /* redraw -- and re-check the terminal size, e.g. after
                SyncTERM switched to 132x37 mid-session */
@@ -2813,7 +3034,7 @@ static int handle_mouse(AdEditor *e, AdKey k, int local) {
         char c;
         e->block_menu = 0;
         c = block_menu(e, local, k.mx - e->left, k.my);
-        if (c) block_command(e, c);
+        if (c) block_command(e, local, c);
     }
     return 1;
 }
@@ -2886,8 +3107,8 @@ static int handle_key(AdEditor *e, AdKey k, int local) {
                 tool_action(e);
             } else if (e->tool == AD_TOOL_SELECT) {
                 char c = (char)(k.ch & ~0x20);
-                if (e->anchored && strchr("CXMDFR", c)) select_command(e, c);
-                else if (c == 'P' || c == 'A') block_command(e, c);
+                if (e->anchored && strchr("CXMDFRHVSN", c)) select_command(e, c);
+                else if (c == 'P' || c == 'A' || c == 'L') block_command(e, local, c);
             } else {
                 e->brush = (unsigned char)k.ch;
                 set_message(e, "Brush: %c", k.ch);

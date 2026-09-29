@@ -38,6 +38,7 @@ typedef struct {
                        viewer's terminal back to full speed. */
     int  clear_screen;
     int  speed;
+    int  format;           /* AD_FMT_* (formats.h): what Save writes */
 } AdSauce;
 
 /* DECSCS speed index -> bps (SyncTERM cterm.adoc), index 0 = full speed */
@@ -60,7 +61,16 @@ int ad_ans_save(const char *path, const AdCanvas *c, const AdSauce *meta,
 int ad_ans_decode(const unsigned char *data, size_t len, AdCanvas *c, AdSauce *meta,
                   char *err, size_t errsz);
 
-/* Reads a file (at most AD_MAX_FILE_BYTES) and decodes it. */
+/* Shared by every format (formats.c): */
+int  ad_save_rows(const AdCanvas *c);   /* rows a save writes */
+unsigned char ad_safe_glyph(unsigned char ch);  /* LF/CR/EOF/ESC look-alikes */
+void ad_sauce_fill(unsigned char rec[128], const AdSauce *meta, size_t art_len,
+                   int datatype, int filetype, int tinfo1, int tinfo2, int ice);
+/* Writes a file beside the target, then renames it over (never half a file). */
+int  ad_write_file(const char *path, const unsigned char *data, size_t n, char *err, size_t errsz);
+
+/* Reads a file (at most AD_MAX_FILE_BYTES) and decodes it in the format
+   its extension says (formats.h). */
 #define AD_MAX_FILE_BYTES (4L * 1024 * 1024)
 int ad_ans_load(const char *path, AdCanvas *c, AdSauce *meta, char *err, size_t errsz);
 

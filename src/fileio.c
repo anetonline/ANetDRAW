@@ -1,6 +1,7 @@
 /* ANSI + SAUCE save/load -- see fileio.h for the references this
  * follows. */
 #include "../include/fileio.h"
+#include "../include/formats.h"
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -52,7 +53,7 @@ static int blank(AdCell c) {
 
 /* Glyphs that would break the file (LF, CR, the EOF byte, ESC) become
    look-alikes -- the same substitutions Moebius makes on save. */
-static unsigned char safe_glyph(unsigned char ch) {
+unsigned char ad_safe_glyph(unsigned char ch) {
     switch (ch) {
         case 10: return 9;
         case 13: return 14;
@@ -76,24 +77,54 @@ const long AD_SPEEDS[AD_SPEED_COUNT] = {
     0, 300, 600, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 76800, 115200
 };
 
+/* A canvas the artist sized is saved at that size; a still-growing one
+   down to its last row that has anything on it -- but never shorter than
+   a standard 25-line screen, or reopening a small sketch would give a
+   canvas too short to keep drawing on. */
+int ad_save_rows(const AdCanvas *c) {
+    int ew, eh;
+    if (c->fixed) return c->h;
+    ad_canvas_extent(c, &ew, &eh);
+    return eh > AD_CANVAS_MIN_H ? eh : AD_CANVAS_MIN_H;
+}
+
+void ad_sauce_fill(unsigned char rec[128], const AdSauce *meta, size_t art_len,
+                   int datatype, int filetype, int tinfo1, int tinfo2, int ice) {
+    char date[16];
+    time_t now = time(NULL);
+    struct tm *tm = localtime(&now);
+    memset(rec, 0, 128);
+    memcpy(rec, "SAUCE00", 7);
+    put_field(rec + 7, meta ? meta->title : "", AD_SAUCE_TITLE_LEN);
+    put_field(rec + 42, meta ? meta->author : "", AD_SAUCE_AUTHOR_LEN);
+    put_field(rec + 62, meta ? meta->group : "", AD_SAUCE_GROUP_LEN);
+    if (tm) strftime(date, sizeof(date), "%Y%m%d", tm);
+    else strcpy(date, "19700101");
+    put_field(rec + 82, date, 8);
+    rec[90] = (unsigned char)(art_len & 0xFF);
+    rec[91] = (unsigned char)((art_len >> 8) & 0xFF);
+    rec[92] = (unsigned char)((art_len >> 16) & 0xFF);
+    rec[93] = (unsigned char)((art_len >> 24) & 0xFF);
+    rec[94] = (unsigned char)datatype;
+    rec[95] = (unsigned char)filetype;
+    put_le16(rec + 96, (unsigned)tinfo1);
+    put_le16(rec + 98, (unsigned)tinfo2);
+    rec[104] = 0;                          /* no comment block */
+    /* TFlags: iCE (bit 0), 8-pixel letter spacing (bits 1-2 = 01),
+       square-pixel aspect (bits 3-4 = 10) -- the same bits Moebius
+       writes for an 8px font. */
+    rec[105] = (unsigned char)((ice ? 1 : 0) | (1 << 1) | (1 << 4));
+    memcpy(rec + 106, "IBM VGA", 7);       /* TInfoS: font, zero-padded */
+}
+
 size_t ad_ans_encode(const AdCanvas *c, const AdSauce *meta, unsigned char **out) {
     Buf b = { NULL, 0, 0, 0 };
     int x, y, rows, w = c->w;
     int cur_fg = 7, cur_bg = 0, cur_bold = 0, cur_blink = 0;
     size_t art_len;
     unsigned char rec[128];
-    char date[16];
 
-    /* A canvas the artist sized is saved at that size; a still-growing
-       one is saved down to its last row that has anything on it -- but
-       never shorter than a standard 25-line screen, or reopening a small
-       sketch would give a canvas too short to keep drawing on. */
-    rows = c->h;
-    if (!c->fixed) {
-        int ew, eh;
-        ad_canvas_extent(c, &ew, &eh);
-        rows = eh > AD_CANVAS_MIN_H ? eh : AD_CANVAS_MIN_H;
-    }
+    rows = ad_save_rows(c);
 
     if (meta && meta->speed > 0 && meta->speed < AD_SPEED_COUNT) {
         char seq[16];
@@ -130,7 +161,7 @@ size_t ad_ans_encode(const AdCanvas *c, const AdSauce *meta, unsigned char **out
                 bputs(&b, "\x1b[");
                 bput(&b, seq, (size_t)k);
             }
-            bputc(&b, safe_glyph(cell.ch));
+            bputc(&b, ad_safe_glyph(cell.ch));
         }
         /* A row that ends in blanks is trimmed and ends with CR LF; a
            full-width row relies on the viewer wrapping at the SAUCE
@@ -142,32 +173,7 @@ size_t ad_ans_encode(const AdCanvas *c, const AdSauce *meta, unsigned char **out
         bputs(&b, "\x1b[0;0*r");  /* back to full speed for whatever comes next */
     art_len = b.n;
 
-    memset(rec, 0, sizeof(rec));
-    memcpy(rec, "SAUCE00", 7);
-    put_field(rec + 7, meta ? meta->title : "", AD_SAUCE_TITLE_LEN);
-    put_field(rec + 42, meta ? meta->author : "", AD_SAUCE_AUTHOR_LEN);
-    put_field(rec + 62, meta ? meta->group : "", AD_SAUCE_GROUP_LEN);
-    {
-        time_t now = time(NULL);
-        struct tm *tm = localtime(&now);
-        if (tm) strftime(date, sizeof(date), "%Y%m%d", tm);
-        else strcpy(date, "19700101");
-        put_field(rec + 82, date, 8);
-    }
-    rec[90] = (unsigned char)(art_len & 0xFF);
-    rec[91] = (unsigned char)((art_len >> 8) & 0xFF);
-    rec[92] = (unsigned char)((art_len >> 16) & 0xFF);
-    rec[93] = (unsigned char)((art_len >> 24) & 0xFF);
-    rec[94] = 1;                           /* DataType: Character */
-    rec[95] = 1;                           /* FileType: ANSi */
-    put_le16(rec + 96, (unsigned)w);       /* TInfo1: width */
-    put_le16(rec + 98, (unsigned)rows);    /* TInfo2: lines */
-    rec[104] = 0;                          /* no comment block */
-    /* TFlags: iCE (bit 0), 8-pixel letter spacing (bits 1-2 = 01),
-       square-pixel aspect (bits 3-4 = 10) -- the same bits Moebius
-       writes for an 8px font. */
-    rec[105] = (unsigned char)((c->ice ? 1 : 0) | (1 << 1) | (1 << 4));
-    memcpy(rec + 106, "IBM VGA", 7);       /* TInfoS: font, zero-padded */
+    ad_sauce_fill(rec, meta, art_len, 1, 1, w, rows, c->ice);  /* Character / ANSi */
 
     bputc(&b, 0x1A);                       /* EOF, then the record */
     bput(&b, rec, sizeof(rec));
@@ -183,32 +189,36 @@ size_t ad_ans_encode(const AdCanvas *c, const AdSauce *meta, unsigned char **out
 int ad_ans_save(const char *path, const AdCanvas *c, const AdSauce *meta,
                 char *err, size_t errsz) {
     unsigned char *data = NULL;
-    size_t n = ad_ans_encode(c, meta, &data);
-    char tmp[1100];
-    FILE *f;
-
+    size_t n = ad_fmt_encode(c, meta, meta ? meta->format : AD_FMT_ANSI, &data);
+    int ok;
     if (!n) {
         snprintf(err, errsz, "out of memory");
         return 0;
     }
+    ok = ad_write_file(path, data, n, err, errsz);
+    free(data);
+    return ok;
+}
+
+int ad_write_file(const char *path, const unsigned char *data, size_t n, char *err, size_t errsz) {
+    char tmp[1100];
+    FILE *f;
+
     /* write beside the target, then rename over it: a crash or a
        hangup mid-save never leaves a half-written file behind */
     snprintf(tmp, sizeof(tmp), "%s.tmp%ld", path, (long)time(NULL));
     f = fopen(tmp, "wb");
     if (!f) {
         snprintf(err, errsz, "can't write there (%s)", strerror(errno));
-        free(data);
         return 0;
     }
     if (fwrite(data, 1, n, f) != n || fflush(f) != 0) {
         snprintf(err, errsz, "write failed (%s)", strerror(errno));
         fclose(f);
         remove(tmp);
-        free(data);
         return 0;
     }
     fclose(f);
-    free(data);
 #ifdef _WIN32
     if (!MoveFileExA(tmp, path, MOVEFILE_REPLACE_EXISTING)) {
         snprintf(err, errsz, "couldn't replace the file");
@@ -455,7 +465,7 @@ int ad_ans_load(const char *path, AdCanvas *c, AdSauce *meta, char *err, size_t 
         return 0;
     }
     fclose(f);
-    ok = ad_ans_decode(data, (size_t)len, c, meta, err, errsz);
+    ok = ad_fmt_decode(data, (size_t)len, ad_fmt_from_path(path), c, meta, err, errsz);
     free(data);
     return ok;
 }
