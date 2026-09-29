@@ -45,11 +45,13 @@ add_executable(anetdraw
     src/transfer.c
     src/gallery.c
     src/tdf.c
+    src/formats.c
+    src/font8x16.c
 )
 target_link_libraries(anetdraw PRIVATE ${OPENDOORS_LINK_TARGET})
 
 # Windows local mode's own window (src/wingui.c) and its IBM VGA font
 if(WIN32)
-    target_sources(anetdraw PRIVATE src/wingui.c src/font8x16.c)
+    target_sources(anetdraw PRIVATE src/wingui.c)
     target_link_libraries(anetdraw PRIVATE user32 gdi32)
 endif()
