@@ -1,0 +1,257 @@
+name: Turbo C DOS
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      asset_version:
+        description: Version text to use in a clean release SDK archive
+        required: false
+        type: string
+        default: ''
+      extended_acceptance:
+        description: Run the public UART and FOSSIL acceptance matrix
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  turbo-c:
+    name: Turbo C 2.01 and WASM
+    runs-on: ubuntu-24.04
+
+    env:
+      TURBO_C_SHA256: 2c87f988605ae9ed70e5fef35b9854de87e36ccdb021caec35ab2424ca4b5553
+      JWASM_SHA256: e4cab76e0cdc038e4bc284be136cbd0e5116b02a0a2a76fc4a12cad326224723
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Restore Turbo C cache
+        id: turbo-c-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/.cache/opendoors/turbo-c-2.01
+          key: turbo-c-2.01-${{ env.TURBO_C_SHA256 }}-v1
+
+      - name: Download and stage Turbo C 2.01
+        if: steps.turbo-c-cache.outputs.cache-hit != 'true'
+        run: |
+          archive="$RUNNER_TEMP/tc201.zip"
+          disks="$RUNNER_TEMP/tc201-disks"
+          toolchain="$HOME/.cache/opendoors/turbo-c-2.01"
+
+          curl --fail --location --retry 3 \
+            --output "$archive" \
+            https://altd.embarcadero.com/download/museum/tc201.zip
+          echo "$TURBO_C_SHA256  $archive" | sha256sum --check --strict
+          unzip -q "$archive" -d "$disks"
+
+          mkdir -p "$toolchain/BIN" "$toolchain/INCLUDE/SYS" \
+            "$toolchain/LIB"
+          cp "$disks"/Disk2/*.EXE "$disks"/Disk2/*.COM \
+            "$toolchain/BIN/"
+          cp "$disks"/Disk3/TLIB.EXE "$toolchain/BIN/"
+          cp "$disks"/Disk3/*.H "$toolchain/INCLUDE/"
+          cp "$disks"/Disk3/SYS/*.H "$toolchain/INCLUDE/SYS/"
+          cp "$disks"/Disk1/*.LIB "$disks"/Disk1/*.OBJ \
+            "$disks"/Disk3/*.LIB "$disks"/Disk3/*.OBJ \
+            "$toolchain/LIB/"
+          echo "$TURBO_C_SHA256" > "$toolchain/ARCHIVE.SHA"
+
+      - name: Save Turbo C cache
+        if: steps.turbo-c-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ~/.cache/opendoors/turbo-c-2.01
+          key: turbo-c-2.01-${{ env.TURBO_C_SHA256 }}-v1
+
+      - name: Restore Open Watcom cache
+        id: watcom-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/watcom
+          key: open-watcom-${{ runner.os }}-${{ runner.arch }}-2.0-2026-08-01
+
+      - name: Set up Open Watcom
+        if: steps.watcom-cache.outputs.cache-hit != 'true'
+        uses: open-watcom/setup-watcom@v1
+        with:
+          version: '2.0'
+          tag: 2026-08-01-Build
+          target: dos
+          environment: false
+
+      - name: Save Open Watcom cache
+        if: steps.watcom-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ~/watcom
+          key: open-watcom-${{ runner.os }}-${{ runner.arch }}-2.0-2026-08-01
+
+      - name: Configure Open Watcom environment
+        run: |
+          echo "WATCOM=$HOME/watcom" >> "$GITHUB_ENV"
+          echo "INCLUDE=$HOME/watcom/h" >> "$GITHUB_ENV"
+          echo "$HOME/watcom/binl" >> "$GITHUB_PATH"
+
+      - name: Assemble DOS swap module with WASM
+        run: |
+          mkdir -p build/turboc/OBJ build/turboc/OUT
+          set -o pipefail
+          wasm -q -dLCODE -dLDATA \
+            -fo=build/turboc/OBJ/ODSWAP.OBJ src/ODSwap.asm \
+            2>&1 | tee build/turboc/wasm.log
+          test -s build/turboc/OBJ/ODSWAP.OBJ
+
+      - name: Download JWasm for Turbo C inline assembly
+        run: |
+          archive="$RUNNER_TEMP/jwasm-dos.zip"
+          destination="$RUNNER_TEMP/jwasm-dos"
+          curl --fail --location --retry 3 \
+            --output "$archive" \
+            https://github.com/Baron-von-Riedesel/JWasm/releases/download/v2.20/JWasm_v220_dos.zip
+          echo "$JWASM_SHA256  $archive" | sha256sum --check --strict
+          unzip -q "$archive" -d "$destination"
+          mkdir -p build/turboc/TC/BIN
+          cp "$destination/JWasmr.exe" build/turboc/TC/BIN/JWASM.EXE
+
+      - name: Stage DOSBox build tree
+        run: |
+          mkdir -p build/turboc/TC
+          cp -R "$HOME/.cache/opendoors/turbo-c-2.01"/* \
+            build/turboc/TC/
+          tools/turboc/stage build/turboc
+
+      - name: Install DOSBox runtime
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes dosbox xvfb xauth
+
+      - name: Compile OpenDoors with Turbo C
+        env:
+          SDL_AUDIODRIVER: dummy
+        run: |
+          set -o pipefail
+          timeout --signal=TERM --kill-after=5s 15m \
+            xvfb-run -a dosbox -noconsole \
+              -conf "$PWD/tools/turboc/dosbox.conf" \
+              -c "mount c $PWD/build/turboc" \
+              -c 'c:' \
+              -c 'call tcbuild.bat' \
+              -c 'exit' \
+            2>&1 | tee build/turboc/dosbox.log
+
+      - name: Report Turbo C diagnostics
+        if: always()
+        run: |
+          if test -f build/turboc/TCBUILD.LOG; then
+            sed 's/\r$//' build/turboc/TCBUILD.LOG
+          fi
+          if ! test -s build/turboc/TCBUILD.OK; then
+            if test -f build/turboc/TCFAIL.TXT; then
+              echo 'Failed build stages:'
+              sed 's/\r$//' build/turboc/TCFAIL.TXT
+            fi
+            exit 1
+          fi
+          test -s build/turboc/OUT/ODOORL.LIB
+          test -s build/turboc/OUT/EX_CHAT.EXE
+          test -s build/turboc/OUT/EX_DIAG.EXE
+          test -s build/turboc/OUT/EX_HELLO.EXE
+          test -s build/turboc/OUT/EX_MUSIC.EXE
+          test -s build/turboc/OUT/EX_VOTE.EXE
+          test -s build/turboc/OUT/ODVTEST.EXE
+          test -s build/turboc/OUT/LINKTEST.EXE
+          test -s build/turboc/OUT/APITEST.EXE
+          test -s build/turboc/OBJ/APIPASS.OK
+
+      - name: Restore X00 test-driver cache
+        if: inputs.extended_acceptance
+        id: x00-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/x00/x00150.zip
+          key: x00-1.50-4577e1ad1d89a652
+
+      - name: Download X00 test driver
+        if: inputs.extended_acceptance && steps.x00-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p "$HOME/x00"
+          curl --fail --location --retry 3 \
+            --output "$HOME/x00/x00150.zip" \
+            https://raw.githubusercontent.com/deadbeatz/mystic_a45/4df1f1fef349e2b192f6dbe2b29717bcd6742314/dosemu/drive_c/x00/x00150.zip
+
+      - name: Verify and stage X00 test driver
+        if: inputs.extended_acceptance
+        run: |
+          echo '4577e1ad1d89a65209ca3b2be9522191c4c25119c9de4938adb2dd4f5a819eab  '"$HOME/x00/x00150.zip" | sha256sum --check
+          unzip -t "$HOME/x00/x00150.zip"
+          unzip -p "$HOME/x00/x00150.zip" X00.SYS > build/turboc/OUT/X00.EXE
+
+      - name: Run Turbo C public transport acceptance
+        if: inputs.extended_acceptance
+        env:
+          SDL_AUDIODRIVER: dummy
+        run: |
+          for door in TCUART.EXE; do
+            timeout --signal=TERM --kill-after=5s 90s \
+              xvfb-run -a python3 tests/acceptance/dos_serial_controller.py \
+                "$(command -v dosbox)" "$PWD/build/turboc/OUT/$door"
+          done
+          for door in TCFOSS.EXE; do
+            timeout --signal=TERM --kill-after=5s 90s \
+              xvfb-run -a python3 tests/acceptance/dos_serial_controller.py \
+                --pre-command 'x00.exe E' \
+                "$(command -v dosbox)" "$PWD/build/turboc/OUT/$door"
+          done
+
+      - name: Stage release SDK
+        if: inputs.asset_version != ''
+        env:
+          ASSET_VERSION: ${{ inputs.asset_version }}
+        run: |
+          name="OpenDoors-${ASSET_VERSION}-dos-turboc-2.01-large"
+          python3 tools/stage_release.py dos \
+            --library build/turboc/OUT/ODOORL.LIB \
+            --destination "build/release/$name" \
+            --platform DOS \
+            --architecture i8086-large \
+            --toolchain 'Turbo C 2.01 with Open Watcom WASM' \
+            --runtime 'Borland DOS large memory model'
+          cd build/release
+          cmake -E tar cf "$name.zip" --format=zip "$name"
+
+      - name: Upload release SDK
+        if: inputs.asset_version != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-dos-turboc
+          path: build/release/*.zip
+          if-no-files-found: error
+
+      - name: Upload Turbo C diagnostics and OpenDoors outputs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: opendoors-turbo-c-2.01
+          path: |
+            build/turboc/wasm.log
+            build/turboc/dosbox.log
+            build/turboc/TCBUILD.LOG
+            build/turboc/TCFAIL.TXT
+            build/turboc/TCBUILD.OK
+            build/turboc/OBJ/*.ASM
+            build/turboc/OUT/ODOORL.LIB
+            build/turboc/OUT/EX_*.EXE
+            build/turboc/OUT/LINKTEST.EXE
+            build/turboc/OUT/APITEST.EXE
+            build/turboc/OUT/TCUART.EXE
+            build/turboc/OUT/TCFOSS.EXE
+            build/turboc/OUT/dos-serial-*.log
+            build/turboc/OUT/ODFAIL.TXT
+            build/turboc/OBJ/APIPASS.OK
+          if-no-files-found: warn

@@ -1,0 +1,13 @@
+#ifdef _WIN64
+#define UT_CUSTOM_MOCK_GetWindowLongPtrA
+#define UT_CUSTOM_MOCK_SetWindowLongPtrA
+#define UT_GET_WINDOW_LONG_PTR utm_GetWindowLongPtrA
+#define UT_SET_WINDOW_LONG_PTR utm_SetWindowLongPtrA
+#define UT_WINDOW_LONG_PTR LONG_PTR
+#else
+#define UT_CUSTOM_MOCK_GetWindowLongA
+#define UT_CUSTOM_MOCK_SetWindowLongA
+#define UT_GET_WINDOW_LONG_PTR utm_GetWindowLongA
+#define UT_SET_WINDOW_LONG_PTR utm_SetWindowLongA
+#define UT_WINDOW_LONG_PTR LONG
+#endif

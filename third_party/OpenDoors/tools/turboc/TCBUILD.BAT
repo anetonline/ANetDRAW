@@ -1,0 +1,130 @@
+@echo off
+set PATH=C:\TC\BIN
+set INCLUDE=C:\SRC;C:\SRC\TRIO;C:\TC\INCLUDE
+set LIB=C:\OUT;C:\TC\LIB
+if exist C:\TCBUILD.LOG del C:\TCBUILD.LOG
+if exist C:\TCFAIL.TXT del C:\TCFAIL.TXT
+if exist C:\TCBUILD.OK del C:\TCBUILD.OK
+if exist C:\OUT\ODOORL.LIB del C:\OUT\ODOORL.LIB
+cd \OBJ
+echo Turbo C 2.01 OpenDoors diagnostic build>C:\TCBUILD.LOG
+call C:\TCONE.BAT ODAUTO
+call C:\TCONE.BAT ODBLOCK
+call C:\TCONE.BAT ODCFILE
+call C:\TCONE.BAT ODCMDLN
+call C:\TCASM.BAT ODCOM
+call C:\TCONE.BAT ODCORE
+call C:\TCONE.BAT ODDRBOX
+call C:\TCONE.BAT ODEDIT
+call C:\TCONE.BAT ODEDSTR
+call C:\TCONE.BAT ODEMU
+call C:\TCONE.BAT ODFORMAT
+call C:\TCONE.BAT ODFMTFB
+call C:\TCONE.BAT ODGETIN
+call C:\TCONE.BAT ODGRAPH
+call C:\TCONE.BAT ODINEX1
+call C:\TCONE.BAT ODINEX2
+call C:\TCONE.BAT ODINQUE
+call C:\TCASM.BAT ODKRNL
+call C:\TCONE.BAT ODLIST
+call C:\TCONE.BAT ODLOG
+call C:\TCONE.BAT ODMULTI
+call C:\TCASM.BAT ODPLAT
+call C:\TCONE.BAT ODPCB
+call C:\TCONE.BAT ODPOPUP
+call C:\TCONE.BAT ODPRNTF
+call C:\TCONE.BAT ODRA
+call C:\TCONE.BAT ODRSV
+call C:\TCONE.BAT ODSAFE
+call C:\TCASM.BAT ODSCRN
+call C:\TCASM.BAT ODSPAWN
+call C:\TCONE.BAT ODSTAND
+call C:\TCONE.BAT ODSTAT
+call C:\TCONE.BAT ODSTR
+call C:\TCONE.BAT ODSYNC
+call C:\TCONE.BAT ODUTIL
+call C:\TCONE.BAT ODWCAT
+call C:\TCONE.BAT ODWIN
+echo.>>C:\TCBUILD.LOG
+echo ==== ODSWAP.ASM ====>>C:\TCBUILD.LOG
+echo Assembling ODSWAP.ASM
+JWASM -q -W0 -omf -Zm -DLCODE -DLDATA -Fo=ODSWAP.OBJ C:\SRC\ODSWAP.ASM >>C:\TCBUILD.LOG
+if not errorlevel 1 goto swapdone
+echo ODSWAP.ASM>>C:\TCFAIL.TXT
+:swapdone
+if exist C:\TCFAIL.TXT goto failed
+call C:\TCLIB.BAT ODAUTO
+call C:\TCLIB.BAT ODBLOCK
+call C:\TCLIB.BAT ODCFILE
+call C:\TCLIB.BAT ODCMDLN
+call C:\TCLIB.BAT ODCOM
+call C:\TCLIB.BAT ODCORE
+call C:\TCLIB.BAT ODDRBOX
+call C:\TCLIB.BAT ODEDIT
+call C:\TCLIB.BAT ODEDSTR
+call C:\TCLIB.BAT ODEMU
+call C:\TCLIB.BAT ODFORMAT
+call C:\TCLIB.BAT ODFMTFB
+call C:\TCLIB.BAT ODGETIN
+call C:\TCLIB.BAT ODGRAPH
+call C:\TCLIB.BAT ODINEX1
+call C:\TCLIB.BAT ODINEX2
+call C:\TCLIB.BAT ODINQUE
+call C:\TCLIB.BAT ODKRNL
+call C:\TCLIB.BAT ODLIST
+call C:\TCLIB.BAT ODLOG
+call C:\TCLIB.BAT ODMULTI
+call C:\TCLIB.BAT ODPLAT
+call C:\TCLIB.BAT ODPCB
+call C:\TCLIB.BAT ODPOPUP
+call C:\TCLIB.BAT ODPRNTF
+call C:\TCLIB.BAT ODRA
+call C:\TCLIB.BAT ODRSV
+call C:\TCLIB.BAT ODSAFE
+call C:\TCLIB.BAT ODSCRN
+call C:\TCLIB.BAT ODSPAWN
+call C:\TCLIB.BAT ODSTAND
+call C:\TCLIB.BAT ODSTAT
+call C:\TCLIB.BAT ODSTR
+call C:\TCLIB.BAT ODSYNC
+call C:\TCLIB.BAT ODUTIL
+call C:\TCLIB.BAT ODWCAT
+call C:\TCLIB.BAT ODWIN
+call C:\TCLIB.BAT ODSWAP
+if exist C:\TCFAIL.TXT goto failed
+call C:\TCEX.BAT EX_CHAT
+call C:\TCEX.BAT EX_DIAG
+call C:\TCEX.BAT EX_HELLO
+call C:\TCEX.BAT EX_MUSIC
+call C:\TCVOTE.BAT
+call C:\TCACTEST.BAT
+if exist C:\TCFAIL.TXT goto failed
+echo.>>C:\TCBUILD.LOG
+echo ==== LINKTEST.C ====>>C:\TCBUILD.LOG
+TCC -ml -O -G -Z -d -w -IC:\SRC;C:\TC\INCLUDE -LC:\OUT;C:\TC\LIB -eC:\OUT\LINKTEST.EXE C:\SRC\LINKTEST.C C:\OUT\ODOORL.LIB >>C:\TCBUILD.LOG
+if errorlevel 1 goto linkfail
+C:\OUT\LINKTEST.EXE
+if errorlevel 1 goto runfail
+echo.>>C:\TCBUILD.LOG
+echo ==== APITEST.C ====>>C:\TCBUILD.LOG
+TCC -ml -O -G -Z -d -w -IC:\SRC;C:\TC\INCLUDE -LC:\OUT;C:\TC\LIB -eC:\OUT\APITEST.EXE C:\SRC\APITEST.C C:\OUT\ODOORL.LIB >>C:\TCBUILD.LOG
+if errorlevel 1 goto apilinkfail
+C:\OUT\APITEST.EXE
+if errorlevel 1 goto apirunfail
+if not exist C:\OBJ\APIPASS.OK goto apirunfail
+echo Turbo C 2.01 build and link test passed>C:\TCBUILD.OK
+goto end
+:linkfail
+echo LINK:LINKTEST.C>>C:\TCFAIL.TXT
+goto failed
+:runfail
+echo RUN:LINKTEST.EXE>>C:\TCFAIL.TXT
+goto failed
+:apilinkfail
+echo LINK:APITEST.C>>C:\TCFAIL.TXT
+goto failed
+:apirunfail
+echo RUN:APITEST.EXE>>C:\TCFAIL.TXT
+:failed
+echo Turbo C 2.01 diagnostic build failed.>>C:\TCBUILD.LOG
+:end

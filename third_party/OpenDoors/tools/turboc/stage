@@ -1,0 +1,52 @@
+#!/bin/sh
+
+# Stage OpenDoors sources for the DOS-hosted Turbo C build.
+
+set -eu
+
+if [ "$#" -gt 1 ]; then
+   echo "usage: tools/turboc/stage [build-directory]" >&2
+   exit 2
+fi
+
+case "${1-build/turboc}" in
+   /*) stage_root=${1-build/turboc} ;;
+   *) stage_root=$(pwd)/${1-build/turboc} ;;
+esac
+
+repo_root=$(CDPATH= cd -- "$(dirname "$0")/../.." && pwd)
+cd "$repo_root"
+
+stage_source=$stage_root/SRC
+mkdir -p "$stage_source/TRIO" "$stage_root/OBJ" "$stage_root/OUT"
+
+stage_file()
+{
+   source=$1
+   destination=$2
+   awk '{ sub(/\r$/, ""); printf "%s\r\n", $0 }' \
+      "$source" > "$destination"
+}
+
+for source in src/*.c src/*.h include/*.h examples/*.c examples/*.h; do
+   stage_file "$source" "$stage_source/$(basename "$source")"
+done
+for source in third_party/trio/*.c third_party/trio/*.h; do
+   stage_file "$source" "$stage_source/TRIO/$(basename "$source")"
+done
+
+stage_file src/ODSwap.asm "$stage_source/ODSWAP.ASM"
+stage_file examples/data/door.cfg "$stage_root/OUT/DOOR.CFG"
+stage_file examples/data/DORINFO1.DEF "$stage_root/OUT/DORINFO1.DEF"
+stage_file tests/link_smoke.c "$stage_source/LINKTEST.C"
+stage_file tests/acceptance/public_surface_test.c "$stage_source/APITEST.C"
+stage_file tests/acceptance/test_support.h "$stage_source/ATSUP.H"
+stage_file tests/acceptance/transport_door.c "$stage_source/TRANSPRT.C"
+stage_file tests/acceptance/modem_answer.c "$stage_source/MDMANS.C"
+stage_file tests/acceptance/control-fields.inc "$stage_source/ATFLDS.I"
+stage_file tests/vote_io_test.c "$stage_source/VOTETEST.C"
+
+for file in TCBUILD.BAT TCONE.BAT TCASM.BAT TCEX.BAT TCLIB.BAT \
+   TCVOTE.BAT TCACTEST.BAT TCUART.LNK TCFOSS.LNK; do
+   stage_file "tools/turboc/$file" "$stage_root/$file"
+done

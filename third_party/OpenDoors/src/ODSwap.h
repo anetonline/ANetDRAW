@@ -1,0 +1,76 @@
+/* OpenDoors Online Software Programming Toolkit
+ * (C) Copyright 1991 - 1999 by Brian Pirie.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ *
+ *
+ *        File: ODSwap.h
+ *
+ * Description: Provides memory swapping, spawning and certain other low-
+ *              level assembly routines needed by OpenDoors. This file is only
+ *              applicable when building the MS-DOS version of OpenDoors.
+ *
+ *   Revisions: Date          Ver   Who  Change
+ *              ---------------------------------------------------------------
+ *              Nov 25, 1995  6.00  BP   Created.
+ *              Feb 19, 1996  6.00  BP   Changed version number to 6.00.
+ *              Mar 03, 1996  6.10  BP   Begin version 6.10.
+ */
+
+#ifndef _INC_ODSWAP
+#define _INC_ODSWAP
+
+#ifdef ODPLAT_DOS
+
+#ifdef __WATCOMC__
+#define ODSWAPCALL __cdecl
+#else
+#define ODSWAPCALL
+#endif
+
+/* Data types. */
+typedef struct _vector
+{
+   char number;                        /* vector number */
+   char flag;                          /* 0-CURRENT, 1-IRET, 2-free, 3-end */
+   unsigned int vseg;                  /* vector segment */
+   unsigned int voff;                  /* vector offset */
+} VECTOR;
+
+/* Global variables. */
+#ifndef __WATCOMC__
+extern char **environ;
+#endif
+
+/* Internal low-level functions. */
+int ODSWAPCALL _chkems(char *, int *);
+int ODSWAPCALL _create(char *, int *);
+int ODSWAPCALL _dskspace(int, unsigned int *, unsigned int *);
+int ODSWAPCALL _getcd(int, char *);
+int ODSWAPCALL _getdrv(void);
+int ODSWAPCALL _getems(int, int *);
+int ODSWAPCALL _getrc(void);
+void ODSWAPCALL _getvect(int, unsigned int *, unsigned int *);
+int ODSWAPCALL _restmap(char *);
+int ODSWAPCALL _savemap(char *);
+void ODSWAPCALL _setdrvcd(int, char * );
+void ODSWAPCALL _setvect(VECTOR *);
+int ODSWAPCALL _xsize(unsigned int, long *, long *);
+int ODSWAPCALL _xspawn(char *, char *, char *, VECTOR *, int, int, char *, int);
+
+#endif /* ODPLAT_DOS */
+
+
+#endif /* _INC_ODSWAP */

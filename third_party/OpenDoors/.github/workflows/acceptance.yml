@@ -1,0 +1,719 @@
+name: Extended acceptance
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 7 * * *'
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  changes:
+    name: Check for changes since the last successful nightly
+    runs-on: ubuntu-24.04
+    outputs:
+      run: ${{ steps.decide.outputs.run }}
+
+    steps:
+      - name: Decide whether to run the acceptance matrix
+        id: decide
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          run=true
+          reason='This is not a scheduled run.'
+          if [[ "$GITHUB_EVENT_NAME" == schedule ]]; then
+            endpoint="repos/$GITHUB_REPOSITORY/actions/workflows/acceptance.yml/runs?event=schedule&status=success&per_page=1"
+            if previous_sha=$(gh api "$endpoint" \
+                --jq '.workflow_runs[0].head_sha // ""'); then
+              if [[ -n "$previous_sha" && "$previous_sha" == "$GITHUB_SHA" ]]; then
+                run=false
+                reason="No pushes since successful nightly at $previous_sha."
+              elif [[ -n "$previous_sha" ]]; then
+                reason="Current SHA $GITHUB_SHA differs from successful nightly $previous_sha."
+              else
+                reason='No successful scheduled run was found.'
+              fi
+            else
+              echo '::warning::Unable to query prior scheduled runs; running the matrix.'
+              reason='The prior-run query failed, so the matrix will run.'
+            fi
+          fi
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+          printf '### Extended acceptance gate\n\n%s\n' "$reason" \
+            >> "$GITHUB_STEP_SUMMARY"
+
+  linux:
+    name: Linux ${{ matrix.variant }}
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [Shared, Static]
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build and install selected library
+        run: |
+          shared=OFF
+          static=OFF
+          if [[ '${{ matrix.variant }}' == Shared ]]; then
+            shared=ON
+          else
+            static=ON
+          fi
+          cmake \
+            -S . \
+            -B build/library \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DOPENDOORS_BUILD_SHARED=$shared \
+            -DOPENDOORS_BUILD_STATIC=$static \
+            -DOPENDOORS_BUILD_EXAMPLES=OFF \
+            -DOPENDOORS_WARNINGS_AS_ERRORS=ON
+          cmake --build build/library --parallel
+          cmake --install build/library --prefix "$RUNNER_TEMP/opendoors"
+
+      - name: Build installed public consumer
+        run: |
+          cmake \
+            -S tests/acceptance \
+            -B build/acceptance \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH="$RUNNER_TEMP/opendoors" \
+            -DOPENDOORS_VARIANT=${{ matrix.variant }} \
+            -DOPENDOORS_ACCEPTANCE_EXTENDED=ON
+          cmake --build build/acceptance --parallel
+
+      - name: Run extended acceptance suite
+        run: >-
+          ctest
+          --test-dir build/acceptance
+          --output-on-failure
+          --output-junit acceptance-linux-${{ matrix.variant }}.xml
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: acceptance-linux-${{ matrix.variant }}
+          path: |
+            build/acceptance/acceptance-*.xml
+            build/acceptance/Testing/Temporary/LastTest.log
+
+  macos:
+    name: macOS ${{ matrix.architecture }} ${{ matrix.variant }}
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15-intel
+            architecture: x86_64
+            deployment: '10.13'
+            variant: Shared
+          - runner: macos-15-intel
+            architecture: x86_64
+            deployment: '10.13'
+            variant: Static
+          - runner: macos-15
+            architecture: arm64
+            deployment: '11.0'
+            variant: Shared
+          - runner: macos-15
+            architecture: arm64
+            deployment: '11.0'
+            variant: Static
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build and install selected library
+        run: |
+          shared=OFF
+          static=OFF
+          if [[ '${{ matrix.variant }}' == Shared ]]; then
+            shared=ON
+          else
+            static=ON
+          fi
+          cmake \
+            -S . \
+            -B build/library \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_OSX_ARCHITECTURES=${{ matrix.architecture }} \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.deployment }} \
+            -DOPENDOORS_BUILD_SHARED=$shared \
+            -DOPENDOORS_BUILD_STATIC=$static \
+            -DOPENDOORS_BUILD_EXAMPLES=OFF \
+            -DOPENDOORS_WARNINGS_AS_ERRORS=ON
+          cmake --build build/library --parallel
+          cmake --install build/library --prefix "$RUNNER_TEMP/opendoors"
+
+      - name: Build installed public consumer
+        run: |
+          cmake \
+            -S tests/acceptance \
+            -B build/acceptance \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH="$RUNNER_TEMP/opendoors" \
+            -DCMAKE_OSX_ARCHITECTURES=${{ matrix.architecture }} \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.deployment }} \
+            -DOPENDOORS_VARIANT=${{ matrix.variant }} \
+            -DOPENDOORS_ACCEPTANCE_EXTENDED=ON
+          cmake --build build/acceptance --parallel
+
+      - name: Run extended acceptance suite
+        run: >-
+          ctest
+          --test-dir build/acceptance
+          --output-on-failure
+          --output-junit acceptance-macos-${{ matrix.architecture }}-${{ matrix.variant }}.xml
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: acceptance-macos-${{ matrix.architecture }}-${{ matrix.variant }}
+          path: |
+            build/acceptance/acceptance-*.xml
+            build/acceptance/Testing/Temporary/LastTest.log
+
+  windows-msvc:
+    name: MSVC ${{ matrix.architecture }} ${{ matrix.variant }}
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
+    runs-on: windows-2022
+    strategy:
+      fail-fast: false
+      matrix:
+        architecture: [x86, x64]
+        variant: [Shared, Static, StaticMT]
+        include:
+          - variant: Shared
+            shared: ON
+            static: OFF
+            static_mt: OFF
+            runtime: MultiThreadedDLL
+          - variant: Static
+            shared: OFF
+            static: ON
+            static_mt: OFF
+            runtime: MultiThreadedDLL
+          - variant: StaticMT
+            shared: OFF
+            static: ON
+            static_mt: ON
+            runtime: MultiThreaded
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build and install selected library
+        shell: pwsh
+        run: |
+          $cmakeArchitecture = if ('${{ matrix.architecture }}' -eq 'x86') {
+            'Win32'
+          } else {
+            'x64'
+          }
+          cmake `
+            -S . `
+            -B build/library `
+            -A $cmakeArchitecture `
+            -DOPENDOORS_BUILD_SHARED=${{ matrix.shared }} `
+            -DOPENDOORS_BUILD_STATIC=${{ matrix.static }} `
+            -DOPENDOORS_BUILD_MSVC_STATIC_MT=${{ matrix.static_mt }} `
+            -DOPENDOORS_BUILD_EXAMPLES=OFF `
+            -DOPENDOORS_WARNINGS_AS_ERRORS=ON `
+            -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL
+          cmake --build build/library --config Release --parallel
+          cmake --install build/library --config Release `
+            --prefix "$env:RUNNER_TEMP/opendoors"
+
+      - name: Build installed public consumer
+        shell: pwsh
+        run: |
+          $cmakeArchitecture = if ('${{ matrix.architecture }}' -eq 'x86') {
+            'Win32'
+          } else {
+            'x64'
+          }
+          cmake `
+            -S tests/acceptance `
+            -B build/acceptance `
+            -A $cmakeArchitecture `
+            "-DCMAKE_PREFIX_PATH=$env:RUNNER_TEMP/opendoors" `
+            -DOPENDOORS_VARIANT=${{ matrix.variant }} `
+            -DOPENDOORS_ACCEPTANCE_EXTENDED=ON `
+            -DCMAKE_MSVC_RUNTIME_LIBRARY=${{ matrix.runtime }}
+          cmake --build build/acceptance --config Release --parallel
+
+      - name: Run extended acceptance suite
+        shell: pwsh
+        run: |
+          $env:PATH = "$env:RUNNER_TEMP\opendoors\bin;$env:PATH"
+          ctest `
+            --test-dir build/acceptance `
+            -C Release `
+            --output-on-failure `
+            --output-junit "acceptance-msvc-${{ matrix.architecture }}-${{ matrix.variant }}.xml"
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: acceptance-msvc-${{ matrix.architecture }}-${{ matrix.variant }}
+          path: |
+            build/acceptance/acceptance-*.xml
+            build/acceptance/Testing/Temporary/LastTest.log
+
+  windows-mingw:
+    name: ${{ matrix.msystem }} ${{ matrix.variant }}
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
+    runs-on: windows-2022
+    strategy:
+      fail-fast: false
+      matrix:
+        msystem: [MINGW32, MINGW64, UCRT64]
+        variant: [Shared, Static]
+        include:
+          - msystem: MINGW32
+            prefix: mingw32
+          - msystem: MINGW64
+            prefix: mingw64
+          - msystem: UCRT64
+            prefix: ucrt64
+          - variant: Shared
+            shared: ON
+            static: OFF
+          - variant: Static
+            shared: OFF
+            static: ON
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.msystem }}
+          update: true
+          pacboy: >-
+            cmake:p
+            ninja:p
+            toolchain:p
+
+      - name: Build and install selected library
+        shell: msys2 {0}
+        run: |
+          cmake \
+            -S . \
+            -B build/library \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DOPENDOORS_BUILD_SHARED=${{ matrix.shared }} \
+            -DOPENDOORS_BUILD_STATIC=${{ matrix.static }} \
+            -DOPENDOORS_BUILD_EXAMPLES=OFF \
+            -DOPENDOORS_WARNINGS_AS_ERRORS=ON
+          cmake --build build/library --parallel
+          cmake --install build/library --prefix "$PWD/build/install"
+
+      - name: Build installed public consumer
+        shell: msys2 {0}
+        run: |
+          cmake \
+            -S tests/acceptance \
+            -B build/acceptance \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH="$PWD/build/install" \
+            -DOPENDOORS_VARIANT=${{ matrix.variant }} \
+            -DOPENDOORS_ACCEPTANCE_EXTENDED=ON
+          cmake --build build/acceptance --parallel
+
+      - name: Run extended acceptance suite
+        shell: pwsh
+        run: |
+          $ctest = Join-Path $env:ProgramFiles 'CMake\bin\ctest.exe'
+          if (-not (Test-Path -LiteralPath $ctest)) {
+            throw "CTest was not found at $ctest"
+          }
+          $runtimeDirectory = 'C:\msys64\${{ matrix.prefix }}\bin'
+          $installBin = Join-Path $PWD 'build\install\bin'
+          $env:PATH = "$installBin;$runtimeDirectory;$env:PATH"
+          & $ctest `
+            --test-dir build\acceptance `
+            --output-on-failure `
+            --output-junit "acceptance-${{ matrix.msystem }}-${{ matrix.variant }}.xml"
+          exit $LASTEXITCODE
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: acceptance-${{ matrix.msystem }}-${{ matrix.variant }}
+          path: |
+            build/acceptance/acceptance-*.xml
+            build/acceptance/Testing/Temporary/LastTest.log
+
+  dos16:
+    name: Open Watcom DOS 16-bit UART and FOSSIL
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Restore Open Watcom cache
+        id: watcom-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/watcom
+          key: open-watcom-${{ runner.os }}-${{ runner.arch }}-2.0-2026-08-01
+
+      - name: Set up Open Watcom
+        if: steps.watcom-cache.outputs.cache-hit != 'true'
+        uses: open-watcom/setup-watcom@v1
+        with:
+          version: '2.0'
+          tag: 2026-08-01-Build
+          target: dos
+          environment: false
+
+      - name: Save Open Watcom cache
+        if: >-
+          steps.watcom-cache.outputs.cache-hit != 'true' &&
+          (github.event_name != 'pull_request' ||
+          github.event.pull_request.head.repo.full_name == github.repository)
+        uses: actions/cache/save@v6
+        with:
+          path: ~/watcom
+          key: open-watcom-${{ runner.os }}-${{ runner.arch }}-2.0-2026-08-01
+
+      - name: Configure Open Watcom environment
+        run: |
+          echo "WATCOM=$HOME/watcom" >> "$GITHUB_ENV"
+          echo "INCLUDE=$HOME/watcom/h" >> "$GITHUB_ENV"
+          echo "$HOME/watcom/binl" >> "$GITHUB_PATH"
+
+      - name: Build 16-bit acceptance door
+        env:
+          CC: wcl
+        run: |
+          cmake \
+            -S dos \
+            -B build/dos \
+            -G 'Watcom WMake' \
+            -D CMAKE_SYSTEM_NAME=DOS \
+            -D CMAKE_SYSTEM_PROCESSOR=I86 \
+            -D CMAKE_BUILD_TYPE=Release \
+            -D OPENDOORS_WARNINGS_AS_ERRORS=ON
+          cmake --build build/dos
+          test -s build/dos/odserial.exe
+          test -s build/dos/odfossil.exe
+
+      - name: Restore X00 test-driver cache
+        id: x00-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/x00/x00150.zip
+          key: x00-1.50-4577e1ad1d89a652
+
+      - name: Download X00 test driver
+        if: steps.x00-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p "$HOME/x00"
+          curl --fail --location --retry 3 \
+            --output "$HOME/x00/x00150.zip" \
+            https://raw.githubusercontent.com/deadbeatz/mystic_a45/4df1f1fef349e2b192f6dbe2b29717bcd6742314/dosemu/drive_c/x00/x00150.zip
+
+      - name: Verify and stage X00 test driver
+        run: |
+          echo '4577e1ad1d89a65209ca3b2be9522191c4c25119c9de4938adb2dd4f5a819eab  '"$HOME/x00/x00150.zip" | sha256sum --check
+          unzip -t "$HOME/x00/x00150.zip"
+          unzip -p "$HOME/x00/x00150.zip" X00.SYS > build/dos/X00.EXE
+
+      - name: Install headless DOS runtime
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes dosbox xvfb xauth
+
+      - name: Run all UART and FOSSIL acceptance scenarios
+        env:
+          SDL_AUDIODRIVER: dummy
+        run: |
+          timeout --signal=TERM --kill-after=5s 90s \
+            xvfb-run -a python3 tests/acceptance/dos_serial_controller.py \
+              "$(command -v dosbox)" "$PWD/build/dos/odserial.exe"
+          timeout --signal=TERM --kill-after=5s 90s \
+            xvfb-run -a python3 tests/acceptance/dos_serial_controller.py \
+              --pre-command 'x00.exe E' \
+              "$(command -v dosbox)" "$PWD/build/dos/odfossil.exe"
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: acceptance-dos16-openwatcom
+          path: |
+            build/dos/dos-serial-*.log
+            build/dos/ODFAIL.TXT
+          if-no-files-found: warn
+
+  dos16-turboc:
+    name: Turbo C DOS 16-bit UART and FOSSIL
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
+    uses: ./.github/workflows/turbo-c.yml
+    with:
+      extended_acceptance: true
+
+  dos32:
+    name: DOS 32-bit UART and FOSSIL
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Restore Open Watcom cache
+        id: watcom-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/watcom
+          key: open-watcom-${{ runner.os }}-${{ runner.arch }}-2.0-2026-08-01
+
+      - name: Set up Open Watcom
+        if: steps.watcom-cache.outputs.cache-hit != 'true'
+        uses: open-watcom/setup-watcom@v1
+        with:
+          version: '2.0'
+          tag: 2026-08-01-Build
+          target: dos
+          environment: false
+
+      - name: Save Open Watcom cache
+        if: >-
+          steps.watcom-cache.outputs.cache-hit != 'true' &&
+          (github.event_name != 'pull_request' ||
+          github.event.pull_request.head.repo.full_name == github.repository)
+        uses: actions/cache/save@v6
+        with:
+          path: ~/watcom
+          key: open-watcom-${{ runner.os }}-${{ runner.arch }}-2.0-2026-08-01
+
+      - name: Restore X00 test-driver cache
+        id: x00-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/x00/x00150.zip
+          key: x00-1.50-4577e1ad1d89a652
+
+      - name: Download X00 test driver
+        if: steps.x00-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p "$HOME/x00"
+          curl --fail --location --retry 3 \
+            --output "$HOME/x00/x00150.zip" \
+            https://raw.githubusercontent.com/deadbeatz/mystic_a45/4df1f1fef349e2b192f6dbe2b29717bcd6742314/dosemu/drive_c/x00/x00150.zip
+
+      - name: Verify X00 test driver
+        run: |
+          echo '4577e1ad1d89a65209ca3b2be9522191c4c25119c9de4938adb2dd4f5a819eab  '"$HOME/x00/x00150.zip" | sha256sum --check
+          unzip -t "$HOME/x00/x00150.zip"
+
+      - name: Save X00 test-driver cache
+        if: >-
+          steps.x00-cache.outputs.cache-hit != 'true' &&
+          (github.event_name != 'pull_request' ||
+          github.event.pull_request.head.repo.full_name == github.repository)
+        uses: actions/cache/save@v6
+        with:
+          path: ~/x00/x00150.zip
+          key: x00-1.50-4577e1ad1d89a652
+
+      - name: Configure Open Watcom environment
+        run: |
+          echo "WATCOM=$HOME/watcom" >> "$GITHUB_ENV"
+          echo "INCLUDE=$HOME/watcom/h" >> "$GITHUB_ENV"
+          echo "$HOME/watcom/binl" >> "$GITHUB_PATH"
+
+      - name: Install headless DOS runtime
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes dosbox xvfb xauth
+
+      - name: Build DOS/4GW acceptance doors
+        env:
+          CC: wcl386
+        run: |
+          cmake \
+            -S dos \
+            -B build/dos32 \
+            -G 'Unix Makefiles' \
+            -D CMAKE_SYSTEM_NAME=DOS \
+            -D CMAKE_SYSTEM_PROCESSOR=I386 \
+            -D CMAKE_BUILD_TYPE=Release \
+            -D OPENDOORS_WARNINGS_AS_ERRORS=ON
+          cmake --build build/dos32
+          cp "$WATCOM/binw/dos4gw.exe" build/dos32/DOS4GW.EXE
+          unzip -p "$HOME/x00/x00150.zip" X00.SYS > build/dos32/X00.EXE
+
+      - name: Run DOS/4GW acceptance matrix
+        env:
+          SDL_AUDIODRIVER: dummy
+        run: |
+          for door in od32uar.exe od32uas.exe; do
+            timeout --signal=TERM --kill-after=5s 90s \
+              xvfb-run -a python3 tests/acceptance/dos_serial_controller.py \
+                "$(command -v dosbox)" "$PWD/build/dos32/$door"
+          done
+          for door in od32for.exe od32fos.exe; do
+            timeout --signal=TERM --kill-after=5s 90s \
+              xvfb-run -a python3 tests/acceptance/dos_serial_controller.py \
+                --pre-command 'x00.exe E' \
+                "$(command -v dosbox)" "$PWD/build/dos32/$door"
+          done
+
+      - name: Build DOS/32A acceptance doors
+        env:
+          CC: wcl386
+        run: |
+          cmake \
+            -S dos \
+            -B build/dos32a \
+            -G 'Unix Makefiles' \
+            -D CMAKE_SYSTEM_NAME=DOS \
+            -D CMAKE_SYSTEM_PROCESSOR=I386 \
+            -D CMAKE_BUILD_TYPE=Release \
+            -D OPENDOORS_WARNINGS_AS_ERRORS=ON \
+            -D OPENDOORS_DOS32_EXTENDER=DOS32A
+          cmake --build build/dos32a
+          unzip -p "$HOME/x00/x00150.zip" X00.SYS > build/dos32a/X00.EXE
+
+      - name: Run DOS/32A acceptance matrix
+        env:
+          SDL_AUDIODRIVER: dummy
+        run: |
+          for door in od32uar.exe od32uas.exe; do
+            timeout --signal=TERM --kill-after=5s 90s \
+              xvfb-run -a python3 tests/acceptance/dos_serial_controller.py \
+                "$(command -v dosbox)" "$PWD/build/dos32a/$door"
+          done
+          for door in od32for.exe od32fos.exe; do
+            timeout --signal=TERM --kill-after=5s 90s \
+              xvfb-run -a python3 tests/acceptance/dos_serial_controller.py \
+                --pre-command 'x00.exe E' \
+                "$(command -v dosbox)" "$PWD/build/dos32a/$door"
+          done
+
+      - name: Remove third-party X00 test driver
+        if: always()
+        run: rm -f build/dos32/X00.EXE build/dos32a/X00.EXE
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: acceptance-dos32-serial
+          path: |
+            build/dos32/*.log
+            build/dos32/*FAIL.TXT
+            build/dos32a/*.log
+            build/dos32a/*FAIL.TXT
+          if-no-files-found: warn
+
+  coverage:
+    name: Public acceptance branch coverage
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build instrumented shared library
+        env:
+          CC: clang
+          CXX: clang++
+        run: |
+          cmake \
+            -S . \
+            -B build/coverage-library \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DOPENDOORS_BUILD_SHARED=ON \
+            -DOPENDOORS_BUILD_STATIC=OFF \
+            -DOPENDOORS_BUILD_EXAMPLES=OFF \
+            '-DCMAKE_C_FLAGS=-fprofile-instr-generate -fcoverage-mapping' \
+            '-DCMAKE_SHARED_LINKER_FLAGS=-fprofile-instr-generate'
+          cmake --build build/coverage-library --parallel
+          cmake --install build/coverage-library \
+            --prefix "$RUNNER_TEMP/opendoors"
+
+      - name: Build installed acceptance consumer
+        env:
+          CC: clang
+          CXX: clang++
+        run: |
+          cmake \
+            -S tests/acceptance \
+            -B build/coverage-acceptance \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_PREFIX_PATH="$RUNNER_TEMP/opendoors" \
+            -DOPENDOORS_VARIANT=Shared \
+            -DOPENDOORS_ACCEPTANCE_EXTENDED=ON \
+            '-DCMAKE_C_FLAGS=-fprofile-instr-generate -fcoverage-mapping' \
+            '-DCMAKE_EXE_LINKER_FLAGS=-fprofile-instr-generate'
+          cmake --build build/coverage-acceptance --parallel
+
+      - name: Run and report acceptance coverage
+        run: |
+          mkdir -p build/coverage-profiles build/acceptance-coverage-html
+          llvm_major=$(clang -dumpversion | cut -d. -f1)
+          llvm_profdata=$(command -v llvm-profdata || \
+            command -v "llvm-profdata-$llvm_major")
+          llvm_cov=$(command -v llvm-cov || \
+            command -v "llvm-cov-$llvm_major")
+          LLVM_PROFILE_FILE="$PWD/build/coverage-profiles/%p-%m.profraw" \
+            ctest \
+              --test-dir build/coverage-acceptance \
+              --output-on-failure \
+              --output-junit acceptance-coverage.xml
+          "$llvm_profdata" merge -sparse build/coverage-profiles/*.profraw \
+            -o build/acceptance.profdata
+          library=$(find "$RUNNER_TEMP/opendoors" -type f \
+            -name 'libODoors.so*' | head -n 1)
+          test -n "$library"
+          "$llvm_cov" report "$library" \
+            -instr-profile=build/acceptance.profdata \
+            -ignore-filename-regex='/(tests|third_party)/' \
+            > build/acceptance-coverage.txt
+          "$llvm_cov" show "$library" \
+            -instr-profile=build/acceptance.profdata \
+            -ignore-filename-regex='/(tests|third_party)/' \
+            -format=html \
+            -output-dir=build/acceptance-coverage-html
+          cat build/acceptance-coverage.txt
+          {
+            echo '## Public acceptance branch coverage'
+            echo
+            echo '```text'
+            tail -n 2 build/acceptance-coverage.txt
+            echo '```'
+            echo
+            echo 'Directional report only; no percentage or delta gate.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: acceptance-branch-coverage
+          path: |
+            build/acceptance-coverage.txt
+            build/acceptance-coverage-html
+            build/coverage-acceptance/acceptance-coverage.xml
+            build/coverage-acceptance/Testing/Temporary/LastTest.log

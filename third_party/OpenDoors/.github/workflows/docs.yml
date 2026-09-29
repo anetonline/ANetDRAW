@@ -1,0 +1,101 @@
+name: Documentation
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - '.github/workflows/docs.yml'
+      - 'docs/**'
+      - 'historic/OPENDOOR.TXT'
+      - 'mkdocs.yml'
+      - 'mkdocs-release.yml'
+      - 'include/OpenDoor.h'
+      - 'include/ODStat.h'
+      - 'README.md'
+      - 'tools/check_api_docs.py'
+      - 'tools/check_version.py'
+      - 'VERSION'
+      - 'release/examples/**'
+      - 'tools/stage_release.py'
+  pull_request:
+    paths:
+      - '.github/workflows/docs.yml'
+      - 'docs/**'
+      - 'historic/OPENDOOR.TXT'
+      - 'mkdocs.yml'
+      - 'mkdocs-release.yml'
+      - 'include/OpenDoor.h'
+      - 'include/ODStat.h'
+      - 'README.md'
+      - 'tools/check_api_docs.py'
+      - 'tools/check_version.py'
+      - 'VERSION'
+      - 'release/examples/**'
+      - 'tools/stage_release.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.x'
+          cache: pip
+          cache-dependency-path: docs/requirements.txt
+
+      - name: Install documentation dependencies
+        run: python -m pip install -r docs/requirements.txt
+
+      - name: Check API reference coverage
+        run: |
+          python tools/check_api_docs.py
+          PYTHONDONTWRITEBYTECODE=1 python tools/check_public_contract.py
+          python tools/check_version.py
+
+      - name: Build site
+        run: mkdocs build --strict --site-dir site
+
+      - name: Build offline site
+        run: |
+          mkdocs build --strict -f mkdocs-release.yml --site-dir offline-site
+          if grep -R -E 'fonts\.(googleapis|gstatic)\.com' offline-site; then
+            echo 'Offline documentation requires a remote font.'
+            exit 1
+          fi
+
+      - name: Upload GitHub Pages artifact
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+  deploy:
+    name: Deploy documentation
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+
+    steps:
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v6
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

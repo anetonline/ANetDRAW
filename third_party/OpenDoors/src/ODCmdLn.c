@@ -1,0 +1,1205 @@
+/* OpenDoors Online Software Programming Toolkit
+ * (C) Copyright 1991 - 1999 by Brian Pirie.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ *
+ *
+ *        File: ODCmdLn.c
+ *
+ * Description: Implementation of od_parse_cmd_line() function, which
+ *              parses standard command-line parameters for OpenDors programs.
+ *
+ *   Revisions: Date          Ver   Who  Change
+ *              ---------------------------------------------------------------
+ *              Jan 29, 1995  6.00  BP   Created.
+ *              Aug 19, 1995  6.00  BP   Cleaned up indentations.
+ *              Nov 12, 1995  6.00  BP   32-bit portability.
+ *              Nov 12, 1995  6.00  BP   Added -CONFIG parameter.
+ *              Dec 21, 1995  6.00  BP   Added -HANDLE parameter.
+ *              Dec 24, 1995  6.00  BP   puts() -> printf().
+ *              Dec 30, 1995  6.00  BP   Added ODCALL for calling convention.
+ *              Jan 03, 1996  6.00  BP   Recognize -D for -DROPFILE.
+ *              Jan 03, 1996  6.00  BP   Parameters must begin with - or /.
+ *              Feb 06, 1996  6.00  BP   Added -SILENT for od_silent_mode.
+ *              Feb 19, 1996  6.00  BP   Changed version number to 6.00.
+ *              Feb 20, 1996  6.00  BP   Added bParsedCmdLine.
+ *              Feb 21, 1996  6.00  BP   Make cmd line options overriding.
+ *              Feb 25, 1996  6.00  BP   Fix -P COMx.
+ *              Feb 27, 1996  6.00  BP   Add -P COMx to command line help.
+ *              Mar 03, 1996  6.10  BP   Begin version 6.10.
+ *              Apr 08, 1996  6.10  BP   Added command-line parsing callbacks.
+ *					 Apr 24, 2002  6.22  RS   Added -SOCKET parameter.
+ *              Aug 10, 2003  6.23  SH   *nix support
+ */
+
+#define BUILDING_OPENDOORS
+
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+
+#ifdef ODPLAT_WIN32
+#include <processenv.h>
+#include <wchar.h>
+#endif
+
+#include "OpenDoor.h"
+#include "ODStr.h"
+#include "ODPlat.h"
+#include "ODCore.h"
+#include "ODInEx.h"
+#include "ODSync.h"
+
+
+/* Maximum number of command-line arguments. Any additional arguments will */
+/* simply be ignored.                                                      */
+#define MAX_ARGS 32
+
+/* Size of temporary string that will hold any options following custom      */
+/* command-line keywords that are passed to the client application's handler */
+/* function.                                                                 */
+#define CUSTOM_OPTION_SIZE 80
+
+/* Command-line parameter identifiers. */
+typedef enum
+{
+   kParamConfigFile,
+   kParamLocal,
+   kParamBPS,
+   kParamPort,
+   kParamNode,
+   kParamHelp,
+   kParamPersonality,
+   kParamMaxTime,
+   kParamAddress,
+   kParamIRQ,
+   kParamNoFOSSIL,
+   kParamNoFIFO,
+   kParamDropFile,
+   kParamUserName,
+   kParamTimeLeft,
+   kParamSecurity,
+   kParamLocation,
+   kParamGraphics,
+   kParamBBSName,
+   kParamPortHandle,
+   kParamSocketDescriptor,
+   kParamSilentMode,
+   kParamOption,
+   kParamCP436UTF8,
+   kParamUnknown
+} tCommandLineParameter;
+
+
+/* Private function prototypes. */
+static void ODAdvanceToNextArg(INT *pnCurrentArg, INT nArgCount,
+   char *pszOption);
+static void ODGetNextArgName(INT *pnCurrentArg, INT nArgCount,
+   char *papszArguments[], char *pszString, size_t nStringSize);
+static tCommandLineParameter ODGetCommandLineParameter(char *pszArgument);
+static void ODParseCommandLineArguments(INT nArgCount,
+   char *papszArguments[]);
+#if defined(ODPLAT_WIN32) || defined(ODPLAT_NIX)
+static BOOL ODParseOpenHandle(const char *pszValue, DWORD_PTR *pdwValue);
+#endif
+#ifdef ODPLAT_WIN32
+static void ODCommandLineInterfaceMismatch(const char *pszFunction,
+   tODWindowsSubsystem Expected, tODWindowsSubsystem Actual);
+typedef LPWSTR *(WINAPI *tODCommandLineToArgvW)(LPCWSTR, INT *);
+static LPWSTR *ODWindowsCommandLineToArgvFallback(LPCWSTR pszCommandLine,
+   INT *pnArgCount);
+static LPWSTR *ODWindowsCommandLineToArgv(LPCWSTR pszCommandLine,
+   INT *pnArgCount, HMODULE *phShell32);
+#endif
+
+
+/* Private variables. */
+#define CONFIG_FILENAME_SIZE 80
+static char szConfigFilename[CONFIG_FILENAME_SIZE];
+
+#ifdef ODPLAT_WIN32
+/* ----------------------------------------------------------------------------
+ * ODWindowsCommandLineToArgvFallback()
+ *
+ * Local implementation of the CommandLineToArgvW argument grammar for
+ * systems where Shell32 does not export that function.
+ */
+static LPWSTR *ODWindowsCommandLineToArgvFallback(LPCWSTR pszCommandLine,
+   INT *pnArgCount)
+{
+   size_t nLength = 0;
+   size_t nPointerCount;
+   size_t nAllocationSize;
+   LPWSTR *papszArguments;
+   LPWSTR pszOutput;
+   LPCWSTR pszCurrent;
+   BOOL bInQuotes;
+   size_t nSlashCount;
+   size_t nIndex;
+
+   while(pszCommandLine[nLength] != L'\0')
+      ++nLength;
+   nPointerCount = nLength + 2;
+   if(nPointerCount > 4097)
+      nPointerCount = 4097;
+   nAllocationSize = nPointerCount * sizeof(LPWSTR)
+      + (nLength + 1) * sizeof(WCHAR);
+   papszArguments = (LPWSTR *)LocalAlloc(LMEM_FIXED, nAllocationSize);
+   if(papszArguments == NULL)
+      return(NULL);
+
+   pszOutput = (LPWSTR)(papszArguments + nPointerCount);
+   pszCurrent = pszCommandLine;
+   *pnArgCount = 0;
+
+   /* CommandLineToArgvW represents leading whitespace as an empty argv[0]. */
+   if(*pszCurrent == L' ' || *pszCurrent == L'\t')
+   {
+      papszArguments[(*pnArgCount)++] = pszOutput;
+      *pszOutput++ = L'\0';
+   }
+
+   while(*pszCurrent != L'\0' && *pnArgCount < 4096)
+   {
+      while(*pszCurrent == L' ' || *pszCurrent == L'\t')
+         ++pszCurrent;
+      if(*pszCurrent == L'\0')
+         break;
+
+      papszArguments[(*pnArgCount)++] = pszOutput;
+      bInQuotes = FALSE;
+      nSlashCount = 0;
+      while(*pszCurrent != L'\0')
+      {
+         WCHAR chCurrent = *pszCurrent++;
+         if(chCurrent == L'\\')
+         {
+            ++nSlashCount;
+            continue;
+         }
+         if(chCurrent == L'\"')
+         {
+            for(nIndex = 0; nIndex < nSlashCount / 2; ++nIndex)
+               *pszOutput++ = L'\\';
+            if((nSlashCount & 1) != 0)
+            {
+               *pszOutput++ = L'\"';
+            }
+            else
+            {
+               if(bInQuotes && *pszCurrent == L'\"')
+               {
+                  *pszOutput++ = L'\"';
+                  ++pszCurrent;
+               }
+               bInQuotes = !bInQuotes;
+            }
+            nSlashCount = 0;
+            continue;
+         }
+         for(nIndex = 0; nIndex < nSlashCount; ++nIndex)
+            *pszOutput++ = L'\\';
+         nSlashCount = 0;
+         if(!bInQuotes && (chCurrent == L' ' || chCurrent == L'\t'))
+            break;
+         *pszOutput++ = chCurrent;
+      }
+      for(nIndex = 0; nIndex < nSlashCount; ++nIndex)
+         *pszOutput++ = L'\\';
+      *pszOutput++ = L'\0';
+   }
+   papszArguments[*pnArgCount] = NULL;
+   return(papszArguments);
+}
+
+/* ----------------------------------------------------------------------------
+ * ODWindowsCommandLineToArgv()
+ *
+ * Resolves CommandLineToArgvW at run time, falling back only when the API is
+ * unavailable. The returned array is always released with LocalFree().
+ */
+static LPWSTR *ODWindowsCommandLineToArgv(LPCWSTR pszCommandLine,
+   INT *pnArgCount, HMODULE *phShell32)
+{
+   HMODULE hShell32;
+   tODCommandLineToArgvW pfnCommandLineToArgvW;
+   union
+   {
+      FARPROC pfnGeneric;
+      tODCommandLineToArgvW pfnCommandLineToArgvW;
+   } Proc;
+   LPWSTR *papszArguments;
+
+   *phShell32 = NULL;
+   hShell32 = LoadLibraryA("shell32.dll");
+   if(hShell32 != NULL)
+   {
+      Proc.pfnGeneric = GetProcAddress(hShell32, "CommandLineToArgvW");
+      pfnCommandLineToArgvW = Proc.pfnCommandLineToArgvW;
+      if(pfnCommandLineToArgvW != NULL)
+      {
+         papszArguments = (*pfnCommandLineToArgvW)(pszCommandLine,
+            pnArgCount);
+         if(papszArguments != NULL)
+         {
+            *phShell32 = hShell32;
+            return(papszArguments);
+         }
+         FreeLibrary(hShell32);
+         return(NULL);
+      }
+      FreeLibrary(hShell32);
+   }
+   return(ODWindowsCommandLineToArgvFallback(pszCommandLine, pnArgCount));
+}
+#endif
+
+/* ----------------------------------------------------------------------------
+ * od_split_cmd_line()
+ *
+ * Function to split an arguments string into argc/argv. Used by
+ * od_parse_cmd_line() on Windows.
+ *
+ * Parameters: pszCmdLine     - Pointer to the command line string, as passed
+ *                              to WinMain().
+ * 
+ *             nArgCount      - Pointer to an INT that will hold the number of
+ *                              arguments found.
+ * 
+ *     Return: char**
+ */
+ODAPIDEF char ** ODCALL od_split_cmd_line(const char* pszCmdLine, INT *nArgCount)
+{
+#ifdef ODPLAT_WIN32
+   LPCSTR pszFullCmdLine;
+   LPWSTR pszFullWide = NULL;
+   LPWSTR pszTailWide = NULL;
+   LPWSTR *papszFullWide = NULL;
+   LPWSTR *papszTailWide = NULL;
+   HMODULE hFullShell32 = NULL;
+   HMODULE hTailShell32 = NULL;
+   INT nFullCount = 0;
+   INT nTailCount = 0;
+   INT nTailLimit;
+   INT nIndex;
+   int nWideLength;
+   int nAnsiLength;
+   size_t nArgumentBytes = 0;
+   char *pszArgumentBlock = NULL;
+   char *pszOutput;
+   char **papszArguments = NULL;
+   char **papszArgumentsRe;
+#else
+   char *pszCmdLineCopy;
+   char *pchCurrent;
+   /* Shrink this initial allocation before returning it. */
+   char **papszArguments;
+   char **papszArgumentsRe;
+#endif
+
+   /* Log function entry if running in trace mode. */
+   TRACE(TRACE_API, "od_split_cmd_line()");
+
+   if(!ODSyncPublicCallAllowed()) return(NULL);
+
+   if (pszCmdLine == NULL || nArgCount == NULL) {
+      od_control.od_error = ERR_PARAMETER;
+      if (nArgCount)
+         *nArgCount = 0;
+      return NULL;
+   }
+
+   *nArgCount = 0;
+#ifdef ODPLAT_WIN32
+   papszArguments = (char **)calloc(4097, sizeof(char *));
+   if(papszArguments == NULL)
+   {
+      od_control.od_error = ERR_MEMORY;
+      return NULL;
+   }
+
+   pszFullCmdLine = GetCommandLineA();
+   if(pszFullCmdLine != NULL)
+   {
+      nWideLength = MultiByteToWideChar(CP_ACP, 0, pszFullCmdLine, -1,
+         NULL, 0);
+      if(nWideLength == 0)
+         goto windows_memory_error;
+      pszFullWide = (LPWSTR)malloc((size_t)nWideLength * sizeof(WCHAR));
+      if(pszFullWide == NULL)
+         goto windows_memory_error;
+      if(MultiByteToWideChar(CP_ACP, 0, pszFullCmdLine, -1, pszFullWide,
+         nWideLength) == 0)
+      {
+         goto windows_memory_error;
+      }
+      papszFullWide = ODWindowsCommandLineToArgv(pszFullWide, &nFullCount,
+         &hFullShell32);
+      if(papszFullWide == NULL)
+         goto windows_memory_error;
+   }
+
+   if(nFullCount > 0)
+      nAnsiLength = WideCharToMultiByte(CP_ACP, 0, papszFullWide[0], -1,
+         NULL, 0, NULL, NULL);
+   else
+      nAnsiLength = 1;
+   if(nAnsiLength == 0)
+      goto windows_memory_error;
+   papszArguments[0] = (char *)malloc((size_t)nAnsiLength);
+   if(papszArguments[0] == NULL)
+      goto windows_memory_error;
+   if(nFullCount > 0)
+   {
+      if(WideCharToMultiByte(CP_ACP, 0, papszFullWide[0], -1,
+         papszArguments[0], nAnsiLength, NULL, NULL) == 0)
+      {
+         goto windows_memory_error;
+      }
+   }
+   else
+   {
+      papszArguments[0][0] = '\0';
+   }
+
+   nWideLength = MultiByteToWideChar(CP_ACP, 0, pszCmdLine, -1, NULL, 0);
+   if(nWideLength == 0)
+      goto windows_memory_error;
+   pszTailWide = (LPWSTR)malloc(((size_t)nWideLength + 2) * sizeof(WCHAR));
+   if(pszTailWide == NULL)
+      goto windows_memory_error;
+   pszTailWide[0] = L'x';
+   pszTailWide[1] = L' ';
+   if(MultiByteToWideChar(CP_ACP, 0, pszCmdLine, -1, pszTailWide + 2,
+      nWideLength) == 0)
+   {
+      goto windows_memory_error;
+   }
+   papszTailWide = ODWindowsCommandLineToArgv(pszTailWide, &nTailCount,
+      &hTailShell32);
+   if(papszTailWide == NULL || nTailCount < 1)
+      goto windows_memory_error;
+
+   nTailLimit = nTailCount - 1;
+   if(nTailLimit > 4095)
+      nTailLimit = 4095;
+   if(nTailLimit != 0)
+   {
+      for(nIndex = 1; nIndex <= nTailLimit; ++nIndex)
+      {
+         nAnsiLength = WideCharToMultiByte(CP_ACP, 0, papszTailWide[nIndex],
+            -1, NULL, 0, NULL, NULL);
+         if(nAnsiLength == 0)
+            goto windows_memory_error;
+         nArgumentBytes += (size_t)nAnsiLength;
+      }
+      pszArgumentBlock = (char *)malloc(nArgumentBytes);
+      if(pszArgumentBlock == NULL)
+         goto windows_memory_error;
+   }
+   pszOutput = pszArgumentBlock;
+   *nArgCount = 1;
+   for(nIndex = 1; nIndex <= nTailLimit; ++nIndex)
+   {
+      nAnsiLength = WideCharToMultiByte(CP_ACP, 0, papszTailWide[nIndex], -1,
+         pszOutput, (int)(nArgumentBytes - (size_t)(pszOutput
+            - pszArgumentBlock)), NULL, NULL);
+      if(nAnsiLength == 0)
+         goto windows_memory_error;
+      papszArguments[*nArgCount] = pszOutput;
+      ++(*nArgCount);
+      pszOutput += nAnsiLength;
+   }
+
+   if(papszFullWide != NULL)
+      LocalFree((HLOCAL)papszFullWide);
+   if(hFullShell32 != NULL)
+      FreeLibrary(hFullShell32);
+   LocalFree((HLOCAL)papszTailWide);
+   if(hTailShell32 != NULL)
+      FreeLibrary(hTailShell32);
+   free(pszFullWide);
+   free(pszTailWide);
+   papszArgumentsRe = (char **)realloc(papszArguments,
+      ((size_t)*nArgCount + 1) * sizeof(*papszArguments));
+   return(papszArgumentsRe != NULL ? papszArgumentsRe : papszArguments);
+
+windows_memory_error:
+   od_control.od_error = ERR_MEMORY;
+   *nArgCount = 0;
+   if(papszFullWide != NULL)
+      LocalFree((HLOCAL)papszFullWide);
+   if(hFullShell32 != NULL)
+      FreeLibrary(hFullShell32);
+   if(papszTailWide != NULL)
+      LocalFree((HLOCAL)papszTailWide);
+   if(hTailShell32 != NULL)
+      FreeLibrary(hTailShell32);
+   free(pszFullWide);
+   free(pszTailWide);
+   free(pszArgumentBlock);
+   free(papszArguments[0]);
+   free(papszArguments);
+   return(NULL);
+#else
+   papszArguments = calloc(4097, sizeof(char*));
+   if(papszArguments == NULL)
+   {
+      od_control.od_error = ERR_MEMORY;
+      return NULL;
+   }
+
+   papszArguments[(*nArgCount)++] = strdup("");
+   if (papszArguments[0] == NULL) {
+      od_control.od_error = ERR_MEMORY;
+      *nArgCount = 0;
+      free(papszArguments);
+      return NULL;
+   }
+
+   pszCmdLineCopy = strdup(pszCmdLine);
+   if(pszCmdLineCopy == NULL)
+   {
+      od_control.od_error = ERR_MEMORY;
+      *nArgCount = 0;
+      free(papszArguments[0]);
+      free(papszArguments);
+      return NULL;
+   }
+
+   /* Loop, building papszArguments and nArgCount. */
+   pchCurrent = pszCmdLineCopy;
+   for(; *nArgCount < 4096 && *pchCurrent != '\0'; ++(*nArgCount))
+   {
+      /* Store address of the next command line argument. */
+      papszArguments[*nArgCount] = pchCurrent;
+
+      /* Skip forward to the next white space. */
+      while(*pchCurrent != '\0' && !isspace((unsigned char)*pchCurrent))
+      {
+         ++pchCurrent;
+      }
+
+      /* Replace white space characters with '\0' string terminators, until */
+      /* we reach the next command line argument, or the end of the string. */
+      while(*pchCurrent != '\0' && isspace((unsigned char)*pchCurrent))
+      {
+         *pchCurrent = '\0';
+         ++pchCurrent;
+      }
+   }
+   papszArgumentsRe = realloc(papszArguments, (*nArgCount + 1) * sizeof(*papszArguments));
+   if (papszArgumentsRe != NULL)
+      return papszArgumentsRe;
+   return papszArguments;
+#endif
+}
+
+/* ----------------------------------------------------------------------------
+ * od_free_split_cmd_line()
+ *
+ * Frees the memory allocated by od_split_cmd_line()
+ *
+ * Parameters: papszArguments - Value returned by call to od_split_cmd_line()
+ * 
+ *     Return: void
+ */
+ODAPIDEF void ODCALL od_free_split_cmd_line(char **papszArguments)
+{
+   if(!ODSyncPublicCallAllowed()) return;
+   if (papszArguments == NULL) {
+      od_control.od_error = ERR_PARAMETER;
+      return;
+   }
+
+   free(papszArguments[0]);
+   free(papszArguments[1]);
+   free(papszArguments);
+}
+
+/* ----------------------------------------------------------------------------
+ * ODCommandLineInterfaceMismatch()
+ *
+ * Reports a Windows command-line interface mismatch without opening an
+ * interactive dialog, then terminates before either parser touches its input.
+ */
+#ifdef ODPLAT_WIN32
+static void ODCommandLineInterfaceMismatch(const char *pszFunction,
+   tODWindowsSubsystem Expected, tODWindowsSubsystem Actual)
+{
+   char szMessage[512];
+   const char *pszExpected;
+   const char *pszActual;
+   const char *pszCorrectFunction;
+   const char *pszTarget;
+
+   pszExpected = Expected == kODWindowsSubsystemGUI
+      ? "Windows GUI" : "Windows console";
+   if(Actual == kODWindowsSubsystemGUI)
+      pszActual = "Windows GUI";
+   else if(Actual == kODWindowsSubsystemConsole)
+      pszActual = "Windows console";
+   else
+      pszActual = "an unknown";
+   pszCorrectFunction = Expected == kODWindowsSubsystemGUI
+      ? "od_parse_cmd_line_cons(argc, argv)"
+      : "od_parse_cmd_line(command_line)";
+   pszTarget = Expected == kODWindowsSubsystemGUI
+      ? "OpenDoors::SharedConsole/OpenDoors::StaticConsole or define "
+        "OD_WINDOWS_CONSOLE"
+      : "a non-Console OpenDoors target";
+
+   sprintf(szMessage,
+      "OpenDoors: %s() requires a %s executable, but the host uses %s. "
+      "Use %s and %s.\n",
+      pszFunction, pszExpected, pszActual, pszCorrectFunction, pszTarget);
+   od_control.od_error = ERR_PARAMETER;
+   fputs(szMessage, stderr);
+   OutputDebugStringA(szMessage);
+   exit(EXIT_FAILURE);
+}
+#endif /* ODPLAT_WIN32 */
+
+/* ----------------------------------------------------------------------------
+ * od_parse_cmd_line()
+ *
+ * Function to parse an OpenDoors program's command-line, interpreting
+ * standard command-line parameters. This is one of the few OpenDoors APIs
+ * that will not automatically initialize OpenDoors if it hasn't already
+ * been done. This is because od_parse_cmd_line() performs setup that must
+ * be done prior to OpenDoors initialization.
+ *
+ * Parameters: FOR NON-WIN32 VERSIONS:
+ *
+ *             nArgCount      - Number of command line arguments, as passed to
+ *                              main() in argc.
+ *
+ *             papszArguments - Pointer to array of pointers to string
+ *                              arguments, as passed to main() in argv. The
+ *                              first element of this array (usually the
+ *                              full path and filename of the executable)
+ *                              is ignored.
+ *
+ *             FOR WIN32 VERSION:
+ *
+ *             pszCmdLine     - Pointer to the command line string, as passed
+ *                              to WinMain().
+ *
+ *     Return: void
+ */
+#ifdef ODPLAT_WIN32
+ODAPIDEF void ODCALL od_parse_cmd_line(LPSTR pszCmdLine)
+{
+   INT nArgCount;
+   char **papszArguments;
+
+   if(ODPlatGetWindowsSubsystem() != kODWindowsSubsystemGUI)
+   {
+      ODCommandLineInterfaceMismatch("od_parse_cmd_line",
+         kODWindowsSubsystemGUI, ODPlatGetWindowsSubsystem());
+   }
+
+   papszArguments = od_split_cmd_line(pszCmdLine, &nArgCount);
+   if(papszArguments == NULL)
+      return;
+   ODParseCommandLineArguments(nArgCount, papszArguments);
+   od_free_split_cmd_line(papszArguments);
+}
+
+ODAPIDEF void ODCALL od_parse_cmd_line_cons(INT nArgCount,
+   char *papszArguments[])
+{
+   if(ODPlatGetWindowsSubsystem() != kODWindowsSubsystemConsole)
+   {
+      ODCommandLineInterfaceMismatch("od_parse_cmd_line_cons",
+         kODWindowsSubsystemConsole, ODPlatGetWindowsSubsystem());
+   }
+   ODParseCommandLineArguments(nArgCount, papszArguments);
+}
+#else /* !ODPLAT_WIN32 */
+ODAPIDEF void ODCALL od_parse_cmd_line(INT nArgCount, char *papszArguments[])
+{
+   ODParseCommandLineArguments(nArgCount, papszArguments);
+}
+#endif /* !ODPLAT_WIN32 */
+
+/* ----------------------------------------------------------------------------
+ * ODParseCommandLineArguments()
+ *
+ * Applies standard OpenDoors options from a caller-owned argument vector.
+ */
+static void ODParseCommandLineArguments(INT nArgCount,
+   char *papszArguments[])
+{
+   char *pszCurrentArg;
+   INT nCurrentArg;
+   INT n;
+
+   TRACE(TRACE_API, "od_parse_cmd_line()");
+
+   if(!ODSyncPublicCallAllowed()) return;
+
+   /* Check validity of parameters. */
+   if(papszArguments == NULL)
+   {
+      od_control.od_error = ERR_PARAMETER;
+      return;
+   }
+
+   /* Record that od_parse_cmd_line() has been called. */
+   bParsedCmdLine = TRUE;
+
+   /* Initialize variables that are not initialized in od_init() if */
+   /* od_parse_cmd_line is specified.                               */
+   od_control.user_ansi = TRUE;
+   od_control.user_timelimit = 60;
+
+   for(nCurrentArg = 1; nCurrentArg < nArgCount; ++nCurrentArg)
+   {
+      pszCurrentArg = papszArguments[nCurrentArg];
+
+      switch(ODGetCommandLineParameter(pszCurrentArg))
+      {
+         case kParamConfigFile:
+            ODAdvanceToNextArg(&nCurrentArg, nArgCount, pszCurrentArg);
+            strncpy(szConfigFilename, papszArguments[nCurrentArg],
+               sizeof(szConfigFilename) - 1);
+            szConfigFilename[sizeof(szConfigFilename) - 1] = '\0';
+            od_control.od_config_filename = szConfigFilename;
+            break;
+
+         case kParamLocal:
+            od_control.od_force_local = TRUE;
+            break;
+
+         case kParamBPS:
+            ODAdvanceToNextArg(&nCurrentArg, nArgCount, pszCurrentArg);
+            od_control.baud = atol(papszArguments[nCurrentArg]);
+            wPreSetInfo |= PRESET_BPS;
+            break;
+
+         case kParamPort:
+            ODAdvanceToNextArg(&nCurrentArg, nArgCount, pszCurrentArg);
+            if(strnicmp(papszArguments[nCurrentArg], "COM", 3) == 0)
+            {
+               od_control.port = atoi(papszArguments[nCurrentArg] + 3) - 1;
+            }
+            else
+            {
+               od_control.port = atoi(papszArguments[nCurrentArg]);
+            }
+            nForcedPort = od_control.port;
+            wPreSetInfo |= PRESET_PORT;
+            break;
+
+         case kParamHelp:
+            if(od_control.od_cmd_line_help_func != NULL)
+            {
+               (*od_control.od_cmd_line_help_func)();
+               exit(0);
+            }
+
+#ifdef ODPLAT_WIN32
+            sprintf(szODWorkString, "%s Command Line Options",
+               strlen(od_control.od_prog_name) > 0 ? od_control.od_prog_name
+               : OD_VER_SHORTNAME);
+            if(od_control.od_cmd_line_help != NULL)
+            {
+               MessageBox(NULL, od_control.od_cmd_line_help, szODWorkString,
+                  MB_ICONINFORMATION | MB_OK);
+            }
+            else
+            {
+               MessageBox(NULL,
+                  "(Note that some options can be overriden by configuration or drop files.)\n"
+                  "\n"
+                  "-C x or -CONFIG x\t- Specfies configuration filename.\n"
+                  "-L or -LOCAL\t- Causes door to operate in local mode, without requiring a drop file.\n"
+                  "-D or -DROPFILE x\t- Door information file directory and/or filename.\n"
+                  "-N x or -NODE x\t- Sets the node number to use.\n"
+                  "-B x or -BPS x\t- Sets the serial port <---> modem bps (baud) rate to use.\n"
+                  "-P x or -PORT x\t- Sets serial port to use. For COM1: use -P 0 or -P COM1, for COM2: use -P 1 or -P COM2, etc.\n"
+                  "-HANDLE x\t- Provides an already open serial port handle.\n"
+						"-SOCKET x\t- Provides an already open TCP/IP socket descriptor.\n"
+                  "-SILENT\t\t- Operate in silent mode, with no local display.\n"
+                  "-MAXTIME x\t- Sets the maximum number of minutes that user will be permitted to access the door.\n"
+                  "-G or -GRAPHICS\t- Unless followed by 0 or N, turns on ANSI display mode.\n"
+                  "-BBSNAME x\t- Name of BBS.\n"
+                  "-USERNAME x\t- Name of user who is currently online.\n"
+                  "-TIMELEFT x\t- User's time remaining online.\n"
+                  "-SECURITY x\t- User's security level.\n"
+                  "-LOCATION x\t- Location from which user is calling.\n"
+                  "-?, -H or -HELP\t- Displays command-line help and exits.",
+                  szODWorkString, MB_ICONINFORMATION | MB_OK);
+            }
+#else /* !ODPLAT_WIN32 */
+            puts("AVALIABLE COMMAND LINE OPTIONS \r");
+            if(od_control.od_cmd_line_help != NULL)
+            {
+               fputs(od_control.od_cmd_line_help, stdout);
+            }
+            else
+            {
+               puts("(Some can be overriden by config/drop file)\r");
+               puts(" -C or -CONFIG    - Specfies configuration filename.\r");
+               puts(" -L or -LOCAL     - Causes door to operate in local mode, without requiring a\r");
+               puts("                    door information (drop) file.\r");
+               puts(" -D or -DROPFILE  - Door information file directory and/or filename.\r");
+               puts(" -N x or -NODE x  - Sets the node number to use.\r");
+               puts(" -B x or -BPS x   - Sets the serial port <---> modem bps (baud) rate to use.\r");
+               puts(" -P x or -PORT x  - Sets serial port to use. For COM1: use -P 0 or -P COM1, for\r");
+               puts("                    COM2: use -P 1 or -P COM2, etc.\r");
+               puts(" -ADDRESS x       - Sets serial port address in HEXIDECIMAL (if no FOSSIL).\r");
+               puts(" -IRQ x           - Sets the serial port IRQ line (if FOSSIL is not used).\r");
+               puts(" -NOFOSSIL        - Disables use of FOSSIL driver, even if available.\r");
+               puts(" -NOFIFO          - Disables use of 16550 FIFO buffers (only if no FOSSIL).\r");
+               puts(" -MAXTIME x       - Sets the maximum number of minutes that any user will be\r");
+               puts("                    permitted to access the door, regardless of time left.\r");
+               puts(" -SILENT          - Operate in silent mode, with no local display.\r");
+               puts(" -G or -GRAPHICS  - Unless followed by 0 or N, turns on ANSI display mode.\r");
+               puts(" -BBSNAME x       - Name of BBS.\r");
+               puts(" -USERNAME x      - Name of user who is currently online.\r");
+               puts(" -TIMELEFT x      - User's time remaining online.\r");
+               puts(" -SECURITY x      - User's security level.\r");
+               puts(" -LOCATION x      - Location from which user is calling.\r");
+               puts(" -?, -H or -HELP  - Displays command-line help and exits.\r");
+            }
+#endif /* !ODPLAT_WIN32 */
+            exit(1);
+            break;
+
+         case kParamNode:
+            ODAdvanceToNextArg(&nCurrentArg, nArgCount, pszCurrentArg);
+            od_control.od_node = atoi(papszArguments[nCurrentArg]);
+            break;
+
+         case kParamMaxTime:
+            ODAdvanceToNextArg(&nCurrentArg, nArgCount, pszCurrentArg);
+            od_control.od_maxtime = atoi(papszArguments[nCurrentArg]);
+            break;
+
+         case kParamAddress:
+            ODAdvanceToNextArg(&nCurrentArg, nArgCount, pszCurrentArg);
+            od_control.od_com_address =
+               (WORD)strtol(papszArguments[nCurrentArg], NULL, 16);
+            break;
+
+         case kParamIRQ:
+            ODAdvanceToNextArg(&nCurrentArg, nArgCount, pszCurrentArg);
+            od_control.od_com_irq = atoi(papszArguments[nCurrentArg]);
+            break;
+
+         case kParamNoFOSSIL:
+            od_control.od_no_fossil = TRUE;
+            break;
+
+         case kParamNoFIFO:
+            od_control.od_com_no_fifo = TRUE;
+            break;
+
+         case kParamDropFile:
+            ODAdvanceToNextArg(&nCurrentArg, nArgCount, pszCurrentArg);
+            strncpy(od_control.info_path, papszArguments[nCurrentArg],
+               sizeof(od_control.info_path) - 1);
+            od_control.info_path[sizeof(od_control.info_path) - 1] = '\0';
+            break;
+
+         case kParamUserName:
+            ODGetNextArgName(&nCurrentArg, nArgCount, papszArguments,
+            od_control.user_name, sizeof(od_control.user_name));
+            break;
+
+         case kParamTimeLeft:
+            ODAdvanceToNextArg(&nCurrentArg, nArgCount, pszCurrentArg);
+            od_control.user_timelimit = atoi(papszArguments[nCurrentArg]);
+            break;
+
+         case kParamSecurity:
+            ODAdvanceToNextArg(&nCurrentArg, nArgCount, pszCurrentArg);
+            od_control.user_security = atoi(papszArguments[nCurrentArg]);
+            break;
+
+         case kParamLocation:
+            ODGetNextArgName(&nCurrentArg, nArgCount, papszArguments,
+            od_control.user_location, sizeof(od_control.user_location));
+            break;
+
+         case kParamGraphics:
+            n = nCurrentArg;
+            if(++n < nArgCount)
+            {
+               if(atoi(papszArguments[n]) == 0 ||
+                  stricmp(papszArguments[n], "N") == 0)
+               {
+                  od_control.user_ansi = FALSE;
+                  ++nCurrentArg;
+                  break;
+               }
+            }
+            od_control.user_ansi = TRUE;
+            break;
+
+         case kParamBBSName:
+            ODGetNextArgName(&nCurrentArg, nArgCount, papszArguments,
+               od_control.system_name, sizeof(od_control.system_name));
+            break;
+
+         case kParamSocketDescriptor:
+         case kParamPortHandle:
+            ODAdvanceToNextArg(&nCurrentArg, nArgCount, pszCurrentArg);
+#if defined(ODPLAT_WIN32) || defined(ODPLAT_NIX)
+            {
+               DWORD_PTR dwOpenHandle;
+
+               if(!ODParseOpenHandle(papszArguments[nCurrentArg],
+                  &dwOpenHandle))
+               {
+                  od_control.od_error = ERR_PARAMETER;
+                  break;
+               }
+
+               od_control.od_open_handle = dwOpenHandle;
+               if(ODGetCommandLineParameter(pszCurrentArg)
+                  == kParamSocketDescriptor)
+               {
+                  od_control.od_use_socket = TRUE;
+               }
+            }
+#else
+            if(ODGetCommandLineParameter(pszCurrentArg)
+               == kParamSocketDescriptor)
+            {
+               od_control.od_use_socket = TRUE;
+            }
+            od_control.od_open_handle = atoi(papszArguments[nCurrentArg]);
+#endif
+            break;
+
+         case kParamSilentMode:
+            od_control.od_silent_mode = TRUE;
+            break;
+
+         case kParamUnknown:
+            /* If the client application provided a custom command line */
+            /* flag function, then pass this unrecognized command-line  */
+            /* parameter callback function.                             */
+            if(od_control.od_cmd_line_flag_handler != NULL) {
+               if (od_control.od_cmd_line_flag_handler(pszCurrentArg))
+                  break;
+            }
+            /* If the client application provided a custom command line   */
+            /* handler function, then pass this unrecognized command-line */
+            /* parameter and any options to that callback function.       */
+            if(od_control.od_cmd_line_handler != NULL)
+            {
+               char szCustomOptions[CUSTOM_OPTION_SIZE];
+               ODGetNextArgName(&nCurrentArg, nArgCount, papszArguments,
+                  szCustomOptions, sizeof(szCustomOptions));
+               (*od_control.od_cmd_line_handler)(pszCurrentArg,
+                  szCustomOptions);
+            }
+            break;
+         case kParamPersonality:
+         case kParamOption:
+            /* Ignored by OpenDoors. */
+            break;
+         case kParamCP436UTF8:
+            od_control.od_cp437_to_utf8_out = TRUE;
+            break;
+      }
+   }
+
+}
+
+
+#if defined(ODPLAT_WIN32) || defined(ODPLAT_NIX)
+/* ----------------------------------------------------------------------------
+ * ODParseOpenHandle()                                 *** PRIVATE FUNCTION ***
+ *
+ * Converts the unsigned decimal representation of a native communications
+ * object without narrowing it through INT. This interface is meaningful only
+ * on platforms which can adopt such an object.
+ *
+ * Parameters: pszValue  - Pointer to the decimal representation.
+ *
+ *             pdwValue - Receives the converted value on success.
+ *
+ *     Return: TRUE on success or FALSE if the complete string is not a valid
+ *             DWORD_PTR value.
+ */
+static BOOL ODParseOpenHandle(const char *pszValue, DWORD_PTR *pdwValue)
+{
+   DWORD_PTR dwResult = 0;
+   DWORD_PTR dwMaximum = (DWORD_PTR)-1;
+   unsigned int nDigit;
+
+   ASSERT(pszValue != NULL);
+   ASSERT(pdwValue != NULL);
+
+   if(*pszValue == '+')
+      ++pszValue;
+
+   if(*pszValue == '\0')
+      return(FALSE);
+
+   do
+   {
+      if(*pszValue < '0' || *pszValue > '9')
+         return(FALSE);
+
+      nDigit = (unsigned int)(*pszValue - '0');
+      if(dwResult > (dwMaximum - nDigit) / 10)
+         return(FALSE);
+
+      dwResult = dwResult * 10 + nDigit;
+   } while(*++pszValue != '\0');
+
+   *pdwValue = dwResult;
+   return(TRUE);
+}
+#endif
+
+
+/* ----------------------------------------------------------------------------
+ * ODAdvanceToNextArg()                                *** PRIVATE FUNCTION ***
+ *
+ * Moves to the argument for a particular command line option.
+ *
+ * Parameters: pnCurrentArg - Pointer to current argument number.
+ *
+ *             nArgCount    - Total number of arguments available.
+ *
+ *             pszOption    - Pointer to command line option name.
+ *
+ *     Return: void
+ */
+static void ODAdvanceToNextArg(INT *pnCurrentArg, INT nArgCount,
+   char *pszOption)
+{
+   ASSERT(pnCurrentArg != NULL);
+   ASSERT(pszOption != NULL);
+
+   if(++*pnCurrentArg >= nArgCount)
+   {
+      printf("Missing parameter for option: %s\r\n", pszOption);
+      exit(1);
+   }
+}
+
+
+/* ----------------------------------------------------------------------------
+ * ODGetNextArgName()                                  *** PRIVATE FUNCTION ***
+ *
+ * Obtains a multi-word value from the parser's argument array.
+ *
+ * Parameters: pnCurrentArg   - Pointer to integer storing current argument
+ *                              number.
+ *
+ *             nArgCount      - The total number of command-line arguments.
+ *
+ *             papszArguments - Pointer to array of pointers to the arguments
+ *                              produced for the current platform.
+ *
+ *             pszString      - Pointer to string in which the value will be
+ *                              stored.
+ *
+ *             nStringSize    - Size of the string.
+ *
+ *     Return: void
+ */
+static void ODGetNextArgName(INT *pnCurrentArg, INT nArgCount,
+   char *papszArguments[], char *pszString, size_t nStringSize)
+{
+   BOOL bFirst = TRUE;
+   size_t nStringLength = 0;
+   char *pszSource;
+
+   ASSERT(pnCurrentArg != NULL);
+   ASSERT(papszArguments != NULL);
+   ASSERT(pszString != NULL);
+   ASSERT(nStringSize > 0);
+
+   if((*pnCurrentArg) + 1 >= nArgCount)
+   {
+      printf("Missing parameter for option: %s\r\n",
+         papszArguments[(*pnCurrentArg) - 1]);
+      exit(1);
+   }
+
+   pszString[0] = '\0';
+
+   while(++*pnCurrentArg < nArgCount)
+   {
+      if(ODGetCommandLineParameter(papszArguments[*pnCurrentArg])
+         != kParamOption)
+      {
+         --*pnCurrentArg;
+         break;
+      }
+
+      if(!bFirst && nStringLength < nStringSize - 1)
+      {
+         pszString[nStringLength++] = ' ';
+      }
+
+      pszSource = papszArguments[*pnCurrentArg];
+      while(*pszSource != '\0' && nStringLength < nStringSize - 1)
+      {
+         pszString[nStringLength++] = *pszSource++;
+      }
+      pszString[nStringLength] = '\0';
+
+      bFirst = FALSE;
+   }
+
+}
+
+
+/* ----------------------------------------------------------------------------
+ * ODGetCommandLineParameter()                         *** PRIVATE FUNCTION ***
+ *
+ * Determines which command-line option, if any, is specified by an argument
+ * string.
+ *
+ * Parameters: pszArgument - Pointer to string containing raw command-line
+ *                           argument.
+ *
+ *     Return: A tCommandLineParameter, identifying which command-line option,
+ *             if any, matches the argument string.
+ */
+static tCommandLineParameter ODGetCommandLineParameter(char *pszArgument)
+{
+   ASSERT(pszArgument != NULL);
+
+   if(*pszArgument == '-' || *pszArgument == '/')
+   {
+      ++pszArgument;
+   }
+   else
+   {
+      return(kParamOption);
+   }
+
+   if(stricmp(pszArgument, "C") == 0
+      || stricmp(pszArgument, "CONFIG") == 0
+      || stricmp(pszArgument, "CONFIGFILE") == 0
+      || stricmp(pszArgument, "CFGFILE") == 0
+      || stricmp(pszArgument, "CFG") == 0)
+   {
+      return(kParamConfigFile);
+   }
+   else if(stricmp(pszArgument, "L") == 0
+      || stricmp(pszArgument, "LOCAL") == 0)
+   {
+      return(kParamLocal);
+   }
+   else if(stricmp(pszArgument, "B") == 0
+      || stricmp(pszArgument, "BPS") == 0
+      || stricmp(pszArgument, "BAUD") == 0)
+   {
+      return(kParamBPS);
+   }
+   else if(stricmp(pszArgument, "P") == 0
+      || stricmp(pszArgument, "PORT") == 0)
+   {
+      return(kParamPort);
+   }
+   else if(stricmp(pszArgument, "N") == 0
+      || stricmp(pszArgument, "NODE") == 0)
+   {
+      return(kParamNode);
+   }
+   else if(stricmp(pszArgument, "?") == 0
+      || stricmp(pszArgument, "H") == 0
+      || stricmp(pszArgument, "HELP") == 0)
+   {
+      return(kParamHelp);
+   }
+   else if(stricmp(pszArgument, "PERSONALITY") == 0)
+   {
+      return(kParamPersonality);
+   }
+   else if(stricmp(pszArgument, "MAXTIME") == 0)
+   {
+      return(kParamMaxTime);
+   }
+   else if(stricmp(pszArgument, "ADDRESS") == 0)
+   {
+      return(kParamAddress);
+   }
+   else if(stricmp(pszArgument, "IRQ") == 0)
+   {
+      return(kParamIRQ);
+   }
+   else if(stricmp(pszArgument, "NOFOSSIL") == 0)
+   {
+      return(kParamNoFOSSIL);
+   }
+   else if(stricmp(pszArgument, "NOFIFO") == 0)
+   {
+      return(kParamNoFIFO);
+   }
+   else if(stricmp(pszArgument, "DROPFILE") == 0 ||
+      stricmp(pszArgument, "D") == 0)
+   {
+      return(kParamDropFile);
+   }
+   else if(stricmp(pszArgument, "USERNAME") == 0)
+   {
+      return(kParamUserName);
+   }
+   else if(stricmp(pszArgument, "TIMELEFT") == 0)
+   {
+      return(kParamTimeLeft);
+   }
+   else if(stricmp(pszArgument, "SECURITY") == 0)
+   {
+      return(kParamSecurity);
+   }
+   else if(stricmp(pszArgument, "LOCATION") == 0)
+   {
+      return(kParamLocation);
+   }
+   else if(stricmp(pszArgument, "GRAPHICS") == 0
+      || stricmp(pszArgument, "G") == 0)
+   {
+      return(kParamGraphics);
+   }
+   else if(stricmp(pszArgument, "BBSNAME") == 0)
+   {
+      return(kParamBBSName);
+   }
+   else if(stricmp(pszArgument, "HANDLE") == 0)
+   {
+      return(kParamPortHandle);
+   }
+   else if(stricmp(pszArgument, "SOCKET") == 0)
+   {
+      return(kParamSocketDescriptor);
+   }
+   else if(stricmp(pszArgument, "SILENT") == 0)
+   {
+      return(kParamSilentMode);
+   }
+   else if(stricmp(pszArgument, "CP437UTF8") == 0)
+   {
+      return(kParamCP436UTF8);
+   }
+   else
+   {
+      return(kParamUnknown);
+   }
+}

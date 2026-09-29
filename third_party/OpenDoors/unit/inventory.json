@@ -1,0 +1,6944 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "path": "src/ODAuto.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "od_autodetect",
+          "signature_line": 55,
+          "body_line": 88,
+          "end_line": 170,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODWaitNoCase",
+          "signature_line": 170,
+          "body_line": 186,
+          "end_line": 223,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODWaitDiscard",
+          "signature_line": 223,
+          "body_line": 226,
+          "end_line": 239,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODBlock.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "od_puttext",
+          "signature_line": 55,
+          "body_line": 84,
+          "end_line": 354,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_gettext",
+          "signature_line": 354,
+          "body_line": 381,
+          "end_line": 434,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_scroll",
+          "signature_line": 434,
+          "body_line": 472,
+          "end_line": 757,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_save_screen",
+          "signature_line": 757,
+          "body_line": 774,
+          "end_line": 809,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_restore_screen",
+          "signature_line": 809,
+          "body_line": 824,
+          "end_line": 1038,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_save_screen_size",
+          "signature_line": 1038,
+          "body_line": 1046,
+          "end_line": 1062,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_save_screen_ex",
+          "signature_line": 1062,
+          "body_line": 1065,
+          "end_line": 1082,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_restore_screen_ex",
+          "signature_line": 1082,
+          "body_line": 1086,
+          "end_line": 1103,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODCFile.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "ODConfigInit",
+          "signature_line": 72,
+          "body_line": 89,
+          "end_line": 809,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODCfgGetWordDecimal",
+          "signature_line": 809,
+          "body_line": 823,
+          "end_line": 834,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODCfgGetDWordDecimal",
+          "signature_line": 834,
+          "body_line": 848,
+          "end_line": 859,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODCfgGetWordHex",
+          "signature_line": 859,
+          "body_line": 877,
+          "end_line": 895,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODCfgGetNextTime",
+          "signature_line": 895,
+          "body_line": 911,
+          "end_line": 945,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODCfgIsTrue",
+          "signature_line": 945,
+          "body_line": 960,
+          "end_line": 981,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODCmdLn.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "ODWindowsCommandLineToArgvFallback",
+          "signature_line": 131,
+          "body_line": 142,
+          "end_line": 226,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODWindowsCommandLineToArgv",
+          "signature_line": 226,
+          "body_line": 236,
+          "end_line": 267,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_split_cmd_line",
+          "signature_line": 267,
+          "body_line": 285,
+          "end_line": 509,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_free_split_cmd_line",
+          "signature_line": 509,
+          "body_line": 521,
+          "end_line": 531,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODCommandLineInterfaceMismatch",
+          "signature_line": 531,
+          "body_line": 542,
+          "end_line": 573,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_parse_cmd_line",
+          "signature_line": 573,
+          "body_line": 605,
+          "end_line": 620,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_parse_cmd_line_cons",
+          "signature_line": 620,
+          "body_line": 624,
+          "end_line": 631,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_parse_cmd_line",
+          "signature_line": 631,
+          "body_line": 634,
+          "end_line": 636,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODParseCommandLineArguments",
+          "signature_line": 636,
+          "body_line": 646,
+          "end_line": 925,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODParseOpenHandle",
+          "signature_line": 925,
+          "body_line": 944,
+          "end_line": 972,
+          "platforms": [
+            "unix",
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODAdvanceToNextArg",
+          "signature_line": 972,
+          "body_line": 991,
+          "end_line": 1000,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODGetNextArgName",
+          "signature_line": 1000,
+          "body_line": 1025,
+          "end_line": 1068,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODGetCommandLineParameter",
+          "signature_line": 1068,
+          "body_line": 1084,
+          "end_line": 1205,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODCom.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "ODComSetVect",
+          "signature_line": 402,
+          "body_line": 416,
+          "end_line": 427,
+          "platforms": [
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComGetVect",
+          "signature_line": 427,
+          "body_line": 441,
+          "end_line": 457,
+          "platforms": [
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComInternalTXReady",
+          "signature_line": 457,
+          "body_line": 470,
+          "end_line": 473,
+          "platforms": [
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComInternalResetTX",
+          "signature_line": 473,
+          "body_line": 486,
+          "end_line": 504,
+          "platforms": [
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComInternalResetRX",
+          "signature_line": 504,
+          "body_line": 517,
+          "end_line": 535,
+          "platforms": [
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComInternalISR",
+          "signature_line": 535,
+          "body_line": 548,
+          "end_line": 693,
+          "platforms": [
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComWin32SetReadTimeouts",
+          "signature_line": 706,
+          "body_line": 722,
+          "end_line": 765,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComCallIdleFunction",
+          "signature_line": 765,
+          "body_line": 785,
+          "end_line": 792,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComAlloc",
+          "signature_line": 792,
+          "body_line": 805,
+          "end_line": 853,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComFree",
+          "signature_line": 853,
+          "body_line": 866,
+          "end_line": 878,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComDOS32DisableFossilBlockIO",
+          "signature_line": 878,
+          "body_line": 882,
+          "end_line": 890,
+          "platforms": [
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComSetIdleFunction",
+          "signature_line": 890,
+          "body_line": 907,
+          "end_line": 918,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComSetFlowControl",
+          "signature_line": 918,
+          "body_line": 940,
+          "end_line": 951,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComSetSpeed",
+          "signature_line": 951,
+          "body_line": 972,
+          "end_line": 983,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComSetPort",
+          "signature_line": 983,
+          "body_line": 1003,
+          "end_line": 1049,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComSetPortAddress",
+          "signature_line": 1049,
+          "body_line": 1065,
+          "end_line": 1076,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComSetIRQ",
+          "signature_line": 1076,
+          "body_line": 1094,
+          "end_line": 1105,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComSetWordFormat",
+          "signature_line": 1105,
+          "body_line": 1124,
+          "end_line": 1135,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComSetRXBuf",
+          "signature_line": 1135,
+          "body_line": 1155,
+          "end_line": 1166,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComSetTXBuf",
+          "signature_line": 1166,
+          "body_line": 1186,
+          "end_line": 1197,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComSetFIFO",
+          "signature_line": 1197,
+          "body_line": 1216,
+          "end_line": 1227,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComSetPreferredMethod",
+          "signature_line": 1227,
+          "body_line": 1244,
+          "end_line": 1264,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComGetMethod",
+          "signature_line": 1264,
+          "body_line": 1283,
+          "end_line": 1292,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComOpen",
+          "signature_line": 1292,
+          "body_line": 1306,
+          "end_line": 1894,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComOpenFromExistingHandle",
+          "signature_line": 1894,
+          "body_line": 1912,
+          "end_line": 1967,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComClose",
+          "signature_line": 1967,
+          "body_line": 1980,
+          "end_line": 2095,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComCarrier",
+          "signature_line": 2095,
+          "body_line": 2111,
+          "end_line": 2244,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComSetDTR",
+          "signature_line": 2244,
+          "body_line": 2259,
+          "end_line": 2358,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComOutbound",
+          "signature_line": 2358,
+          "body_line": 2379,
+          "end_line": 2489,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComClearOutbound",
+          "signature_line": 2489,
+          "body_line": 2505,
+          "end_line": 2570,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComClearInbound",
+          "signature_line": 2570,
+          "body_line": 2583,
+          "end_line": 2647,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComInbound",
+          "signature_line": 2647,
+          "body_line": 2668,
+          "end_line": 2777,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComGetByte",
+          "signature_line": 2798,
+          "body_line": 2800,
+          "end_line": 3171,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComCP437ToUnicodeLen",
+          "signature_line": 3190,
+          "body_line": 3193,
+          "end_line": 3216,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComCP437ToUnicode",
+          "signature_line": 3216,
+          "body_line": 3219,
+          "end_line": 3255,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComSendByte",
+          "signature_line": 3255,
+          "body_line": 3269,
+          "end_line": 3511,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComGetBuffer",
+          "signature_line": 3511,
+          "body_line": 3534,
+          "end_line": 3759,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODComSendBuffer",
+          "signature_line": 3759,
+          "body_line": 3777,
+          "end_line": 4217,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODConsole.c",
+      "platforms": [
+        "windows"
+      ],
+      "functions": [
+        {
+          "name": "ODConsoleShiftStatus",
+          "signature_line": 29,
+          "body_line": 32,
+          "end_line": 48,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODConsoleInitialize",
+          "signature_line": 48,
+          "body_line": 51,
+          "end_line": 123,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODConsoleShutdown",
+          "signature_line": 123,
+          "body_line": 126,
+          "end_line": 159,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODConsoleAvailable",
+          "signature_line": 159,
+          "body_line": 162,
+          "end_line": 164,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODConsoleSetSize",
+          "signature_line": 164,
+          "body_line": 168,
+          "end_line": 243,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODConsoleWrite",
+          "signature_line": 243,
+          "body_line": 247,
+          "end_line": 298,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODConsoleReadKey",
+          "signature_line": 298,
+          "body_line": 301,
+          "end_line": 340,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODCore.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "ODCoreSendRemoteByte",
+          "signature_line": 170,
+          "body_line": 182,
+          "end_line": 194,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODCoreSendRemoteBuffer",
+          "signature_line": 194,
+          "body_line": 197,
+          "end_line": 209,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODWaitDrain",
+          "signature_line": 209,
+          "body_line": 224,
+          "end_line": 255,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_clr_scr",
+          "signature_line": 255,
+          "body_line": 269,
+          "end_line": 328,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_input_str",
+          "signature_line": 328,
+          "body_line": 354,
+          "end_line": 428,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_clear_keybuffer",
+          "signature_line": 428,
+          "body_line": 445,
+          "end_line": 469,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_key_pending",
+          "signature_line": 469,
+          "body_line": 481,
+          "end_line": 503,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_get_key",
+          "signature_line": 503,
+          "body_line": 520,
+          "end_line": 594,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_carrier",
+          "signature_line": 594,
+          "body_line": 611,
+          "end_line": 639,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODCoreCarrierResult",
+          "signature_line": 639,
+          "body_line": 655,
+          "end_line": 663,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_repeat",
+          "signature_line": 663,
+          "body_line": 680,
+          "end_line": 740,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_page",
+          "signature_line": 740,
+          "body_line": 753,
+          "end_line": 939,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_disp",
+          "signature_line": 939,
+          "body_line": 959,
+          "end_line": 998,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_disp_str",
+          "signature_line": 998,
+          "body_line": 1011,
+          "end_line": 1045,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_set_statusline",
+          "signature_line": 1045,
+          "body_line": 1060,
+          "end_line": 1181,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODStoreTextInfo",
+          "signature_line": 1181,
+          "body_line": 1195,
+          "end_line": 1197,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODRestoreTextInfo",
+          "signature_line": 1197,
+          "body_line": 1210,
+          "end_line": 1215,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODStringToName",
+          "signature_line": 1215,
+          "body_line": 1229,
+          "end_line": 1267,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_set_color",
+          "signature_line": 1267,
+          "body_line": 1282,
+          "end_line": 1290,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_set_attrib",
+          "signature_line": 1290,
+          "body_line": 1303,
+          "end_line": 1450,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODAddANSIParameter",
+          "signature_line": 1450,
+          "body_line": 1466,
+          "end_line": 1480,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_putch",
+          "signature_line": 1480,
+          "body_line": 1493,
+          "end_line": 1528,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_set_dtr",
+          "signature_line": 1528,
+          "body_line": 1542,
+          "end_line": 1567,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODCoreSetDTRResult",
+          "signature_line": 1567,
+          "body_line": 1580,
+          "end_line": 1583,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_get_answer",
+          "signature_line": 1583,
+          "body_line": 1598,
+          "end_line": 1642,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_color_config",
+          "signature_line": 1642,
+          "body_line": 1658,
+          "end_line": 1740,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODPagePrompt",
+          "signature_line": 1740,
+          "body_line": 1755,
+          "end_line": 1830,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_control_get",
+          "signature_line": 1830,
+          "body_line": 1845,
+          "end_line": 1852,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODDrBox.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "od_draw_box",
+          "signature_line": 1,
+          "body_line": 64,
+          "end_line": 191,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODEdit.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "od_multiline_edit",
+          "signature_line": 184,
+          "body_line": 210,
+          "end_line": 290,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditSetupInstance",
+          "signature_line": 290,
+          "body_line": 312,
+          "end_line": 474,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditCleanupInstance",
+          "signature_line": 474,
+          "body_line": 488,
+          "end_line": 498,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditRedrawArea",
+          "signature_line": 498,
+          "body_line": 511,
+          "end_line": 525,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditDrawAreaLine",
+          "signature_line": 525,
+          "body_line": 542,
+          "end_line": 583,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditMainLoop",
+          "signature_line": 583,
+          "body_line": 597,
+          "end_line": 956,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditGotoPreviousLine",
+          "signature_line": 956,
+          "body_line": 970,
+          "end_line": 988,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditGotoNextLine",
+          "signature_line": 988,
+          "body_line": 1002,
+          "end_line": 1025,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditScrollArea",
+          "signature_line": 1025,
+          "body_line": 1044,
+          "end_line": 1169,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditRecommendFullRedraw",
+          "signature_line": 1169,
+          "body_line": 1195,
+          "end_line": 1218,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditEstDrawBytes",
+          "signature_line": 1218,
+          "body_line": 1242,
+          "end_line": 1289,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditGetCurrentLineInArea",
+          "signature_line": 1289,
+          "body_line": 1304,
+          "end_line": 1308,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditUpdateCursorPos",
+          "signature_line": 1308,
+          "body_line": 1322,
+          "end_line": 1329,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditUpdateCursorIfMoved",
+          "signature_line": 1329,
+          "body_line": 1344,
+          "end_line": 1356,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditEnterText",
+          "signature_line": 1356,
+          "body_line": 1376,
+          "end_line": 1473,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditSetBreakSequence",
+          "signature_line": 1473,
+          "body_line": 1493,
+          "end_line": 1544,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditCursorLeft",
+          "signature_line": 1544,
+          "body_line": 1560,
+          "end_line": 1597,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditDeleteCurrentChar",
+          "signature_line": 1597,
+          "body_line": 1613,
+          "end_line": 1632,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditDeleteCurrentLine",
+          "signature_line": 1632,
+          "body_line": 1645,
+          "end_line": 1684,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditPastEndOfCurLine",
+          "signature_line": 1684,
+          "body_line": 1701,
+          "end_line": 1706,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditRememberBufferSize",
+          "signature_line": 1706,
+          "body_line": 1719,
+          "end_line": 1724,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditRememberArea",
+          "signature_line": 1724,
+          "body_line": 1744,
+          "end_line": 1788,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditRedrawChanged",
+          "signature_line": 1788,
+          "body_line": 1815,
+          "end_line": 1867,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditDetermineChanged",
+          "signature_line": 1867,
+          "body_line": 1908,
+          "end_line": 2035,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditRedrawSubArea",
+          "signature_line": 2035,
+          "body_line": 2060,
+          "end_line": 2162,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditGetActualCurPos",
+          "signature_line": 2162,
+          "body_line": 2182,
+          "end_line": 2195,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditIsEOLForMode",
+          "signature_line": 2195,
+          "body_line": 2209,
+          "end_line": 2218,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditCalculateLineArrayGrowth",
+          "signature_line": 2218,
+          "body_line": 2243,
+          "end_line": 2262,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditBufferFormatAndIndex",
+          "signature_line": 2262,
+          "body_line": 2276,
+          "end_line": 2480,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditBufferGetLineLength",
+          "signature_line": 2480,
+          "body_line": 2497,
+          "end_line": 2532,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditBufferGetTotalLines",
+          "signature_line": 2532,
+          "body_line": 2545,
+          "end_line": 2551,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditBufferGetCharacter",
+          "signature_line": 2551,
+          "body_line": 2574,
+          "end_line": 2582,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditBufferMakeSpace",
+          "signature_line": 2582,
+          "body_line": 2608,
+          "end_line": 2686,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditTryToGrow",
+          "signature_line": 2686,
+          "body_line": 2710,
+          "end_line": 2774,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODEdStr.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "od_edit_str",
+          "signature_line": 77,
+          "body_line": 113,
+          "end_line": 956,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditIsCharValidForPos",
+          "signature_line": 956,
+          "body_line": 975,
+          "end_line": 1128,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditAsCharForPos",
+          "signature_line": 1128,
+          "body_line": 1149,
+          "end_line": 1208,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditDisplayPermaliteral",
+          "signature_line": 1208,
+          "body_line": 1223,
+          "end_line": 1256,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEditGetWindowSize",
+          "signature_line": 1256,
+          "body_line": 1265,
+          "end_line": 1281,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODEmu.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "ODEmulateGetTextInfo",
+          "signature_line": 126,
+          "body_line": 130,
+          "end_line": 147,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEmulateSetCursorPos",
+          "signature_line": 147,
+          "body_line": 150,
+          "end_line": 155,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEmulateCopyText",
+          "signature_line": 155,
+          "body_line": 159,
+          "end_line": 166,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_hotkey_menu",
+          "signature_line": 166,
+          "body_line": 195,
+          "end_line": 258,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_send_file",
+          "signature_line": 258,
+          "body_line": 280,
+          "end_line": 586,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_send_file_section",
+          "signature_line": 586,
+          "body_line": 615,
+          "end_line": 987,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEmulatePathExtension",
+          "signature_line": 987,
+          "body_line": 1002,
+          "end_line": 1020,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEmulateExtensionIsRIP",
+          "signature_line": 1020,
+          "body_line": 1035,
+          "end_line": 1050,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEmulateAutoNameFits",
+          "signature_line": 1050,
+          "body_line": 1065,
+          "end_line": 1070,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEmulateBuildRIPMessage",
+          "signature_line": 1070,
+          "body_line": 1089,
+          "end_line": 1101,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEmulateFindCompatFile",
+          "signature_line": 1101,
+          "body_line": 1120,
+          "end_line": 1173,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_disp_emu",
+          "signature_line": 1173,
+          "body_line": 1192,
+          "end_line": 1226,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_emulate",
+          "signature_line": 1226,
+          "body_line": 1242,
+          "end_line": 1260,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEmulateFromBuffer",
+          "signature_line": 1260,
+          "body_line": 1283,
+          "end_line": 2382,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODEmulateFillArea",
+          "signature_line": 2382,
+          "body_line": 2405,
+          "end_line": 2432,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODFormat.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "ODVsnprintf",
+          "signature_line": 10,
+          "body_line": 14,
+          "end_line": 20,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODFmtFB.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "ODFallbackVsnprintf",
+          "signature_line": 1,
+          "body_line": 33,
+          "end_line": 35,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODGetIn.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "ODGetInputWait",
+          "signature_line": 195,
+          "body_line": 199,
+          "end_line": 236,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODGetInputDeadlineSlice",
+          "signature_line": 236,
+          "body_line": 241,
+          "end_line": 264,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODGetInputWaitUntil",
+          "signature_line": 264,
+          "body_line": 269,
+          "end_line": 308,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODGetInputCore",
+          "signature_line": 308,
+          "body_line": 314,
+          "end_line": 478,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_get_input",
+          "signature_line": 478,
+          "body_line": 487,
+          "end_line": 497,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_get_input_until",
+          "signature_line": 497,
+          "body_line": 506,
+          "end_line": 532,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODLongestFullCode",
+          "signature_line": 532,
+          "body_line": 545,
+          "end_line": 567,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODHaveStartOfSequence",
+          "signature_line": 567,
+          "body_line": 579,
+          "end_line": 600,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODGetCodeIfLongest",
+          "signature_line": 600,
+          "body_line": 613,
+          "end_line": 644,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODShiftSeq",
+          "signature_line": 644,
+          "body_line": 656,
+          "end_line": 671,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODGraph.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "od_clr_line",
+          "signature_line": 56,
+          "body_line": 71,
+          "end_line": 152,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_set_cursor",
+          "signature_line": 152,
+          "body_line": 168,
+          "end_line": 267,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_get_cursor",
+          "signature_line": 267,
+          "body_line": 283,
+          "end_line": 318,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODInEx1.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "ODFramingIsEightBit",
+          "signature_line": 135,
+          "body_line": 140,
+          "end_line": 144,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "safe_strcpy",
+          "signature_line": 338,
+          "body_line": 343,
+          "end_line": 350,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "safe_strcat",
+          "signature_line": 350,
+          "body_line": 354,
+          "end_line": 368,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_set_port",
+          "signature_line": 368,
+          "body_line": 382,
+          "end_line": 396,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_get_user_8bit",
+          "signature_line": 396,
+          "body_line": 404,
+          "end_line": 409,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_set_user_8bit",
+          "signature_line": 409,
+          "body_line": 417,
+          "end_line": 423,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_init",
+          "signature_line": 423,
+          "body_line": 439,
+          "end_line": 1640,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODInitReadSFDoorsDAT",
+          "signature_line": 1640,
+          "body_line": 1653,
+          "end_line": 1848,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODInitReadExitInfo",
+          "signature_line": 1848,
+          "body_line": 1861,
+          "end_line": 2066,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODInitTerminalSpeedToBaud",
+          "signature_line": 2066,
+          "body_line": 2082,
+          "end_line": 2156,
+          "platforms": [
+            "unix"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODInitSelectTerminalBaud",
+          "signature_line": 2156,
+          "body_line": 2167,
+          "end_line": 2175,
+          "platforms": [
+            "unix"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODInitApplyUserInfo",
+          "signature_line": 2175,
+          "body_line": 2186,
+          "end_line": 2201,
+          "platforms": [
+            "unix"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODInitPartTwo",
+          "signature_line": 2201,
+          "body_line": 2218,
+          "end_line": 2822,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODInitError",
+          "signature_line": 2822,
+          "body_line": 2837,
+          "end_line": 2874,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODInitLoginDlgProc",
+          "signature_line": 2874,
+          "body_line": 2895,
+          "end_line": 2954,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODInEx2.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "ODGetElapsedMinutes",
+          "signature_line": 146,
+          "body_line": 152,
+          "end_line": 160,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODDropFileOpen",
+          "signature_line": 160,
+          "body_line": 167,
+          "end_line": 179,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODDropFileRecordWriteFailure",
+          "signature_line": 179,
+          "body_line": 184,
+          "end_line": 190,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODDropFileWrite",
+          "signature_line": 190,
+          "body_line": 196,
+          "end_line": 208,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODTextDropFileWrite",
+          "signature_line": 208,
+          "body_line": 215,
+          "end_line": 229,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODDropFileClose",
+          "signature_line": 229,
+          "body_line": 235,
+          "end_line": 260,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_exit",
+          "signature_line": 274,
+          "body_line": 293,
+          "end_line": 1089,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSearchForDropFile",
+          "signature_line": 1089,
+          "body_line": 1129,
+          "end_line": 1176,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSearchInDir",
+          "signature_line": 1176,
+          "body_line": 1202,
+          "end_line": 1258,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODExitInfoPrimitiveEndian",
+          "signature_line": 1286,
+          "body_line": 1297,
+          "end_line": 1362,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODExitInfoExtendedEndian",
+          "signature_line": 1362,
+          "body_line": 1372,
+          "end_line": 1377,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODExitInfoRA2Endian",
+          "signature_line": 1377,
+          "body_line": 1387,
+          "end_line": 1470,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODReadExitInfoPrimitive",
+          "signature_line": 1470,
+          "body_line": 1485,
+          "end_line": 1551,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODWriteExitInfoPrimitive",
+          "signature_line": 1551,
+          "body_line": 1566,
+          "end_line": 1628,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODAtExitCallback",
+          "signature_line": 1628,
+          "body_line": 1655,
+          "end_line": 1668,
+          "platforms": [
+            "unix",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSendModemCommand",
+          "signature_line": 1668,
+          "body_line": 1695,
+          "end_line": 1708,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSendModemCommandOnce",
+          "signature_line": 1708,
+          "body_line": 1727,
+          "end_line": 1824,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODWaitForString",
+          "signature_line": 1824,
+          "body_line": 1841,
+          "end_line": 1926,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODAPISleep",
+          "signature_line": 1926,
+          "body_line": 1936,
+          "end_line": 1945,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODDiagnosticMessage",
+          "signature_line": 1945,
+          "body_line": 1950,
+          "end_line": 1964,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODInExDisableDTR",
+          "signature_line": 1964,
+          "body_line": 1978,
+          "end_line": 2019,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODInQue.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "ODInQueueAlloc",
+          "signature_line": 85,
+          "body_line": 103,
+          "end_line": 184,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODInQueueFree",
+          "signature_line": 184,
+          "body_line": 197,
+          "end_line": 215,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODInQueueWaiting",
+          "signature_line": 215,
+          "body_line": 229,
+          "end_line": 246,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODInQueueAddEvent",
+          "signature_line": 246,
+          "body_line": 263,
+          "end_line": 311,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODInQueueAddEvents",
+          "signature_line": 311,
+          "body_line": 317,
+          "end_line": 353,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODInQueueReserveEvent",
+          "signature_line": 353,
+          "body_line": 358,
+          "end_line": 376,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODInQueueCancelReservedEvent",
+          "signature_line": 376,
+          "body_line": 381,
+          "end_line": 395,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODInQueueCommitReservedEvent",
+          "signature_line": 395,
+          "body_line": 401,
+          "end_line": 431,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODInQueueExchangeLastControlKey",
+          "signature_line": 431,
+          "body_line": 437,
+          "end_line": 454,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODInQueueGetNextEvent",
+          "signature_line": 477,
+          "body_line": 480,
+          "end_line": 625,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODInQueueEmpty",
+          "signature_line": 625,
+          "body_line": 638,
+          "end_line": 648,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODInQueueGetLastActivity",
+          "signature_line": 648,
+          "body_line": 664,
+          "end_line": 679,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODInQueueResetLastActivity",
+          "signature_line": 679,
+          "body_line": 692,
+          "end_line": 705,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODKrnl.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "ODStatStartArrowUse",
+          "signature_line": 168,
+          "body_line": 182,
+          "end_line": 184,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODStatEndArrowUse",
+          "signature_line": 184,
+          "body_line": 198,
+          "end_line": 201,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODKrnlInitialize",
+          "signature_line": 201,
+          "body_line": 219,
+          "end_line": 258,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODKrnlShutdown",
+          "signature_line": 258,
+          "body_line": 271,
+          "end_line": 295,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_kernel",
+          "signature_line": 308,
+          "body_line": 310,
+          "end_line": 722,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODKrnlHandleLocalKey",
+          "signature_line": 722,
+          "body_line": 737,
+          "end_line": 770,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODKrnlHandleReceivedChar",
+          "signature_line": 770,
+          "body_line": 787,
+          "end_line": 802,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODKrnlTimeUpdate",
+          "signature_line": 802,
+          "body_line": 816,
+          "end_line": 916,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODKrnlDeliverTimeMessage",
+          "signature_line": 916,
+          "body_line": 928,
+          "end_line": 944,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODKrnlQueueUIChange",
+          "signature_line": 944,
+          "body_line": 949,
+          "end_line": 1011,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODKrnlRequestShutdown",
+          "signature_line": 1011,
+          "body_line": 1014,
+          "end_line": 1017,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODKrnlRefreshUIState",
+          "signature_line": 1017,
+          "body_line": 1022,
+          "end_line": 1065,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODKrnlGetUIState",
+          "signature_line": 1065,
+          "body_line": 1068,
+          "end_line": 1077,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODKrnlForceOpenDoorsShutdown",
+          "signature_line": 1077,
+          "body_line": 1095,
+          "end_line": 1123,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODKrnlRequestChatToggle",
+          "signature_line": 1123,
+          "body_line": 1126,
+          "end_line": 1132,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODKrnlRequestKeyboardToggle",
+          "signature_line": 1132,
+          "body_line": 1135,
+          "end_line": 1141,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODKrnlRequestSysopNextToggle",
+          "signature_line": 1141,
+          "body_line": 1144,
+          "end_line": 1150,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODKrnlRequestInactivityToggle",
+          "signature_line": 1150,
+          "body_line": 1153,
+          "end_line": 1159,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODKrnlRequestTimeAdjustment",
+          "signature_line": 1159,
+          "body_line": 1162,
+          "end_line": 1168,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODKrnlRequestLockout",
+          "signature_line": 1168,
+          "body_line": 1171,
+          "end_line": 1179,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODKrnlRequestExit",
+          "signature_line": 1179,
+          "body_line": 1182,
+          "end_line": 1189,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODKrnlDispatchPending",
+          "signature_line": 1189,
+          "body_line": 1192,
+          "end_line": 1275,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODKrnlEndChatMode",
+          "signature_line": 1284,
+          "body_line": 1296,
+          "end_line": 1298,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_chat",
+          "signature_line": 1298,
+          "body_line": 1313,
+          "end_line": 1329,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODKrnlChatMode",
+          "signature_line": 1329,
+          "body_line": 1342,
+          "end_line": 1554,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODKrnlChatCleanup",
+          "signature_line": 1554,
+          "body_line": 1568,
+          "end_line": 1598,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODList.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "od_list_files",
+          "signature_line": 74,
+          "body_line": 94,
+          "end_line": 418,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODListFilenameMerge",
+          "signature_line": 418,
+          "body_line": 445,
+          "end_line": 475,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODListFilenameSplit",
+          "signature_line": 475,
+          "body_line": 514,
+          "end_line": 609,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODListGetFirstWord",
+          "signature_line": 609,
+          "body_line": 628,
+          "end_line": 649,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODListGetRemainingWords",
+          "signature_line": 649,
+          "body_line": 664,
+          "end_line": 681,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODLog.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "ODLogTimeRecordSucceeded",
+          "signature_line": 58,
+          "body_line": 68,
+          "end_line": 70,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODLogFormatWorkString",
+          "signature_line": 70,
+          "body_line": 80,
+          "end_line": 96,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODLogEnable",
+          "signature_line": 96,
+          "body_line": 110,
+          "end_line": 114,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_log_open",
+          "signature_line": 114,
+          "body_line": 128,
+          "end_line": 203,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODLogWriteStandardMsg",
+          "signature_line": 203,
+          "body_line": 217,
+          "end_line": 244,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_log_write",
+          "signature_line": 244,
+          "body_line": 257,
+          "end_line": 320,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODLogClose",
+          "signature_line": 320,
+          "body_line": 334,
+          "end_line": 415,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODMulti.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "ODPersonalityOpenDoors",
+          "signature_line": 72,
+          "body_line": 76,
+          "end_line": 78,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODPersonalityOneRow",
+          "signature_line": 78,
+          "body_line": 81,
+          "end_line": 83,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODPersonalityRemoteAccess",
+          "signature_line": 83,
+          "body_line": 86,
+          "end_line": 88,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODPersonalityWildcat",
+          "signature_line": 88,
+          "body_line": 91,
+          "end_line": 93,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODPersonalityPCBoard",
+          "signature_line": 93,
+          "body_line": 96,
+          "end_line": 98,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODMultiResolvePersonality",
+          "signature_line": 121,
+          "body_line": 126,
+          "end_line": 141,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODMPSEnable",
+          "signature_line": 141,
+          "body_line": 155,
+          "end_line": 158,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_set_personality",
+          "signature_line": 158,
+          "body_line": 171,
+          "end_line": 260,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_add_personality",
+          "signature_line": 260,
+          "body_line": 283,
+          "end_line": 329,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODPlat.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "ODPlatGetWindowsSubsystem",
+          "signature_line": 94,
+          "body_line": 106,
+          "end_line": 135,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODPlatInit",
+          "signature_line": 135,
+          "body_line": 149,
+          "end_line": 231,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODPlatYield",
+          "signature_line": 231,
+          "body_line": 246,
+          "end_line": 263,
+          "platforms": [
+            "dos16"
+          ],
+          "test": null
+        },
+        {
+          "name": "odthread_wrapper",
+          "signature_line": 280,
+          "body_line": 283,
+          "end_line": 287,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODThreadCreate",
+          "signature_line": 287,
+          "body_line": 307,
+          "end_line": 332,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODThreadWaitForExit",
+          "signature_line": 332,
+          "body_line": 345,
+          "end_line": 348,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODThreadSleep",
+          "signature_line": 348,
+          "body_line": 352,
+          "end_line": 355,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSemaphoreAlloc",
+          "signature_line": 355,
+          "body_line": 375,
+          "end_line": 384,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSemaphoreFree",
+          "signature_line": 384,
+          "body_line": 397,
+          "end_line": 401,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSemaphoreUp",
+          "signature_line": 401,
+          "body_line": 416,
+          "end_line": 421,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSemaphoreDown",
+          "signature_line": 421,
+          "body_line": 443,
+          "end_line": 453,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODProcessExit",
+          "signature_line": 453,
+          "body_line": 468,
+          "end_line": 474,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODPlatRingBell",
+          "signature_line": 474,
+          "body_line": 479,
+          "end_line": 492,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODDOSReadSessionClock",
+          "signature_line": 511,
+          "body_line": 516,
+          "end_line": 569,
+          "platforms": [
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionTimeInitialize",
+          "signature_line": 582,
+          "body_line": 586,
+          "end_line": 605,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionTimeGet",
+          "signature_line": 605,
+          "body_line": 609,
+          "end_line": 719,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_get_time",
+          "signature_line": 719,
+          "body_line": 727,
+          "end_line": 743,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "OD32BIOSClock",
+          "signature_line": 743,
+          "body_line": 759,
+          "end_line": 761,
+          "platforms": [
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODTimerStart",
+          "signature_line": 761,
+          "body_line": 783,
+          "end_line": 831,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODTimerElapsed",
+          "signature_line": 831,
+          "body_line": 845,
+          "end_line": 848,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODTimerWaitForElapse",
+          "signature_line": 848,
+          "body_line": 862,
+          "end_line": 897,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODTimerLeft",
+          "signature_line": 897,
+          "body_line": 912,
+          "end_line": 973,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_sleep",
+          "signature_line": 973,
+          "body_line": 991,
+          "end_line": 1065,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODDirOpen",
+          "signature_line": 1123,
+          "body_line": 1159,
+          "end_line": 1240,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODDirAttributesMatch",
+          "signature_line": 1240,
+          "body_line": 1255,
+          "end_line": 1263,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODDirRead",
+          "signature_line": 1263,
+          "body_line": 1288,
+          "end_line": 1438,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODDirClose",
+          "signature_line": 1438,
+          "body_line": 1452,
+          "end_line": 1468,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "DOSToCTime",
+          "signature_line": 1468,
+          "body_line": 1484,
+          "end_line": 1511,
+          "platforms": [
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODDirDOSFindFirst",
+          "signature_line": 1511,
+          "body_line": 1536,
+          "end_line": 1582,
+          "platforms": [
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODDirDOSFindNext",
+          "signature_line": 1582,
+          "body_line": 1598,
+          "end_line": 1635,
+          "platforms": [
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODDirWinMatchesAttributes",
+          "signature_line": 1635,
+          "body_line": 1654,
+          "end_line": 1684,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODDirChangeCurrent",
+          "signature_line": 1684,
+          "body_line": 1698,
+          "end_line": 1724,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODDirGetCurrent",
+          "signature_line": 1724,
+          "body_line": 1741,
+          "end_line": 1776,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFileDelete",
+          "signature_line": 1776,
+          "body_line": 1793,
+          "end_line": 1834,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFileAccessMode",
+          "signature_line": 1834,
+          "body_line": 1853,
+          "end_line": 1932,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODPCB.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "pdef_pcboard",
+          "signature_line": 1,
+          "body_line": 64,
+          "end_line": 212,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODPopup.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "od_popup_menu",
+          "signature_line": 122,
+          "body_line": 160,
+          "end_line": 516,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODPopupCheckForKey",
+          "signature_line": 516,
+          "body_line": 535,
+          "end_line": 656,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODPopupDisplayMenuItem",
+          "signature_line": 656,
+          "body_line": 690,
+          "end_line": 735,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODPrntf.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "od_printf",
+          "signature_line": 1,
+          "body_line": 74,
+          "end_line": 222,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODRA.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "pdef_ra",
+          "signature_line": 66,
+          "body_line": 81,
+          "end_line": 469,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODRADisplayPageInfo",
+          "signature_line": 469,
+          "body_line": 484,
+          "end_line": 536,
+          "platforms": [
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODRADisplayTime",
+          "signature_line": 536,
+          "body_line": 550,
+          "end_line": 558,
+          "platforms": [
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODRADisplayDate",
+          "signature_line": 558,
+          "body_line": 574,
+          "end_line": 601,
+          "platforms": [
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODRADisplayFlags",
+          "signature_line": 601,
+          "body_line": 615,
+          "end_line": 631,
+          "platforms": [
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODRsv.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "ODReserveRangeLock",
+          "signature_line": 149,
+          "body_line": 154,
+          "end_line": 214,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODReserveRangeUnlock",
+          "signature_line": 214,
+          "body_line": 217,
+          "end_line": 243,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODReservePause",
+          "signature_line": 243,
+          "body_line": 246,
+          "end_line": 251,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODReserveAcquire",
+          "signature_line": 251,
+          "body_line": 255,
+          "end_line": 276,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODReserveTransfer",
+          "signature_line": 276,
+          "body_line": 280,
+          "end_line": 303,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODReserveAccess",
+          "signature_line": 303,
+          "body_line": 310,
+          "end_line": 340,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODReserveCountRecords",
+          "signature_line": 340,
+          "body_line": 343,
+          "end_line": 355,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODReserveSnapshotRecords",
+          "signature_line": 355,
+          "body_line": 359,
+          "end_line": 370,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODReserveReadLiveRecord",
+          "signature_line": 370,
+          "body_line": 375,
+          "end_line": 411,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODReserveWriteOwn",
+          "signature_line": 411,
+          "body_line": 415,
+          "end_line": 446,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODReserveDetach",
+          "signature_line": 446,
+          "body_line": 449,
+          "end_line": 463,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODReserveNameValid",
+          "signature_line": 463,
+          "body_line": 466,
+          "end_line": 484,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODReserveTicketGreater",
+          "signature_line": 484,
+          "body_line": 488,
+          "end_line": 491,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODReserveTicketPrecedes",
+          "signature_line": 491,
+          "body_line": 495,
+          "end_line": 501,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODReserveOpenRegistry",
+          "signature_line": 501,
+          "body_line": 504,
+          "end_line": 534,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODReservePrepareHeader",
+          "signature_line": 534,
+          "body_line": 538,
+          "end_line": 601,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODReserveSetIdentity",
+          "signature_line": 601,
+          "body_line": 604,
+          "end_line": 612,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODReserveCheckIdentities",
+          "signature_line": 612,
+          "body_line": 615,
+          "end_line": 671,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODReserveAppendParticipant",
+          "signature_line": 671,
+          "body_line": 675,
+          "end_line": 714,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODReserveSessionInitialize",
+          "signature_line": 714,
+          "body_line": 717,
+          "end_line": 759,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODReserveSessionShutdown",
+          "signature_line": 759,
+          "body_line": 762,
+          "end_line": 774,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_reserve_configure",
+          "signature_line": 774,
+          "body_line": 777,
+          "end_line": 798,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_reserve_request",
+          "signature_line": 798,
+          "body_line": 801,
+          "end_line": 885,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODReserveWaitCore",
+          "signature_line": 885,
+          "body_line": 888,
+          "end_line": 931,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_reserve_wait",
+          "signature_line": 931,
+          "body_line": 934,
+          "end_line": 968,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_reserve_wait_until",
+          "signature_line": 968,
+          "body_line": 972,
+          "end_line": 1020,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_reserve_end",
+          "signature_line": 1020,
+          "body_line": 1023,
+          "end_line": 1052,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODSafe.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "ODSizeAdd",
+          "signature_line": 1,
+          "body_line": 7,
+          "end_line": 14,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSizeMultiply",
+          "signature_line": 14,
+          "body_line": 17,
+          "end_line": 24,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODScrn.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "ODScrnCreateWin",
+          "signature_line": 259,
+          "body_line": 275,
+          "end_line": 322,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnWindowProc",
+          "signature_line": 322,
+          "body_line": 347,
+          "end_line": 489,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnPaint",
+          "signature_line": 489,
+          "body_line": 510,
+          "end_line": 599,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnInvalidate",
+          "signature_line": 599,
+          "body_line": 620,
+          "end_line": 626,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnPublish",
+          "signature_line": 626,
+          "body_line": 636,
+          "end_line": 660,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnSetCurrentFont",
+          "signature_line": 660,
+          "body_line": 676,
+          "end_line": 709,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnAdjustWindows",
+          "signature_line": 709,
+          "body_line": 725,
+          "end_line": 784,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnStartWindow",
+          "signature_line": 784,
+          "body_line": 792,
+          "end_line": 824,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnStopWindow",
+          "signature_line": 824,
+          "body_line": 833,
+          "end_line": 841,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnSetFocusToWindow",
+          "signature_line": 841,
+          "body_line": 854,
+          "end_line": 859,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnSetWinCaretPos",
+          "signature_line": 859,
+          "body_line": 873,
+          "end_line": 891,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnInitialize",
+          "signature_line": 891,
+          "body_line": 912,
+          "end_line": 1177,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnShutdown",
+          "signature_line": 1177,
+          "body_line": 1190,
+          "end_line": 1221,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnSetBoundary",
+          "signature_line": 1221,
+          "body_line": 1241,
+          "end_line": 1274,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnSetCursorPos",
+          "signature_line": 1274,
+          "body_line": 1293,
+          "end_line": 1312,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnSetAttribute",
+          "signature_line": 1312,
+          "body_line": 1331,
+          "end_line": 1339,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnEnableScrolling",
+          "signature_line": 1339,
+          "body_line": 1354,
+          "end_line": 1362,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnEnableCaret",
+          "signature_line": 1362,
+          "body_line": 1379,
+          "end_line": 1483,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnGetTextInfo",
+          "signature_line": 1483,
+          "body_line": 1499,
+          "end_line": 1520,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnPrintf",
+          "signature_line": 1520,
+          "body_line": 1537,
+          "end_line": 1580,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnDisplayChar",
+          "signature_line": 1580,
+          "body_line": 1594,
+          "end_line": 1707,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnGetCursorPos",
+          "signature_line": 1707,
+          "body_line": 1722,
+          "end_line": 1751,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnUpdateCaretPos",
+          "signature_line": 1751,
+          "body_line": 1765,
+          "end_line": 1800,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnRingBell",
+          "signature_line": 1800,
+          "body_line": 1804,
+          "end_line": 1808,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnClear",
+          "signature_line": 1808,
+          "body_line": 1823,
+          "end_line": 1867,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnScrollUpAndInvalidate",
+          "signature_line": 1867,
+          "body_line": 1882,
+          "end_line": 1895,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnScrollUpOneLine",
+          "signature_line": 1895,
+          "body_line": 1910,
+          "end_line": 1948,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnGetText",
+          "signature_line": 1948,
+          "body_line": 1977,
+          "end_line": 2018,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnPutText",
+          "signature_line": 2018,
+          "body_line": 2045,
+          "end_line": 2096,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnDisplayString",
+          "signature_line": 2096,
+          "body_line": 2111,
+          "end_line": 2118,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnDisplayBuffer",
+          "signature_line": 2118,
+          "body_line": 2137,
+          "end_line": 2344,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnCopyText",
+          "signature_line": 2344,
+          "body_line": 2378,
+          "end_line": 2429,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnClearToEndOfLine",
+          "signature_line": 2429,
+          "body_line": 2443,
+          "end_line": 2471,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnCreateWindow",
+          "signature_line": 2471,
+          "body_line": 2500,
+          "end_line": 2575,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnDestroyWindow",
+          "signature_line": 2575,
+          "body_line": 2591,
+          "end_line": 2611,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnLocalInput",
+          "signature_line": 2611,
+          "body_line": 2636,
+          "end_line": 2739,
+          "platforms": [
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnShowMessage",
+          "signature_line": 2739,
+          "body_line": 2763,
+          "end_line": 2819,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnRemoveMessage",
+          "signature_line": 2819,
+          "body_line": 2833,
+          "end_line": 2851,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenRectValid",
+          "signature_line": 2885,
+          "body_line": 2889,
+          "end_line": 2897,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenCell",
+          "signature_line": 2897,
+          "body_line": 2900,
+          "end_line": 2905,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnConsoleCopyPersonalityRow",
+          "signature_line": 2905,
+          "body_line": 2910,
+          "end_line": 2934,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODScrnPublishConsole",
+          "signature_line": 2934,
+          "body_line": 2937,
+          "end_line": 3012,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenMarkDirty",
+          "signature_line": 3012,
+          "body_line": 3017,
+          "end_line": 3035,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenInitialize",
+          "signature_line": 3035,
+          "body_line": 3038,
+          "end_line": 3109,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenShutdown",
+          "signature_line": 3109,
+          "body_line": 3112,
+          "end_line": 3118,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenAvailable",
+          "signature_line": 3118,
+          "body_line": 3121,
+          "end_line": 3123,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenError",
+          "signature_line": 3123,
+          "body_line": 3126,
+          "end_line": 3128,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenWidth",
+          "signature_line": 3128,
+          "body_line": 3131,
+          "end_line": 3133,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenHeight",
+          "signature_line": 3133,
+          "body_line": 3136,
+          "end_line": 3138,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenGetInfo",
+          "signature_line": 3138,
+          "body_line": 3141,
+          "end_line": 3152,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenSetBoundary",
+          "signature_line": 3152,
+          "body_line": 3155,
+          "end_line": 3169,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenSetCursorPos",
+          "signature_line": 3169,
+          "body_line": 3172,
+          "end_line": 3190,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenSetAttribute",
+          "signature_line": 3190,
+          "body_line": 3193,
+          "end_line": 3196,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenEnableScrolling",
+          "signature_line": 3196,
+          "body_line": 3199,
+          "end_line": 3202,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenScrollUpOneLine",
+          "signature_line": 3202,
+          "body_line": 3205,
+          "end_line": 3229,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenDisplayChar",
+          "signature_line": 3229,
+          "body_line": 3232,
+          "end_line": 3294,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenDisplayBuffer",
+          "signature_line": 3294,
+          "body_line": 3297,
+          "end_line": 3300,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenDisplayString",
+          "signature_line": 3300,
+          "body_line": 3303,
+          "end_line": 3306,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenClear",
+          "signature_line": 3306,
+          "body_line": 3309,
+          "end_line": 3330,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenClearToEndOfLine",
+          "signature_line": 3330,
+          "body_line": 3333,
+          "end_line": 3353,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenGetText",
+          "signature_line": 3353,
+          "body_line": 3357,
+          "end_line": 3376,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenPutText",
+          "signature_line": 3376,
+          "body_line": 3380,
+          "end_line": 3403,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenCopyText",
+          "signature_line": 3403,
+          "body_line": 3407,
+          "end_line": 3449,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenPresent",
+          "signature_line": 3449,
+          "body_line": 3452,
+          "end_line": 3513,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenBeginEmulation",
+          "signature_line": 3513,
+          "body_line": 3516,
+          "end_line": 3519,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenEndEmulation",
+          "signature_line": 3519,
+          "body_line": 3522,
+          "end_line": 3528,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenIsEmulating",
+          "signature_line": 3528,
+          "body_line": 3531,
+          "end_line": 3533,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionSnapshotPutDWORD",
+          "signature_line": 3533,
+          "body_line": 3538,
+          "end_line": 3543,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionSnapshotGetDWORD",
+          "signature_line": 3543,
+          "body_line": 3546,
+          "end_line": 3549,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionSnapshotDimensions",
+          "signature_line": 3549,
+          "body_line": 3552,
+          "end_line": 3567,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenSnapshotSize",
+          "signature_line": 3567,
+          "body_line": 3570,
+          "end_line": 3581,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenSave",
+          "signature_line": 3581,
+          "body_line": 3584,
+          "end_line": 3659,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSessionScreenRestore",
+          "signature_line": 3659,
+          "body_line": 3662,
+          "end_line": 3776,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODSpawn.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "ODWindowsQuoteArgument",
+          "signature_line": 89,
+          "body_line": 101,
+          "end_line": 158,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODWindowsQuoteArguments",
+          "signature_line": 158,
+          "body_line": 167,
+          "end_line": 201,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_spawn",
+          "signature_line": 280,
+          "body_line": 294,
+          "end_line": 403,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_spawnvpe",
+          "signature_line": 403,
+          "body_line": 432,
+          "end_line": 438,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSpawnVPEInternal",
+          "signature_line": 438,
+          "body_line": 453,
+          "end_line": 705,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "_spawnvpe",
+          "signature_line": 705,
+          "body_line": 729,
+          "end_line": 779,
+          "platforms": [
+            "unix",
+            "dos16"
+          ],
+          "test": null
+        },
+        {
+          "name": "addvect",
+          "signature_line": 779,
+          "body_line": 794,
+          "end_line": 830,
+          "platforms": [
+            "dos16"
+          ],
+          "test": null
+        },
+        {
+          "name": "savevect",
+          "signature_line": 830,
+          "body_line": 843,
+          "end_line": 861,
+          "platforms": [
+            "dos16"
+          ],
+          "test": null
+        },
+        {
+          "name": "testfile",
+          "signature_line": 861,
+          "body_line": 878,
+          "end_line": 944,
+          "platforms": [
+            "dos16"
+          ],
+          "test": null
+        },
+        {
+          "name": "tempfile",
+          "signature_line": 944,
+          "body_line": 959,
+          "end_line": 996,
+          "platforms": [
+            "dos16"
+          ],
+          "test": null
+        },
+        {
+          "name": "cmdenv",
+          "signature_line": 996,
+          "body_line": 1018,
+          "end_line": 1139,
+          "platforms": [
+            "dos16"
+          ],
+          "test": null
+        },
+        {
+          "name": "doxspawn",
+          "signature_line": 1139,
+          "body_line": 1157,
+          "end_line": 1246,
+          "platforms": [
+            "dos16"
+          ],
+          "test": null
+        },
+        {
+          "name": "_spawnve",
+          "signature_line": 1246,
+          "body_line": 1266,
+          "end_line": 1307,
+          "platforms": [
+            "dos16"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODUnixExecProgram",
+          "signature_line": 1312,
+          "body_line": 1319,
+          "end_line": 1378,
+          "platforms": [
+            "unix"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODUnixReportSpawnError",
+          "signature_line": 1378,
+          "body_line": 1383,
+          "end_line": 1407,
+          "platforms": [
+            "unix"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODUnixReadSpawnError",
+          "signature_line": 1407,
+          "body_line": 1412,
+          "end_line": 1441,
+          "platforms": [
+            "unix"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODUnixWaitForChild",
+          "signature_line": 1441,
+          "body_line": 1444,
+          "end_line": 1453,
+          "platforms": [
+            "unix"
+          ],
+          "test": null
+        },
+        {
+          "name": "_spawnvpe",
+          "signature_line": 1453,
+          "body_line": 1473,
+          "end_line": 1630,
+          "platforms": [
+            "unix",
+            "dos16"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODStand.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "pdef_opendoors",
+          "signature_line": 1,
+          "body_line": 61,
+          "end_line": 232,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "pdef_od_onerow",
+          "signature_line": 232,
+          "body_line": 246,
+          "end_line": 360,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODStat.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "ODStatAddKey",
+          "signature_line": 56,
+          "body_line": 70,
+          "end_line": 73,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODStatRemoveKey",
+          "signature_line": 73,
+          "body_line": 87,
+          "end_line": 107,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODStatGetUserAge",
+          "signature_line": 107,
+          "body_line": 121,
+          "end_line": 169,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODStatForceStatusUpdate",
+          "signature_line": 169,
+          "body_line": 183,
+          "end_line": 186,
+          "platforms": [
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODStr.c",
+      "platforms": [
+        "unix"
+      ],
+      "functions": [
+        {
+          "name": "od_strlwr",
+          "signature_line": 1,
+          "body_line": 36,
+          "end_line": 43,
+          "platforms": [
+            "unix"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_strupr",
+          "signature_line": 43,
+          "body_line": 47,
+          "end_line": 54,
+          "platforms": [
+            "unix"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODSync.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "ODMutexInitialize",
+          "signature_line": 17,
+          "body_line": 20,
+          "end_line": 28,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODMutexDestroy",
+          "signature_line": 28,
+          "body_line": 31,
+          "end_line": 37,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODMutexLock",
+          "signature_line": 37,
+          "body_line": 40,
+          "end_line": 46,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODMutexUnlock",
+          "signature_line": 46,
+          "body_line": 49,
+          "end_line": 55,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSyncSessionInitialize",
+          "signature_line": 55,
+          "body_line": 58,
+          "end_line": 65,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSyncSessionShutdown",
+          "signature_line": 65,
+          "body_line": 68,
+          "end_line": 73,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSyncSessionActive",
+          "signature_line": 73,
+          "body_line": 75,
+          "end_line": 75,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSyncAPILevelActive",
+          "signature_line": 75,
+          "body_line": 78,
+          "end_line": 84,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSyncAPIIsNested",
+          "signature_line": 84,
+          "body_line": 87,
+          "end_line": 89,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSyncPublicCallAllowed",
+          "signature_line": 89,
+          "body_line": 92,
+          "end_line": 99,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSyncAPIEntry",
+          "signature_line": 99,
+          "body_line": 102,
+          "end_line": 108,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSyncAPIExit",
+          "signature_line": 108,
+          "body_line": 111,
+          "end_line": 128,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSyncAPICheckpoint",
+          "signature_line": 128,
+          "body_line": 131,
+          "end_line": 144,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSyncAPIRelease",
+          "signature_line": 144,
+          "body_line": 147,
+          "end_line": 156,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODSyncAPIReacquire",
+          "signature_line": 156,
+          "body_line": 159,
+          "end_line": 162,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODUtil.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "ODStringCopy",
+          "signature_line": 1,
+          "body_line": 75,
+          "end_line": 87,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODStringNormalizeLine",
+          "signature_line": 87,
+          "body_line": 102,
+          "end_line": 122,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODStringCToPascal",
+          "signature_line": 122,
+          "body_line": 142,
+          "end_line": 153,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODStringPascalToC",
+          "signature_line": 153,
+          "body_line": 172,
+          "end_line": 187,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODStringHasTail",
+          "signature_line": 187,
+          "body_line": 205,
+          "end_line": 218,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODMakeFilename",
+          "signature_line": 218,
+          "body_line": 247,
+          "end_line": 291,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFileSize",
+          "signature_line": 291,
+          "body_line": 305,
+          "end_line": 316,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODDWordShiftLeft",
+          "signature_line": 316,
+          "body_line": 335,
+          "end_line": 353,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODDWordShiftRight",
+          "signature_line": 353,
+          "body_line": 368,
+          "end_line": 385,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODDWordDivide",
+          "signature_line": 385,
+          "body_line": 407,
+          "end_line": 470,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODDWordMultiply",
+          "signature_line": 470,
+          "body_line": 486,
+          "end_line": 508,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODWCat.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "pdef_wildcat",
+          "signature_line": 1,
+          "body_line": 64,
+          "end_line": 275,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODWin.c",
+      "platforms": [
+        "unix",
+        "windows",
+        "dos16",
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "od_window_create",
+          "signature_line": 1,
+          "body_line": 84,
+          "end_line": 268,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "od_window_remove",
+          "signature_line": 268,
+          "body_line": 284,
+          "end_line": 320,
+          "platforms": [
+            "unix",
+            "windows",
+            "dos16",
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODFrame.c",
+      "platforms": [
+        "windows"
+      ],
+      "functions": [
+        {
+          "name": "ODFrameCreateWindow",
+          "signature_line": 158,
+          "body_line": 171,
+          "end_line": 297,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFrameCreateToolbar",
+          "signature_line": 297,
+          "body_line": 315,
+          "end_line": 420,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFrameDestroyToolbar",
+          "signature_line": 420,
+          "body_line": 436,
+          "end_line": 452,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFrameCreateStatusBar",
+          "signature_line": 452,
+          "body_line": 467,
+          "end_line": 499,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFrameSetMainStatusText",
+          "signature_line": 499,
+          "body_line": 512,
+          "end_line": 561,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFrameCopyProgramName",
+          "signature_line": 561,
+          "body_line": 564,
+          "end_line": 568,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFrameDestroyStatusBar",
+          "signature_line": 568,
+          "body_line": 581,
+          "end_line": 583,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFrameSizeStatusBar",
+          "signature_line": 583,
+          "body_line": 596,
+          "end_line": 612,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFrameGetUsedClientAtTop",
+          "signature_line": 612,
+          "body_line": 626,
+          "end_line": 637,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFrameGetUsedClientAtBottom",
+          "signature_line": 637,
+          "body_line": 651,
+          "end_line": 662,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFrameWindowProc",
+          "signature_line": 662,
+          "body_line": 687,
+          "end_line": 1165,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFrameControlStateChanged",
+          "signature_line": 1165,
+          "body_line": 1174,
+          "end_line": 1184,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFrameUpdateCmdUI",
+          "signature_line": 1184,
+          "body_line": 1197,
+          "end_line": 1253,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFrameUpdateTimeDisplay",
+          "signature_line": 1253,
+          "body_line": 1267,
+          "end_line": 1284,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFrameUpdateWantChat",
+          "signature_line": 1284,
+          "body_line": 1297,
+          "end_line": 1358,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFrameDestroyWindow",
+          "signature_line": 1358,
+          "body_line": 1372,
+          "end_line": 1389,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFrameToolbarProc",
+          "signature_line": 1389,
+          "body_line": 1414,
+          "end_line": 1426,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFrameUpdateTimeLeft",
+          "signature_line": 1426,
+          "body_line": 1439,
+          "end_line": 1463,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFrameAboutDlgProc",
+          "signature_line": 1463,
+          "body_line": 1483,
+          "end_line": 1549,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFrameCenterWindowInParent",
+          "signature_line": 1549,
+          "body_line": 1562,
+          "end_line": 1592,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFrameMessageLoop",
+          "signature_line": 1592,
+          "body_line": 1607,
+          "end_line": 1624,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFrameTranslateAccelerator",
+          "signature_line": 1624,
+          "body_line": 1641,
+          "end_line": 1656,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFrameThreadProc",
+          "signature_line": 1656,
+          "body_line": 1670,
+          "end_line": 1707,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFrameStart",
+          "signature_line": 1707,
+          "body_line": 1722,
+          "end_line": 1771,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFramePostThreadQuit",
+          "signature_line": 1771,
+          "body_line": 1783,
+          "end_line": 1791,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFrameRequestShutdown",
+          "signature_line": 1791,
+          "body_line": 1804,
+          "end_line": 1827,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFrameShutdown",
+          "signature_line": 1827,
+          "body_line": 1837,
+          "end_line": 1869,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        },
+        {
+          "name": "ODFrameMessageDlgProc",
+          "signature_line": 1869,
+          "body_line": 1889,
+          "end_line": 1932,
+          "platforms": [
+            "windows"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/OD32DPMI.c",
+      "platforms": [
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "OD32DPMIRealModeInterrupt",
+          "signature_line": 1,
+          "body_line": 15,
+          "end_line": 29,
+          "platforms": [
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/OD32Foss.c",
+      "platforms": [
+        "dos32"
+      ],
+      "functions": [
+        {
+          "name": "OD32FossilCall",
+          "signature_line": 1,
+          "body_line": 15,
+          "end_line": 17,
+          "platforms": [
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "OD32FossilDetect",
+          "signature_line": 17,
+          "body_line": 20,
+          "end_line": 29,
+          "platforms": [
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "OD32FossilInitialize",
+          "signature_line": 29,
+          "body_line": 32,
+          "end_line": 39,
+          "platforms": [
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "OD32FossilClose",
+          "signature_line": 39,
+          "body_line": 42,
+          "end_line": 49,
+          "platforms": [
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "OD32FossilSetFlow",
+          "signature_line": 49,
+          "body_line": 52,
+          "end_line": 59,
+          "platforms": [
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "OD32FossilStatus",
+          "signature_line": 59,
+          "body_line": 62,
+          "end_line": 71,
+          "platforms": [
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "OD32FossilSetDTR",
+          "signature_line": 71,
+          "body_line": 74,
+          "end_line": 81,
+          "platforms": [
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "OD32FossilSimpleCall",
+          "signature_line": 81,
+          "body_line": 84,
+          "end_line": 91,
+          "platforms": [
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "OD32FossilClearOutbound",
+          "signature_line": 91,
+          "body_line": 94,
+          "end_line": 96,
+          "platforms": [
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "OD32FossilClearInbound",
+          "signature_line": 96,
+          "body_line": 99,
+          "end_line": 101,
+          "platforms": [
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "OD32FossilGetByte",
+          "signature_line": 101,
+          "body_line": 104,
+          "end_line": 112,
+          "platforms": [
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "OD32FossilSendByte",
+          "signature_line": 112,
+          "body_line": 115,
+          "end_line": 124,
+          "platforms": [
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "OD32FossilBufferAllocate",
+          "signature_line": 124,
+          "body_line": 127,
+          "end_line": 157,
+          "platforms": [
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "OD32FossilBufferFree",
+          "signature_line": 157,
+          "body_line": 160,
+          "end_line": 173,
+          "platforms": [
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "OD32FossilReceiveBlock",
+          "signature_line": 173,
+          "body_line": 177,
+          "end_line": 199,
+          "platforms": [
+            "dos32"
+          ],
+          "test": null
+        },
+        {
+          "name": "OD32FossilSendBlock",
+          "signature_line": 199,
+          "body_line": 203,
+          "end_line": 225,
+          "platforms": [
+            "dos32"
+          ],
+          "test": null
+        }
+      ]
+    },
+    {
+      "path": "src/ODSwap.asm",
+      "platforms": [
+        "dos16"
+      ],
+      "functions": [
+        {
+          "name": "__xspawn",
+          "signature_line": 378,
+          "body_line": 378,
+          "end_line": 809,
+          "platforms": [
+            "dos16"
+          ],
+          "test": null
+        },
+        {
+          "name": "mapems",
+          "signature_line": 811,
+          "body_line": 811,
+          "end_line": 825,
+          "platforms": [
+            "dos16"
+          ],
+          "test": null
+        },
+        {
+          "name": "setvectsub",
+          "signature_line": 827,
+          "body_line": 827,
+          "end_line": 849,
+          "platforms": [
+            "dos16"
+          ],
+          "test": null
+        },
+        {
+          "name": "safevect",
+          "signature_line": 851,
+          "body_line": 851,
+          "end_line": 875,
+          "platforms": [
+            "dos16"
+          ],
+          "test": null
+        },
+        {
+          "name": "__xsize",
+          "signature_line": 883,
+          "body_line": 883,
+          "end_line": 975,
+          "platforms": [
+            "dos16"
+          ],
+          "test": null
+        },
+        {
+          "name": "__chkems",
+          "signature_line": 983,
+          "body_line": 983,
+          "end_line": 1076,
+          "platforms": [
+            "dos16"
+          ],
+          "test": null
+        },
+        {
+          "name": "__savemap",
+          "signature_line": 1084,
+          "body_line": 1084,
+          "end_line": 1107,
+          "platforms": [
+            "dos16"
+          ],
+          "test": null
+        },
+        {
+          "name": "__restmap",
+          "signature_line": 1115,
+          "body_line": 1115,
+          "end_line": 1139,
+          "platforms": [
+            "dos16"
+          ],
+          "test": null
+        },
+        {
+          "name": "__getems",
+          "signature_line": 1147,
+          "body_line": 1147,
+          "end_line": 1170,
+          "platforms": [
+            "dos16"
+          ],
+          "test": null
+        },
+        {
+          "name": "__dskspace",
+          "signature_line": 1178,
+          "body_line": 1178,
+          "end_line": 1214,
+          "platforms": [
+            "dos16"
+          ],
+          "test": null
+        },
+        {
+          "name": "__getrc",
+          "signature_line": 1222,
+          "body_line": 1222,
+          "end_line": 1232,
+          "platforms": [
+            "dos16"
+          ],
+          "test": null
+        },
+        {
+          "name": "__create",
+          "signature_line": 1240,
+          "body_line": 1240,
+          "end_line": 1281,
+          "platforms": [
+            "dos16"
+          ],
+          "test": null
+        },
+        {
+          "name": "__getcd",
+          "signature_line": 1291,
+          "body_line": 1291,
+          "end_line": 1322,
+          "platforms": [
+            "dos16"
+          ],
+          "test": null
+        },
+        {
+          "name": "__getdrv",
+          "signature_line": 1330,
+          "body_line": 1330,
+          "end_line": 1343,
+          "platforms": [
+            "dos16"
+          ],
+          "test": null
+        },
+        {
+          "name": "__getvect",
+          "signature_line": 1351,
+          "body_line": 1351,
+          "end_line": 1382,
+          "platforms": [
+            "dos16"
+          ],
+          "test": null
+        },
+        {
+          "name": "__setvect",
+          "signature_line": 1390,
+          "body_line": 1390,
+          "end_line": 1413,
+          "platforms": [
+            "dos16"
+          ],
+          "test": null
+        },
+        {
+          "name": "__setdrvcd",
+          "signature_line": 1422,
+          "body_line": 1422,
+          "end_line": 1448,
+          "platforms": [
+            "dos16"
+          ],
+          "test": null
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,171 @@
+site_name: OpenDoors Reference
+site_description: Current reference documentation for the OpenDoors C/C++ toolkit
+site_url: https://realdeuce.github.io/OpenDoors/
+repo_url: https://github.com/RealDeuce/OpenDoors
+repo_name: RealDeuce/OpenDoors
+edit_uri: edit/master/docs/
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Introduction: introduction.md
+  - Getting started: getting-started.md
+  - Guides:
+      - Programming tutorial: guides/programming-tutorial.md
+      - Building and linking: guides/building.md
+      - Session lifecycle: guides/session-lifecycle.md
+      - Terminal and screen model: guides/terminal-screen.md
+      - Windows programming: guides/windows.md
+      - DOS personalities: guides/personalities.md
+      - Configuration and command lines: guides/configuration.md
+      - Custom door-information formats: guides/door-information-formats.md
+      - Log-file system: guides/logging.md
+      - Multi-node operation: guides/multinode.md
+      - Troubleshooting: guides/troubleshooting.md
+      - Versioning and compatibility: guides/versioning.md
+  - API reference:
+      - Overview: reference/api/index.md
+      - Text display:
+          - od_printf: reference/api/od_printf.md
+          - od_disp_str: reference/api/od_disp_str.md
+          - od_disp: reference/api/od_disp.md
+          - od_disp_emu: reference/api/od_disp_emu.md
+          - od_emulate: reference/api/od_emulate.md
+          - od_repeat: reference/api/od_repeat.md
+          - od_putch: reference/api/od_putch.md
+      - Color and cursor control:
+          - od_set_color: reference/api/od_set_color.md
+          - od_set_attrib: reference/api/od_set_attrib.md
+          - od_set_cursor: reference/api/od_set_cursor.md
+          - od_get_cursor: reference/api/od_get_cursor.md
+      - Screen manipulation:
+          - od_clr_scr: reference/api/od_clr_scr.md
+          - od_save_screen: reference/api/od_save_screen.md
+          - od_restore_screen: reference/api/od_restore_screen.md
+          - od_save_screen_size: reference/api/od_save_screen_size.md
+          - od_save_screen_ex: reference/api/od_save_screen_ex.md
+          - od_restore_screen_ex: reference/api/od_restore_screen_ex.md
+      - Block manipulation:
+          - od_clr_line: reference/api/od_clr_line.md
+          - od_gettext: reference/api/od_gettext.md
+          - od_puttext: reference/api/od_puttext.md
+          - od_scroll: reference/api/od_scroll.md
+      - Windows and menus:
+          - od_draw_box: reference/api/od_draw_box.md
+          - od_window_create: reference/api/od_window_create.md
+          - od_window_remove: reference/api/od_window_remove.md
+          - od_popup_menu: reference/api/od_popup_menu.md
+      - File display:
+          - od_send_file: reference/api/od_send_file.md
+          - od_send_file_section: reference/api/od_send_file_section.md
+          - od_hotkey_menu: reference/api/od_hotkey_menu.md
+          - od_list_files: reference/api/od_list_files.md
+      - Input:
+          - od_get_answer: reference/api/od_get_answer.md
+          - od_get_key: reference/api/od_get_key.md
+          - od_get_input: reference/api/od_get_input.md
+          - od_get_input_until: reference/api/od_get_input_until.md
+          - od_input_str: reference/api/od_input_str.md
+          - od_edit_str: reference/api/od_edit_str.md
+          - od_clear_keybuffer: reference/api/od_clear_keybuffer.md
+          - od_multiline_edit: reference/api/od_multiline_edit.md
+          - od_key_pending: reference/api/od_key_pending.md
+      - Door activity and command lines:
+          - od_page: reference/api/od_page.md
+          - od_spawn: reference/api/od_spawn.md
+          - od_spawnvpe: reference/api/od_spawnvpe.md
+          - od_log_open: reference/api/od_log_open.md
+          - od_log_write: reference/api/od_log_write.md
+          - od_parse_cmd_line: reference/api/od_parse_cmd_line.md
+          - od_parse_cmd_line_cons: reference/api/od_parse_cmd_line_cons.md
+          - od_split_cmd_line: reference/api/od_split_cmd_line.md
+          - od_free_split_cmd_line: reference/api/od_free_split_cmd_line.md
+      - Special control:
+          - od_init: reference/api/od_init.md
+          - od_color_config: reference/api/od_color_config.md
+          - od_add_personality: reference/api/od_add_personality.md
+          - od_set_personality: reference/api/od_set_personality.md
+          - od_set_statusline: reference/api/od_set_statusline.md
+          - od_set_user_8bit: reference/api/od_set_user_8bit.md
+          - od_autodetect: reference/api/od_autodetect.md
+          - od_kernel: reference/api/od_kernel.md
+          - od_exit: reference/api/od_exit.md
+          - od_carrier: reference/api/od_carrier.md
+          - od_set_dtr: reference/api/od_set_dtr.md
+          - od_set_port: reference/api/od_set_port.md
+          - od_chat: reference/api/od_chat.md
+          - od_sleep: reference/api/od_sleep.md
+          - od_get_time: reference/api/od_get_time.md
+          - od_reserve_configure: reference/api/od_reserve_configure.md
+          - od_reserve_request: reference/api/od_reserve_request.md
+          - od_reserve_wait: reference/api/od_reserve_wait.md
+          - od_reserve_wait_until: reference/api/od_reserve_wait_until.md
+          - od_reserve_end: reference/api/od_reserve_end.md
+          - od_get_user_8bit: reference/api/od_get_user_8bit.md
+          - od_control_get: reference/api/od_control_get.md
+  - Data reference:
+      - Types and callbacks: reference/types.md
+      - Constants and macros:
+          - Overview: reference/constants.md
+          - General and platform: reference/constants/general.md
+          - Errors and exit levels: reference/constants/errors.md
+          - Colors: reference/constants/colors.md
+          - Input and editors: reference/constants/input.md
+          - Menus and screen: reference/constants/display.md
+          - Session and connection: reference/constants/session.md
+          - Components and personalities: reference/constants/components.md
+      - od_control:
+          - Overview: reference/control/index.md
+          - Connection and door information: reference/control/connection.md
+          - Caller and system information: reference/control/caller.md
+          - Runtime state and policy: reference/control/runtime.md
+          - Customization and callbacks: reference/control/customization.md
+      - Compatibility interfaces: reference/compatibility.md
+      - Glossary: reference/glossary.md
+  - DOS personality SDK:
+      - Overview: reference/personality/index.md
+      - Helpers:
+          - ODStatAddKey: reference/personality/ODStatAddKey.md
+          - ODStatRemoveKey: reference/personality/ODStatRemoveKey.md
+          - ODStatGetUserAge: reference/personality/ODStatGetUserAge.md
+          - ODStatForceStatusUpdate: reference/personality/ODStatForceStatusUpdate.md
+          - szStatusText: reference/personality/szStatusText.md
+      - Local output:
+          - ODScrnDisplayChar: reference/personality/ODScrnDisplayChar.md
+          - ODScrnDisplayBuffer: reference/personality/ODScrnDisplayBuffer.md
+          - ODScrnDisplayString: reference/personality/ODScrnDisplayString.md
+          - ODScrnPrintf: reference/personality/ODScrnPrintf.md
+          - ODScrnGetText: reference/personality/ODScrnGetText.md
+          - ODScrnPutText: reference/personality/ODScrnPutText.md
+          - ODScrnSetCursorPos: reference/personality/ODScrnSetCursorPos.md
+          - ODScrnSetAttribute: reference/personality/ODScrnSetAttribute.md
+  - Development:
+      - Threading and session ownership: development/threading.md
+      - V7 API design: development/v7-api-design.md

@@ -1,0 +1,9411 @@
+{
+  "version": 1,
+  "tests": {
+    "surface.compile": {
+      "tier": "push",
+      "description": "C and C++ public-header compilation"
+    },
+    "surface.abi": {
+      "tier": "push",
+      "description": "Public type sizes and tODControl layout"
+    },
+    "surface.constants": {
+      "tier": "push",
+      "description": "Documented constant values"
+    },
+    "surface.aliases": {
+      "tier": "push",
+      "description": "Compatibility alias identity"
+    },
+    "symbols.exports": {
+      "tier": "push",
+      "description": "Every declared API symbol is linkable/exported"
+    },
+    "control.storage": {
+      "tier": "push",
+      "description": "Global identity, initial storage, and field addressability"
+    },
+    "lifecycle.defaults": {
+      "tier": "push",
+      "description": "Initialization defaults and caller override behavior"
+    },
+    "command-line.behavior": {
+      "tier": "push",
+      "description": "Command-line parsing and callbacks"
+    },
+    "dropfiles.all": {
+      "tier": "push",
+      "description": "Every built-in and custom drop-file contract"
+    },
+    "terminal.screen": {
+      "tier": "push",
+      "description": "Public screen, display, cursor, and window operations"
+    },
+    "terminal.socket": {
+      "tier": "extended",
+      "description": "Transport-neutral remote output, input, and autodetection"
+    },
+    "input.interactive": {
+      "tier": "extended",
+      "description": "Scripted input, editor, menu, page, and chat behavior"
+    },
+    "process.spawn": {
+      "tier": "push",
+      "description": "Spawn, environment, logging, sleep, and kernel behavior"
+    },
+    "components.lifecycle": {
+      "tier": "push",
+      "description": "Optional component setup and callbacks"
+    },
+    "personalities.builtin": {
+      "tier": "push",
+      "description": "Built-in personality lifecycle"
+    },
+    "personality.sdk": {
+      "tier": "push",
+      "description": "DOS personality SDK compile and screen-cell behavior"
+    },
+    "windows.control": {
+      "tier": "push",
+      "description": "Windows-only public control fields"
+    },
+    "reservation.named": {
+      "tier": "push",
+      "description": "Named filesystem reservation lifecycle"
+    }
+  },
+  "coverage": [
+    {
+      "kind": "compatibility-alias",
+      "name": "B_WHITE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "B_YELLOW",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "STATUS_HELP",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "STATUS_SYSTEM",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "STATUS_USER1",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "STATUS_USER2",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "STATUS_USER3",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "STATUS_USER4",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "caller_ansi",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "caller_callsign",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "caller_credit",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "caller_downlimit",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "caller_echomailentered",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "caller_logindate",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "caller_loginsec",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "caller_logintime",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "caller_logonpassword",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "caller_netmailentered",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "caller_numpages",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "caller_readthru",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "caller_sex",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "caller_timelimit",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "caller_timeofcreation",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "caller_usernum",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "caller_userrecord",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "caller_wantchat",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "config_file",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "config_filename",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "config_function",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "default_personality",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "key_help",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "key_nohelp",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "logfile",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "mps",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "od_avatar",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "od_chat_colour1",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "od_chat_colour2",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "od_colour_char",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "od_colour_config",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "od_colour_delimiter",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "od_colour_names",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "od_config_colors",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "od_config_colours",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "od_config_lines",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "od_config_text",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "od_full_colour",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "od_init_with_config",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "od_kernal",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "od_log_messages",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "od_program_name",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "od_rbbs_node",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "od_registered_to",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "od_registration_key",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "od_set_colour",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "ra_birthday",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "ra_combinedrecord",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "ra_comment",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "ra_date_format",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "ra_deducted_time",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "ra_emsi_capabilities",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "ra_emsi_crtdef",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "ra_emsi_protocols",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "ra_emsi_requests",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "ra_emsi_session",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "ra_emsi_software",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "ra_error_free",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "ra_file_area",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "ra_firstcall",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "ra_forward_to",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "ra_hold_attr1",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "ra_hold_attr2",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "ra_hold_len",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "ra_language",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "ra_menustack",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "ra_menustackpointer",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "ra_msg_area",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "ra_screenwidth",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "ra_subdate",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "ra_sysop_next",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "ra_userhandle",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "compatibility-alias",
+      "name": "user_credit",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.aliases"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "BOX_BOTTOM",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "BOX_LEFT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "BOX_LOWERLEFT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "BOX_LOWERRIGHT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "BOX_RIGHT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "BOX_TOP",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "BOX_UPPERLEFT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "BOX_UPPERRIGHT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "B_BLACK",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "B_BLUE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "B_BROWN",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "B_CYAN",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "B_GREEN",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "B_GREY",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "B_MAGENTA",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "B_RED",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "B_WHITE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "B_YELLOW",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "CALLINFO",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "CHAINTXT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "COM_DEFAULT_FLOW",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "COM_DOOR32",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "COM_FOSSIL",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "COM_INTERNAL",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "COM_NO_FLOW",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "COM_RTSCTS_FLOW",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "COM_SOCKET",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "COM_STDIO",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "COM_WIN32",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "CURRENT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "CUSTOM",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "DETECT_NORMAL",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "DIRSEP",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "DIRSEP_STR",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "DIS_BPS_SETTING",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "DIS_CARRIERDETECT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "DIS_DTR_DISABLE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "DIS_INFOFILE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "DIS_LOCAL_INPUT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "DIS_LOCAL_OVERRIDE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "DIS_NAME_PROMPT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "DIS_SYSOP_KEYS",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "DIS_TIMEOUT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "DOOR32SYS",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "DOORSYS_DRWY",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "DOORSYS_GAP",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "DOORSYS_WILDCAT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "DORINFO1",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "D_BLACK",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "D_BLUE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "D_BROWN",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "D_CYAN",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "D_GREEN",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "D_GREY",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "D_MAGENTA",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "D_RED",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "EDIT_FLAG_ALLOW_CANCEL",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "EDIT_FLAG_AUTO_DELETE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "EDIT_FLAG_AUTO_ENTER",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "EDIT_FLAG_EDIT_STRING",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "EDIT_FLAG_FIELD_MODE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "EDIT_FLAG_FILL_STRING",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "EDIT_FLAG_KEEP_BLANK",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "EDIT_FLAG_LEAVE_BLANK",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "EDIT_FLAG_NORMAL",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "EDIT_FLAG_NO_REDRAW",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "EDIT_FLAG_PASSWORD_MODE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "EDIT_FLAG_PERMALITERAL",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "EDIT_FLAG_SHOW_SIZE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "EDIT_FLAG_STRICT_INPUT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "EDIT_MENU_DO_NOTHING",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "EDIT_MENU_EXIT_EDITOR",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "EDIT_RETURN_ACCEPT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "EDIT_RETURN_CANCEL",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "EDIT_RETURN_ERROR",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "EDIT_RETURN_NEXT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "EDIT_RETURN_PREVIOUS",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "EFLAG_NORMAL",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ERRORLEVEL_CRITICAL",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ERRORLEVEL_DROPTOBBS",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ERRORLEVEL_ENABLE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ERRORLEVEL_HANGUP",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ERRORLEVEL_INACTIVITY",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ERRORLEVEL_NOCARRIER",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ERRORLEVEL_NORMAL",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ERRORLEVEL_TIMEOUT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ERR_FILEOPEN",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ERR_FILEREAD",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ERR_GENERALFAILURE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ERR_LIMIT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ERR_MEMORY",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ERR_NOGRAPHICS",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ERR_NOMATCH",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ERR_NONE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ERR_NOREMOTE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ERR_NOTHINGWAITING",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ERR_PARAMETER",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ERR_UNSUPPORTED",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ES_DELETED",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ES_DISABLED",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ES_ENABLED",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "EVENT_CHARACTER",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "EVENT_EXTENDED_KEY",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "EXITINFO",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "FALSE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "FORMAT_FTSC_MESSAGE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "FORMAT_LINE_BREAKS",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "FORMAT_NO_WORDWRAP",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "FORMAT_PARAGRAPH_BREAKS",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "GETIN_NORMAL",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "GETIN_RAW",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "GETIN_RAWCTRL",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "INCLUDE_CONFIG_FILE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "INCLUDE_LOGFILE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "INCLUDE_MPS",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "IRET",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "L_BLACK",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "L_BLUE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "L_CYAN",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "L_GREEN",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "L_MAGENTA",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "L_RED",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "L_WHITE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "L_YELLOW",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "MAYBE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "MENU_ALLOW_CANCEL",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "MENU_DESTROY",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "MENU_KEEP",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "MENU_NORMAL",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "MENU_PULLDOWN",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "NO_CONFIG_FILE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "NO_DOOR_FILE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "NO_LOGFILE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "NO_MPS",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ODAPIDEF",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ODCALL",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ODFAR",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ODPLAT_DOS",
+      "platforms": [
+        "dos16"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ODPLAT_DOS32",
+      "platforms": [
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ODPLAT_NIX",
+      "platforms": [
+        "unix"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ODPLAT_WIN32",
+      "platforms": [
+        "windows"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "ODVCALL",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_API_VAR_DECL",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_API_VAR_DEFN",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_DLL",
+      "platforms": [
+        "windows"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_EXPORT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_GLOBAL_CONV",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_IMPORT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_KEY_DELETE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_KEY_DOWN",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_KEY_END",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_KEY_F1",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_KEY_F10",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_KEY_F11",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_KEY_F12",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_KEY_F2",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_KEY_F3",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_KEY_F4",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_KEY_F5",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_KEY_F6",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_KEY_F7",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_KEY_F8",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_KEY_F9",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_KEY_HOME",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_KEY_INSERT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_KEY_LEFT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_KEY_PGDN",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_KEY_PGUP",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_KEY_RIGHT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_KEY_SHIFTTAB",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_KEY_UP",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_MULTIEDIT_ERROR",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_MULTIEDIT_SUCCESS",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_NAMING_CONVENTION",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_NO_TIMEOUT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_VERSION",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "OD_WIN32_STATIC",
+      "platforms": [
+        "windows"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PAGE_DISABLE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PAGE_ENABLE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PAGE_USE_HOURS",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PEROP_CUSTOMKEY",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PEROP_DEINITIALIZE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PEROP_DISPLAY1",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PEROP_DISPLAY2",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PEROP_DISPLAY3",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PEROP_DISPLAY4",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PEROP_DISPLAY5",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PEROP_DISPLAY6",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PEROP_DISPLAY7",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PEROP_DISPLAY8",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PEROP_INITIALIZE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PEROP_UPDATE1",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PEROP_UPDATE2",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PEROP_UPDATE3",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PEROP_UPDATE4",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PEROP_UPDATE5",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PEROP_UPDATE6",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PEROP_UPDATE7",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PEROP_UPDATE8",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PER_OD_ONEROW",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PER_OPENDOORS",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PER_PCBOARD",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PER_RA",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "PER_WILDCAT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "POPUP_ERROR",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "POPUP_ESCAPE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "POPUP_LEFT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "POPUP_RIGHT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "P_NOWAIT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "P_WAIT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "QBBS275EXITINFO",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "RA1EXITINFO",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "RA2EXITINFO",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "SCROLL_NORMAL",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "SCROLL_NO_CLEAR",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "SFDOORSDAT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "STATUS_ALTERNATE_1",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "STATUS_ALTERNATE_2",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "STATUS_ALTERNATE_3",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "STATUS_ALTERNATE_4",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "STATUS_ALTERNATE_5",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "STATUS_ALTERNATE_6",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "STATUS_ALTERNATE_7",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "STATUS_NONE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "STATUS_NORMAL",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "TRIBBSSYS",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "constant",
+      "name": "TRUE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.constants"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "baud",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "event_days",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "event_errorlevel",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "event_force",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "event_last_run",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "event_starttime",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "event_status",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "info_path",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "key_chat",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "input.interactive"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "key_dosshell",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "input.interactive"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "key_drop2bbs",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "input.interactive"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "key_hangup",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "input.interactive"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "key_keyboardoff",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "input.interactive"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "key_lesstime",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "input.interactive"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "key_lockout",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "input.interactive"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "key_moretime",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "input.interactive"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "key_status",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "input.interactive"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "key_sysopnext",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "input.interactive"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_after_chat",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_after_shell",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_always_clear",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_app_icon",
+      "platforms": [
+        "windows"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "windows.control"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_before_chat",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_before_exit",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "components.lifecycle"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_before_shell",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_box_chars",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_cafter_chat",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "components.lifecycle"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_cafter_shell",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "components.lifecycle"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_cbefore_chat",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "components.lifecycle"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_cbefore_shell",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "components.lifecycle"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_cfg_lines",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_cfg_text",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_chat_active",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_chat_color1",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_chat_color2",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_chat_reason",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_clear_on_exit",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_cmd_line_flag_handler",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "components.lifecycle"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_cmd_line_handler",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "components.lifecycle"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_cmd_line_help",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_cmd_line_help_func",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "components.lifecycle"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_cmd_show",
+      "platforms": [
+        "windows"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "windows.control"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_color_char",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_color_delimiter",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_color_names",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_com_address",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_com_fifo_trigger",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_com_flow_control",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_com_irq",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_com_method",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_com_no_fifo",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_com_rx_buf",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_com_tx_buf",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_config_callback",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "components.lifecycle"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_config_file",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_config_filename",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_config_function",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "components.lifecycle"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_connect_speed",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_continue",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_continue_col",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_continue_no",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_continue_nonstop",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_continue_yes",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_cp437_to_utf8_out",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_cur_attrib",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_current_statusline",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_day",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_default_personality",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_default_rip_win",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_disable",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_disable_dtr",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_disable_inactivity",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_emu_simulate_modem",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_error",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_errorlevel",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_exiting",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_extended_info",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_force_local",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_full_color",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_full_put",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_hanging_up",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_help_callback",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "components.lifecycle"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_help_text",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_help_text2",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_hot_key",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "input.interactive"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_in_buf_size",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_inactive_warning",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_inactivity",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_inactivity_timeout",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_inactivity_warning",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_info_type",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_internal_debug",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_ker_exec",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "components.lifecycle"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_last_hot",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_last_input",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_list_comment_col",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_list_name_col",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_list_offline_col",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_list_pause",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_list_size_col",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_list_stop",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_list_title_col",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_local_input",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "components.lifecycle"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_local_win_col",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_logfile",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_logfile_disable",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_logfile_messages",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_logfile_name",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_max_key_latency",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_maxtime",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_maxtime_deduction",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_menu_border_col",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_menu_highkey_col",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_menu_highlight_col",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_menu_key_col",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_menu_text_col",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_menu_title_col",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_month",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_mps",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_no_file_func",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "components.lifecycle"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_no_fossil",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_no_keyboard",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_no_ra_codes",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_no_response",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_no_sysop",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_no_time",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_nocopyright",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_node",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_noexit",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_num_keys",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "input.interactive"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_offline",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_okaytopage",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_open_handle",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_page_len",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_page_pausing",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_page_statusline",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_pageendmin",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_pagestartmin",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_paging",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_press_key",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_prog_copyright",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_prog_name",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_prog_version",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_ra_info",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_reg_key",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_reg_name",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_sending_rip",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_silent_mode",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_spawn_freeze_time",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_status_line",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_status_on",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_swapping_disable",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_swapping_noems",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_swapping_path",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_sysop_next",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_time_left",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_time_msg_func",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "components.lifecycle"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_time_warning",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_update_status_now",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_use_socket",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_user_keyboard_on",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "od_want_chat",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "port",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "sysop_name",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "sysop_next",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "system_calls",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "system_last_caller",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "system_last_handle",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "system_name",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "timelog_busyperday",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "timelog_busyperhour",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "timelog_start_date",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_address",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_ansi",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_attrib2",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_attrib3",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_attribute",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_avatar",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_birthday",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_callsign",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_combinedrecord",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_comment",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_credit",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_dataphone",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_date_format",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_deducted_time",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_downk",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_downlimit",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_downloads",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_echomailentered",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_emsi_capabilities",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_emsi_crtdef",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_emsi_protocols",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_emsi_requests",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_emsi_session",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_emsi_software",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_error_free",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_expert",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_file_area",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_file_group",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_firstcall",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_flags",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_forward_to",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_group",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_handle",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_hold_attr1",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_hold_attr2",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_hold_len",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_homephone",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_language",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_last_birthday_check",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_last_cost_menu",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_last_pwdchange",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_lastdate",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_lastread",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_lasttime",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_location",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_logindate",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_loginsec",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_logintime",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_logon_pwd_crc",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_logonpassword",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_menu_cost",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_menustack",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_menustackpointer",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_messages",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_msg_area",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_msg_group",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_name",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_net_credit",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_netmailentered",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_num",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_numcalls",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_numpages",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_org",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_password",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_pending",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_protocol",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_pwd_crc",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_readthru",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_reasonforchat",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_rip",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_rip_ver",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_screen_length",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_screenwidth",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_security",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_sex",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_subdate",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_time_used",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_timelimit",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_timeofcreation",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_todayk",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_upk",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_uploads",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_wantchat",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "control-field",
+      "name": "user_xi_record",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.abi",
+        "control.storage",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "ODConfigInit",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "components.lifecycle"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "ODLogEnable",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "components.lifecycle"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "ODMPSEnable",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "components.lifecycle"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_add_personality",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "personalities.builtin"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_autodetect",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.socket"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_carrier",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.socket"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_chat",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "input.interactive"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_clear_keybuffer",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "input.interactive"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_clr_line",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_clr_scr",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_color_config",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_control_get",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_disp",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_disp_emu",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_disp_str",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_draw_box",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_edit_str",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "input.interactive"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_emulate",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_exit",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_free_split_cmd_line",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "command-line.behavior"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_get_answer",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "input.interactive"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_get_cursor",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_get_input",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "input.interactive"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_get_input_until",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "input.interactive"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_get_key",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "input.interactive"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_get_time",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "input.interactive"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_get_user_8bit",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_gettext",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_hotkey_menu",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "input.interactive"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_init",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_input_str",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "input.interactive"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_kernel",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "process.spawn"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_key_pending",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "input.interactive"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_list_files",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_log_open",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "process.spawn"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_log_write",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "process.spawn"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_multiline_edit",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "input.interactive"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_page",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "input.interactive"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_parse_cmd_line",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "command-line.behavior"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_parse_cmd_line_cons",
+      "platforms": [
+        "windows"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "command-line.behavior"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_popup_menu",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "input.interactive"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_printf",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_putch",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_puttext",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_repeat",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_reserve_configure",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "reservation.named"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_reserve_end",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "reservation.named"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_reserve_request",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "reservation.named"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_reserve_wait",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "reservation.named"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_reserve_wait_until",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "reservation.named"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_restore_screen",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_restore_screen_ex",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_save_screen",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_save_screen_ex",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_save_screen_size",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_scroll",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_send_file",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_send_file_section",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_set_attrib",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_set_color",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_set_cursor",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_set_dtr",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_set_personality",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "personalities.builtin"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_set_port",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_set_statusline",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "lifecycle.defaults"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_set_user_8bit",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "dropfiles.all"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_sleep",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "process.spawn"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_spawn",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "process.spawn"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_spawnvpe",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "process.spawn"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_split_cmd_line",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "command-line.behavior"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_window_create",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "od_window_remove",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "terminal.screen"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "pdef_od_onerow",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "personalities.builtin"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "pdef_opendoors",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "personalities.builtin"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "pdef_pcboard",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "personalities.builtin"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "pdef_ra",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "personalities.builtin"
+      ]
+    },
+    {
+      "kind": "function",
+      "name": "pdef_wildcat",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "personalities.builtin"
+      ]
+    },
+    {
+      "kind": "global",
+      "name": "od_control",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "symbols.exports",
+        "control.storage"
+      ]
+    },
+    {
+      "kind": "personality-function",
+      "name": "ODScrnDisplayBuffer",
+      "platforms": [
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "personality.sdk"
+      ]
+    },
+    {
+      "kind": "personality-function",
+      "name": "ODScrnDisplayChar",
+      "platforms": [
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "personality.sdk"
+      ]
+    },
+    {
+      "kind": "personality-function",
+      "name": "ODScrnDisplayString",
+      "platforms": [
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "personality.sdk"
+      ]
+    },
+    {
+      "kind": "personality-function",
+      "name": "ODScrnGetText",
+      "platforms": [
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "personality.sdk"
+      ]
+    },
+    {
+      "kind": "personality-function",
+      "name": "ODScrnPrintf",
+      "platforms": [
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "personality.sdk"
+      ]
+    },
+    {
+      "kind": "personality-function",
+      "name": "ODScrnPutText",
+      "platforms": [
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "personality.sdk"
+      ]
+    },
+    {
+      "kind": "personality-function",
+      "name": "ODScrnSetAttribute",
+      "platforms": [
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "personality.sdk"
+      ]
+    },
+    {
+      "kind": "personality-function",
+      "name": "ODScrnSetCursorPos",
+      "platforms": [
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "personality.sdk"
+      ]
+    },
+    {
+      "kind": "personality-function",
+      "name": "ODStatAddKey",
+      "platforms": [
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "personality.sdk"
+      ]
+    },
+    {
+      "kind": "personality-function",
+      "name": "ODStatForceStatusUpdate",
+      "platforms": [
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "personality.sdk"
+      ]
+    },
+    {
+      "kind": "personality-function",
+      "name": "ODStatGetUserAge",
+      "platforms": [
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "personality.sdk"
+      ]
+    },
+    {
+      "kind": "personality-function",
+      "name": "ODStatRemoveKey",
+      "platforms": [
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "personality.sdk"
+      ]
+    },
+    {
+      "kind": "personality-global",
+      "name": "szStatusText",
+      "platforms": [
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "personality.sdk"
+      ]
+    },
+    {
+      "kind": "type",
+      "name": "BOOL",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.compile",
+        "surface.abi"
+      ]
+    },
+    {
+      "kind": "type",
+      "name": "BYTE",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.compile",
+        "surface.abi"
+      ]
+    },
+    {
+      "kind": "type",
+      "name": "DWORD",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.compile",
+        "surface.abi"
+      ]
+    },
+    {
+      "kind": "type",
+      "name": "DWORD_PTR",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.compile",
+        "surface.abi"
+      ]
+    },
+    {
+      "kind": "type",
+      "name": "INT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.compile",
+        "surface.abi"
+      ]
+    },
+    {
+      "kind": "type",
+      "name": "INT16",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.compile",
+        "surface.abi"
+      ]
+    },
+    {
+      "kind": "type",
+      "name": "INT32",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.compile",
+        "surface.abi"
+      ]
+    },
+    {
+      "kind": "type",
+      "name": "INT8",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.compile",
+        "surface.abi"
+      ]
+    },
+    {
+      "kind": "type",
+      "name": "OD_COMPONENT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.compile",
+        "surface.abi"
+      ]
+    },
+    {
+      "kind": "type",
+      "name": "OD_PERSONALITY_PROC",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.compile",
+        "surface.abi"
+      ]
+    },
+    {
+      "kind": "type",
+      "name": "UINT",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.compile",
+        "surface.abi"
+      ]
+    },
+    {
+      "kind": "type",
+      "name": "WORD",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.compile",
+        "surface.abi"
+      ]
+    },
+    {
+      "kind": "type",
+      "name": "tODControl",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.compile",
+        "surface.abi"
+      ]
+    },
+    {
+      "kind": "type",
+      "name": "tODEditMenuResult",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.compile",
+        "surface.abi"
+      ]
+    },
+    {
+      "kind": "type",
+      "name": "tODEditOptions",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.compile",
+        "surface.abi"
+      ]
+    },
+    {
+      "kind": "type",
+      "name": "tODEditTextFormat",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.compile",
+        "surface.abi"
+      ]
+    },
+    {
+      "kind": "type",
+      "name": "tODInputEvent",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.compile",
+        "surface.abi"
+      ]
+    },
+    {
+      "kind": "type",
+      "name": "tODInputEventType",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.compile",
+        "surface.abi"
+      ]
+    },
+    {
+      "kind": "type",
+      "name": "tODMilliSec",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.compile",
+        "surface.abi"
+      ]
+    },
+    {
+      "kind": "type",
+      "name": "tODReserveResult",
+      "platforms": [
+        "windows",
+        "unix",
+        "dos16",
+        "dos32"
+      ],
+      "evidence": [
+        "surface.compile",
+        "surface.abi"
+      ]
+    }
+  ]
+}

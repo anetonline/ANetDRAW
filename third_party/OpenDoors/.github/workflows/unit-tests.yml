@@ -1,0 +1,411 @@
+name: Unit Tests
+
+on:
+  push:
+  pull_request:
+  workflow_call:
+    inputs:
+      full:
+        description: Run the complete suite instead of selecting affected owners
+        required: false
+        default: true
+        type: boolean
+      allow_proposed_coverage_waivers:
+        description: Continue through coverage gaps with proposed waivers
+        required: false
+        default: false
+        type: boolean
+  workflow_dispatch:
+    inputs:
+      full:
+        description: Run the complete suite instead of selecting affected owners
+        required: false
+        default: true
+        type: boolean
+      allow_proposed_coverage_waivers:
+        description: Continue through coverage gaps with proposed waivers
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  select:
+    name: Select affected unit owners
+    runs-on: ubuntu-24.04
+    outputs:
+      selection: ${{ steps.select.outputs.selection }}
+      run: ${{ steps.select.outputs.run }}
+      platform_unix: ${{ steps.select.outputs.platform_unix }}
+      platform_windows: ${{ steps.select.outputs.platform_windows }}
+      platform_dos16: ${{ steps.select.outputs.platform_dos16 }}
+      platform_dos32: ${{ steps.select.outputs.platform_dos32 }}
+      unix_matrix: ${{ steps.select.outputs.unix_matrix }}
+      watcom_matrix: ${{ steps.select.outputs.watcom_matrix }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Select exact source/function owners
+        id: select
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PUSH_BASE: ${{ github.event.before }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          FORCE_FULL: ${{ inputs.full }}
+        run: |
+          options=(--github-output "$GITHUB_OUTPUT")
+          if [[ "$FORCE_FULL" == true || "$EVENT_NAME" == workflow_dispatch ]]; then
+            options+=(--full)
+          elif [[ "$EVENT_NAME" == pull_request ]]; then
+            options+=(--base "$PR_BASE" --head HEAD)
+          elif [[ -z "$PUSH_BASE" || "$PUSH_BASE" =~ ^0+$ ]]; then
+            options+=(--full)
+          else
+            options+=(--base "$PUSH_BASE" --head HEAD)
+          fi
+          python3 unit/tools/selector.py "${options[@]}"
+
+  validate:
+    name: Inventory and framework
+    needs: select
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - name: Validate generated inventory and registered ownership
+        run: |
+          python3 unit/tools/inventory.py --check
+          python3 unit/tools/check.py
+          python3 -m unittest discover -s unit/tools -p 'test_*.py' -v
+      - name: Exercise the C89 runtime
+        run: |
+          clang -std=c89 -pedantic -Wall -Wextra -Werror \
+            -I unit/framework unit/framework/ut.c unit/framework/selftest.c \
+            -o "$RUNNER_TEMP/unit-selftest"
+          "$RUNNER_TEMP/unit-selftest" "$RUNNER_TEMP/unit-selftest.cov"
+
+  unix:
+    name: ${{ matrix.platform }} native and LLVM
+    needs: [select, validate]
+    if: needs.select.outputs.platform_unix == 'true'
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.select.outputs.unix_matrix) }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install and show LLVM tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes llvm
+          clang --version
+          llvm-profdata --version
+          llvm-cov --version
+      - name: Run registered cases with both coverage oracles
+        env:
+          UNIT_SELECTION: ${{ needs.select.outputs.selection }}
+        run: >-
+          mkdir -p build &&
+          printf '%s' "$UNIT_SELECTION" > build/unit-selection.json &&
+          python3 unit/tools/run.py
+          --platform "${{ matrix.platform }}"
+          --selection build/unit-selection.json
+          --coverage
+          ${{ inputs.allow_proposed_coverage_waivers && '--allow-proposed-coverage-waivers' || '' }}
+          --build "build/unit-${{ matrix.platform }}"
+      - name: Upload detailed coverage records
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: unit-${{ matrix.platform }}-coverage
+          path: |
+            build/unit-${{ matrix.platform }}/*.coverage.json
+            build/unit-${{ matrix.platform }}/*.native-coverage.json
+            build/unit-${{ matrix.platform }}/*.mcc.txt
+          if-no-files-found: warn
+
+  macos:
+    name: macOS ${{ matrix.platform }} native and LLVM
+    needs: [select, validate]
+    if: needs.select.outputs.platform_unix == 'true'
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.select.outputs.unix_matrix) }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Select current Homebrew LLVM
+        run: |
+          if ! brew list llvm >/dev/null 2>&1; then
+            brew install llvm
+          fi
+          echo "$(brew --prefix llvm)/bin" >> "$GITHUB_PATH"
+      - name: Run registered cases with both coverage oracles
+        env:
+          UNIT_SELECTION: ${{ needs.select.outputs.selection }}
+        run: >-
+          mkdir -p build &&
+          printf '%s' "$UNIT_SELECTION" > build/unit-selection.json &&
+          python3 unit/tools/run.py
+          --platform "${{ matrix.platform }}"
+          --selection build/unit-selection.json
+          --coverage
+          ${{ inputs.allow_proposed_coverage_waivers && '--allow-proposed-coverage-waivers' || '' }}
+          --build "build/unit-macos-${{ matrix.platform }}"
+      - name: Upload detailed coverage records
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: unit-macos-${{ matrix.platform }}-coverage
+          path: |
+            build/unit-macos-${{ matrix.platform }}/*.coverage.json
+            build/unit-macos-${{ matrix.platform }}/*.native-coverage.json
+            build/unit-macos-${{ matrix.platform }}/*.mcc.txt
+          if-no-files-found: warn
+
+  windows:
+    name: Windows ${{ matrix.architecture }} native
+    needs: [select, validate]
+    if: needs.select.outputs.platform_windows == 'true'
+    runs-on: windows-2025
+    strategy:
+      fail-fast: false
+      matrix:
+        architecture: [x86, x64]
+    steps:
+      - uses: actions/checkout@v7
+      - name: Detect LLVM profiling support
+        id: llvm-profile
+        shell: pwsh
+        run: |
+          $arguments = @('-print-file-name=clang_rt.profile.lib')
+          if ('${{ matrix.architecture }}' -eq 'x86') {
+            $arguments = @('-m32') + $arguments
+          }
+          $runtime = (& clang @arguments | Select-Object -Last 1).Trim()
+          $available = Test-Path -LiteralPath $runtime
+          "available=$($available.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          Write-Host "LLVM profile runtime: $runtime (available: $available)"
+      - name: Show LLVM tools
+        shell: pwsh
+        run: |
+          clang --version
+          llvm-profdata --version
+          llvm-cov --version
+      - name: Run registered Windows cases
+        shell: pwsh
+        env:
+          UNIT_SELECTION: ${{ needs.select.outputs.selection }}
+        run: |
+          New-Item -ItemType Directory -Force build | Out-Null
+          Set-Content -NoNewline -Path build/unit-selection.json -Value $env:UNIT_SELECTION
+          python unit/tools/run.py `
+          --platform windows `
+          --windows-architecture ${{ matrix.architecture }} `
+          --windows-abi msvc `
+          --selection build/unit-selection.json `
+          --cc clang `
+          --clang clang `
+          ${{ steps.llvm-profile.outputs.available == 'true' && '--coverage' || '' }} `
+          ${{ inputs.allow_proposed_coverage_waivers && '--allow-proposed-coverage-waivers' || '' }} `
+          --build build/unit-windows-${{ matrix.architecture }}
+      - name: Upload detailed coverage records
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: unit-windows-${{ matrix.architecture }}-coverage
+          path: |
+            build/unit-windows-${{ matrix.architecture }}/*.coverage.json
+            build/unit-windows-${{ matrix.architecture }}/*.native-coverage.json
+            build/unit-windows-${{ matrix.architecture }}/*.mcc.txt
+          if-no-files-found: warn
+
+  watcom:
+    name: Open Watcom ${{ matrix.target }} runtime
+    needs: [select, validate]
+    if: needs.select.outputs.platform_dos16 == 'true' || needs.select.outputs.platform_dos32 == 'true'
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.select.outputs.watcom_matrix) }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Restore Open Watcom cache
+        id: watcom-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/watcom
+          key: open-watcom-${{ runner.os }}-${{ runner.arch }}-2.0-2026-08-01
+      - name: Set up Open Watcom
+        if: steps.watcom-cache.outputs.cache-hit != 'true'
+        uses: open-watcom/setup-watcom@v1
+        with:
+          version: '2.0'
+          tag: 2026-08-01-Build
+          target: dos
+          environment: false
+      - name: Save Open Watcom cache
+        if: steps.watcom-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ~/watcom
+          key: open-watcom-${{ runner.os }}-${{ runner.arch }}-2.0-2026-08-01
+      - name: Configure Open Watcom environment
+        run: |
+          echo "WATCOM=$HOME/watcom" >> "$GITHUB_ENV"
+          echo "INCLUDE=$HOME/watcom/h" >> "$GITHUB_ENV"
+          echo "$HOME/watcom/binl" >> "$GITHUB_PATH"
+      - name: Install headless DOS runtime
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes dosbox xvfb xauth
+      - name: Compile and run every registered applicable case
+        env:
+          SDL_AUDIODRIVER: dummy
+          UNIT_SELECTION: ${{ needs.select.outputs.selection }}
+        run: >-
+          mkdir -p build &&
+          printf '%s' "$UNIT_SELECTION" > build/unit-selection.json &&
+          xvfb-run -a python3 unit/tools/run.py
+          --platform "${{ matrix.platform }}"
+          --selection build/unit-selection.json
+          --toolchain "${{ matrix.toolchain }}"
+          --dosbox "$(command -v dosbox)"
+          --dos-timeout 900
+          ${{ inputs.allow_proposed_coverage_waivers && '--allow-proposed-coverage-waivers' || '' }}
+          --build "build/unit-${{ matrix.target }}"
+      - name: Upload DOS coverage and emulator diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: unit-${{ matrix.target }}-coverage
+          path: |
+            build/unit-${{ matrix.target }}/*.native-coverage.json
+            build/unit-${{ matrix.target }}/*.COV
+            build/unit-${{ matrix.target }}/*.BAD
+            build/unit-${{ matrix.target }}/dosbox.log
+          if-no-files-found: warn
+
+  turbo-c:
+    name: Turbo C 2.01 runtime
+    needs: [select, validate]
+    if: needs.select.outputs.platform_dos16 == 'true'
+    runs-on: ubuntu-24.04
+    env:
+      TURBO_C_SHA256: 2c87f988605ae9ed70e5fef35b9854de87e36ccdb021caec35ab2424ca4b5553
+    steps:
+      - uses: actions/checkout@v7
+      - name: Restore Turbo C cache
+        id: turbo-c-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/.cache/opendoors/turbo-c-2.01
+          key: turbo-c-2.01-${{ env.TURBO_C_SHA256 }}-v1
+      - name: Download and stage Turbo C 2.01
+        if: steps.turbo-c-cache.outputs.cache-hit != 'true'
+        run: |
+          archive="$RUNNER_TEMP/tc201.zip"
+          disks="$RUNNER_TEMP/tc201-disks"
+          toolchain="$HOME/.cache/opendoors/turbo-c-2.01"
+          curl --fail --location --retry 3 \
+            --output "$archive" \
+            https://altd.embarcadero.com/download/museum/tc201.zip
+          echo "$TURBO_C_SHA256  $archive" | sha256sum --check --strict
+          unzip -q "$archive" -d "$disks"
+          mkdir -p "$toolchain/BIN" "$toolchain/INCLUDE/SYS" \
+            "$toolchain/LIB"
+          cp "$disks"/Disk2/*.EXE "$disks"/Disk2/*.COM \
+            "$toolchain/BIN/"
+          cp "$disks"/Disk3/TLIB.EXE "$toolchain/BIN/"
+          cp "$disks"/Disk3/*.H "$toolchain/INCLUDE/"
+          cp "$disks"/Disk3/SYS/*.H "$toolchain/INCLUDE/SYS/"
+          cp "$disks"/Disk1/*.LIB "$disks"/Disk1/*.OBJ \
+            "$disks"/Disk3/*.LIB "$disks"/Disk3/*.OBJ \
+            "$toolchain/LIB/"
+          echo "$TURBO_C_SHA256" > "$toolchain/ARCHIVE.SHA"
+      - name: Save Turbo C cache
+        if: steps.turbo-c-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ~/.cache/opendoors/turbo-c-2.01
+          key: turbo-c-2.01-${{ env.TURBO_C_SHA256 }}-v1
+      - name: Restore Open Watcom cache
+        id: watcom-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/watcom
+          key: open-watcom-${{ runner.os }}-${{ runner.arch }}-2.0-2026-08-01
+      - name: Set up Open Watcom
+        if: steps.watcom-cache.outputs.cache-hit != 'true'
+        uses: open-watcom/setup-watcom@v1
+        with:
+          version: '2.0'
+          tag: 2026-08-01-Build
+          target: dos
+          environment: false
+      - name: Save Open Watcom cache
+        if: steps.watcom-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ~/watcom
+          key: open-watcom-${{ runner.os }}-${{ runner.arch }}-2.0-2026-08-01
+      - name: Configure Open Watcom environment
+        run: |
+          echo "WATCOM=$HOME/watcom" >> "$GITHUB_ENV"
+          echo "INCLUDE=$HOME/watcom/h" >> "$GITHUB_ENV"
+          echo "$HOME/watcom/binl" >> "$GITHUB_PATH"
+      - name: Generate exact Turbo C unit translations
+        env:
+          UNIT_SELECTION: ${{ needs.select.outputs.selection }}
+        run: |
+          mkdir -p build
+          printf '%s' "$UNIT_SELECTION" > build/unit-selection.json
+          python3 unit/tools/turbo_generate.py \
+            --selection build/unit-selection.json \
+            --build build/unit-turbo-generated
+      - name: Stage Turbo C and OpenDoors headers
+        run: |
+          mkdir -p build/unit-turbo/TC build/unit-turbo/SRC/TRIO
+          cp -R "$HOME/.cache/opendoors/turbo-c-2.01"/* \
+            build/unit-turbo/TC/
+          for source in include/*.h src/*.h; do
+            destination="build/unit-turbo/SRC/$(basename "$source")"
+            awk '{ sub(/\r$/, ""); printf "%s\r\n", $0 }' \
+              "$source" > "$destination"
+          done
+          for source in third_party/trio/*.h; do
+            destination="build/unit-turbo/SRC/TRIO/$(basename "$source")"
+            awk '{ sub(/\r$/, ""); printf "%s\r\n", $0 }' \
+              "$source" > "$destination"
+          done
+      - name: Install headless DOS runtime
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes dosbox xvfb xauth
+      - name: Compile and run registered cases with Turbo C
+        env:
+          SDL_AUDIODRIVER: dummy
+        run: >-
+          xvfb-run -a python3 unit/tools/turbo.py
+          --generated build/unit-turbo-generated
+          --stage build/unit-turbo
+          --dosbox "$(command -v dosbox)"
+          --wasm "$(command -v wasm)"
+          --dosbox-config tools/turboc/dosbox.conf
+          ${{ inputs.allow_proposed_coverage_waivers && '--allow-proposed-coverage-waivers' || '' }}
+          --timeout 900
+      - name: Upload Turbo C coverage and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: unit-turbo-c-coverage
+          path: |
+            build/unit-turbo-generated/*.turbo-native-coverage.json
+            build/unit-turbo/UNITOUT/*.COV
+            build/unit-turbo/UNITOUT/*.BAD
+            build/unit-turbo/TCUNIT.LOG
+            build/unit-turbo/WASM.LOG
+            build/unit-turbo/tcunit-dosbox.log
+          if-no-files-found: warn

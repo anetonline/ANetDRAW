@@ -1,0 +1,13 @@
+ODScrnDisplayBuffer
+ODScrnDisplayChar
+ODScrnDisplayString
+ODScrnGetText
+ODScrnPrintf
+ODScrnPutText
+ODScrnSetAttribute
+ODScrnSetCursorPos
+ODStatAddKey
+ODStatForceStatusUpdate
+ODStatGetUserAge
+ODStatRemoveKey
+szStatusText

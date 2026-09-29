@@ -1,0 +1,17 @@
+# local helper written by util/syncterm_local.sh
+.door_local.sh
+
+# build output (every target is rebuilt from source)
+build/
+build-*/
+release/
+
+# the TheDraw font pack is a separate download (util/make_fontpack.py
+# builds it into build-fonts/; a local copy for testing lives in fonts/)
+fonts/
+
+# local test data: callers' folders and the live gallery
+anetdraw_data/
+
+__pycache__/
+*.pyc

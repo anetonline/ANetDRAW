@@ -1,0 +1,1059 @@
+name: Build and smoke integration
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    name: Version consistency
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+      - run: python3 tools/check_version.py
+      - run: PYTHONDONTWRITEBYTECODE=1 python3 tools/check_public_contract.py
+
+  turbo-c:
+    name: Turbo C DOS
+    uses: ./.github/workflows/turbo-c.yml
+
+  windows:
+    name: Windows ${{ matrix.architecture }} ${{ matrix.configuration }}
+    runs-on: windows-2022
+    strategy:
+      fail-fast: false
+      matrix:
+        architecture: [x86, x64]
+        configuration: [Debug, Release]
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build
+        shell: pwsh
+        run: >-
+          .\build-msvc.ps1
+          -Architecture '${{ matrix.architecture }}'
+          -Configuration '${{ matrix.configuration }}'
+          -WarningsAsErrors
+
+      - name: Run smoke integration tests
+        shell: pwsh
+        run: >-
+          ctest
+          --test-dir 'build/msvc/${{ matrix.architecture }}'
+          -C '${{ matrix.configuration }}'
+          -R '^(shared_link_smoke|static_link_smoke|acceptance\.)'
+          --output-on-failure
+
+      - name: Inspect DLL architecture and exports
+        shell: pwsh
+        run: |
+          $architecture = '${{ matrix.architecture }}'
+          $configuration = '${{ matrix.configuration }}'
+          $buildDirectory = Join-Path $PWD "build\msvc\$architecture"
+          $dll = Join-Path $buildDirectory "bin\$configuration\ODoors63.dll"
+          $libraryDirectory = Join-Path $buildDirectory "lib\$configuration"
+
+          foreach ($path in @(
+              $dll,
+              (Join-Path $libraryDirectory 'ODoorW.lib'),
+              (Join-Path $libraryDirectory 'ODoors-static.lib'))) {
+              if (-not (Test-Path -LiteralPath $path)) {
+                  throw "Expected build output was not found: $path"
+              }
+          }
+
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} `
+              'Microsoft Visual Studio\Installer\vswhere.exe'
+          $installation = & $vswhere -latest -products '*' `
+              -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
+              -property installationPath
+          if (-not $installation) {
+              throw 'A Visual Studio C++ installation was not found.'
+          }
+
+          $targetDirectory = if ($architecture -eq 'x86') {
+              'Hostx64\x86'
+          } else {
+              'Hostx64\x64'
+          }
+          $dumpbin = Get-ChildItem -Path (Join-Path $installation `
+              "VC\Tools\MSVC\*\bin\$targetDirectory\dumpbin.exe") |
+              Sort-Object FullName -Descending |
+              Select-Object -First 1
+          if (-not $dumpbin) {
+              throw 'dumpbin.exe was not found.'
+          }
+
+          $headers = & $dumpbin.FullName /headers $dll 2>&1 | Out-String
+          if ($LASTEXITCODE -ne 0) {
+              throw 'dumpbin /headers failed.'
+          }
+          $machinePattern = if ($architecture -eq 'x86') {
+              '14C machine \(x86\)'
+          } else {
+              '8664 machine \(x64\)'
+          }
+          if ($headers -notmatch $machinePattern) {
+              throw "ODoors63.dll does not contain the expected $architecture machine header."
+          }
+
+          $exports = & $dumpbin.FullName /exports $dll 2>&1 | Out-String
+          if ($LASTEXITCODE -ne 0) {
+              throw 'dumpbin /exports failed.'
+          }
+          foreach ($symbol in @(
+              'od_init',
+              'od_printf',
+              'od_control',
+              'od_save_screen_size',
+              'od_save_screen_ex',
+              'od_restore_screen_ex')) {
+              if ($exports -notmatch "\b$symbol\b") {
+                  throw "ODoors63.dll does not export $symbol."
+              }
+          }
+
+  mingw:
+    name: Windows ${{ matrix.msystem }} Release
+    runs-on: windows-2022
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - msystem: MINGW32
+            architecture: i686
+            prefix: mingw32
+          - msystem: MINGW64
+            architecture: x86_64
+            prefix: mingw64
+          - msystem: UCRT64
+            architecture: x86_64
+            prefix: ucrt64
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - id: msys2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.msystem }}
+          update: true
+          pacboy: >-
+            cmake:p
+            ninja:p
+            toolchain:p
+
+      - name: Enable UCRT crash dumps
+        if: matrix.msystem == 'UCRT64'
+        shell: pwsh
+        run: |
+          $archive = Join-Path $env:RUNNER_TEMP 'procdump.zip'
+          $toolDirectory = Join-Path $PWD 'build\procdump'
+          $dumpDirectory = Join-Path $PWD 'build\ucrt-dumps'
+          New-Item -ItemType Directory -Path $toolDirectory -Force | Out-Null
+          New-Item -ItemType Directory -Path $dumpDirectory -Force | Out-Null
+          $dumpDirectory = (Resolve-Path -LiteralPath $dumpDirectory).Path
+          $dumpKey = 'HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps'
+          New-Item -Path $dumpKey -Force | Out-Null
+          New-ItemProperty -Path $dumpKey -Name DumpFolder `
+            -PropertyType ExpandString -Value $dumpDirectory -Force | Out-Null
+          New-ItemProperty -Path $dumpKey -Name DumpType `
+            -PropertyType DWord -Value 2 -Force | Out-Null
+          New-ItemProperty -Path $dumpKey -Name DumpCount `
+            -PropertyType DWord -Value 8 -Force | Out-Null
+          [DateTime]::UtcNow.ToString('o') |
+            Set-Content -LiteralPath 'build\ucrt-capture-start.txt'
+          Get-ItemProperty -Path $dumpKey |
+            Select-Object DumpFolder, DumpType, DumpCount |
+            Format-List
+          Invoke-WebRequest `
+            -Uri 'https://download.sysinternals.com/files/Procdump.zip' `
+            -OutFile $archive
+          Expand-Archive -LiteralPath $archive -DestinationPath $toolDirectory
+          if (-not (Test-Path -LiteralPath `
+              (Join-Path $toolDirectory 'procdump64.exe'))) {
+            throw 'The ProcDump archive did not contain procdump64.exe.'
+          }
+
+      - name: Configure
+        shell: msys2 {0}
+        run: |
+          if test "${{ matrix.msystem }}" = UCRT64; then
+            export CFLAGS="${CFLAGS:-} -g"
+          fi
+          cmake \
+            -S . \
+            -B build/mingw \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DOPENDOORS_WARNINGS_AS_ERRORS=ON
+
+      - name: Build
+        shell: msys2 {0}
+        run: cmake --build build/mingw --parallel
+
+      - name: Run native Windows smoke integration tests
+        shell: pwsh
+        run: |
+          $ctest = Join-Path '${{ steps.msys2.outputs.msys2-location }}' `
+            '${{ matrix.prefix }}\bin\ctest.exe'
+          if (-not (Test-Path -LiteralPath $ctest)) {
+            throw "CTest was not found at $ctest"
+          }
+          $toolDirectory = Split-Path -Parent $ctest
+          $env:PATH = "$toolDirectory;$env:PATH"
+          if ('${{ matrix.msystem }}' -ne 'UCRT64') {
+            & $ctest --test-dir build\mingw `
+              -R '^(shared_link_smoke|static_link_smoke|acceptance\.)' `
+              --output-on-failure
+            exit $LASTEXITCODE
+          }
+
+          $dumpDirectory = (Resolve-Path 'build\ucrt-dumps').Path
+          $procdump = (Resolve-Path `
+            'build\procdump\procdump64.exe').Path
+          $spawnDirectory = (Resolve-Path `
+            'build\mingw\tests\acceptance').Path
+          $spawn = Join-Path $spawnDirectory `
+            'opendoors_acceptance_spawn.exe'
+          $child = Join-Path $spawnDirectory `
+            'opendoors_acceptance_spawn_child.exe'
+          $env:PATH = "$((Resolve-Path 'build\mingw').Path);$env:PATH"
+          $testStatus = 0
+
+          & $procdump -accepteula -ma -i $dumpDirectory 2>&1 |
+            Tee-Object -FilePath 'build\procdump-install.log'
+          if ($LASTEXITCODE -ne 0) {
+            throw 'ProcDump could not install its postmortem debugger.'
+          }
+          try {
+            Push-Location $spawnDirectory
+            try {
+              & $procdump -accepteula -ma -e -x $dumpDirectory `
+                $spawn $child
+              if ($LASTEXITCODE -ne 0) {
+                $testStatus = $LASTEXITCODE
+              }
+            } finally {
+              Pop-Location
+            }
+
+            & $ctest --test-dir build\mingw `
+              -R '^(shared_link_smoke|static_link_smoke|acceptance\.)' `
+              --output-on-failure `
+              -E '^acceptance\.spawn$'
+            if ($LASTEXITCODE -ne 0) {
+              $testStatus = $LASTEXITCODE
+            }
+            if (Get-ChildItem -Path $dumpDirectory -Filter '*.dmp') {
+              $testStatus = 1
+            }
+          } finally {
+            & $procdump -accepteula -u 2>&1 |
+              Tee-Object -FilePath 'build\procdump-uninstall.log'
+          }
+          exit $testStatus
+
+      - name: Collect UCRT crash events
+        if: failure() && matrix.msystem == 'UCRT64'
+        shell: pwsh
+        run: |
+          $startTime = [DateTime]::Parse(
+            (Get-Content -LiteralPath 'build\ucrt-capture-start.txt'),
+            [Globalization.CultureInfo]::InvariantCulture,
+            [Globalization.DateTimeStyles]::RoundtripKind)
+          $events = @()
+          $dump = $null
+          for ($attempt = 0; $attempt -lt 15; ++$attempt) {
+            $events = @(Get-WinEvent -FilterHashtable @{
+                LogName = 'Application'
+                StartTime = $startTime
+              } -ErrorAction SilentlyContinue) |
+              Where-Object { $_.Message -match 'opendoors_acceptance' }
+            $dump = Get-ChildItem -Path 'build\ucrt-dumps' -Filter '*.dmp' |
+              Sort-Object LastWriteTime -Descending |
+              Select-Object -First 1
+            if ($events.Count -ne 0 -and $dump) {
+              break
+            }
+            Start-Sleep -Seconds 1
+          }
+          if ($events.Count -eq 0) {
+            'No matching Application events were recorded.' |
+              Set-Content -LiteralPath 'build\ucrt-application-events.txt'
+          } else {
+            $summary = $events |
+              Select-Object TimeCreated, ProviderName, Id, LevelDisplayName,
+                Message |
+              Format-List |
+              Out-String -Width 4096
+            $summary | Tee-Object `
+              -FilePath 'build\ucrt-application-events.txt' |
+              Write-Host
+            $events | ForEach-Object { $_.ToXml() } |
+              Set-Content -LiteralPath 'build\ucrt-application-events.xml'
+          }
+
+      - name: Analyze UCRT crash dump
+        if: failure() && matrix.msystem == 'UCRT64'
+        shell: pwsh
+        run: |
+          $dump = Get-ChildItem -Path 'build\ucrt-dumps' -Filter '*.dmp' |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
+          if (-not $dump) {
+            Write-Warning 'Windows Error Reporting did not produce a dump.'
+            exit 0
+          }
+
+          $executable = Resolve-Path `
+            'build\mingw\tests\acceptance\opendoors_acceptance_spawn.exe'
+          $cdb = @(
+            "${env:ProgramFiles(x86)}\Windows Kits\10\Debuggers\x64\cdb.exe",
+            "$env:ProgramFiles\Windows Kits\10\Debuggers\x64\cdb.exe"
+          ) | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+          if ($cdb) {
+            & $cdb -z $dump.FullName -c '.ecxr; k; ~* kb; q'
+          }
+
+          $lldb = Get-Command lldb.exe -ErrorAction SilentlyContinue
+          if ($lldb) {
+            & $lldb.Source --core $dump.FullName $executable `
+              --batch -o 'thread backtrace all'
+          }
+          if (-not $cdb -and -not $lldb) {
+            Write-Warning 'Neither CDB nor LLDB is installed; preserving the dump for offline analysis.'
+          }
+
+      - name: Upload UCRT crash state
+        if: failure() && matrix.msystem == 'UCRT64'
+        uses: actions/upload-artifact@v7
+        with:
+          name: ucrt-spawn-crash
+          retention-days: 7
+          if-no-files-found: warn
+          path: |
+            build/ucrt-dumps/*.dmp
+            build/ucrt-application-events.txt
+            build/ucrt-application-events.xml
+            build/procdump-install.log
+            build/procdump-uninstall.log
+            build/mingw/tests/acceptance/opendoors_acceptance_spawn.exe
+            build/mingw/tests/acceptance/opendoors_acceptance_spawn_child.exe
+
+      - name: Install and inspect
+        shell: msys2 {0}
+        run: |
+          cmake --install build/mingw --prefix "$PWD/build/mingw-install"
+          test -s build/mingw-install/bin/ODoors63.dll
+          test -s build/mingw-install/lib/libODoorW.dll.a
+          test -s build/mingw-install/lib/libODoors-static.a
+          objdump -p build/mingw-install/bin/ODoors63.dll > build/mingw-objdump.txt
+          grep -q 'od_init' build/mingw-objdump.txt
+          grep -q 'od_control' build/mingw-objdump.txt
+          if grep -Eiq 'DLL Name: (msys-2\.0|libgcc|libstdc\+\+|libwinpthread).*\.dll' \
+              build/mingw-objdump.txt; then
+            echo 'Unexpected non-system runtime dependency:'
+            grep -Ei 'DLL Name:' build/mingw-objdump.txt
+            exit 1
+          fi
+
+      - name: Build installed-package consumers
+        shell: msys2 {0}
+        run: |
+          for variant in Shared Static; do
+            cmake \
+              -S tests/package_consumer \
+              -B "build/mingw-consumer-$variant" \
+              -G Ninja \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_PREFIX_PATH="$PWD/build/mingw-install" \
+              -DOPENDOORS_VARIANT="$variant"
+            cmake --build "build/mingw-consumer-$variant" --parallel
+            PATH="$PWD/build/mingw-install/bin:$PATH" \
+              ctest --test-dir "build/mingw-consumer-$variant" \
+                --output-on-failure
+          done
+
+  unix:
+    name: ${{ matrix.os }} ${{ matrix.configuration }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        configuration: [Debug, Release]
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Configure
+        run: >-
+          cmake
+          -S .
+          -B build
+          -DCMAKE_BUILD_TYPE=${{ matrix.configuration }}
+          -DOPENDOORS_WARNINGS_AS_ERRORS=ON
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Run smoke integration tests
+        run: >-
+          ctest --test-dir build
+          -R '^(shared_link_smoke|static_link_smoke|acceptance\.)'
+          --output-on-failure
+
+  package:
+    name: Installed package (${{ matrix.variant }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: Shared
+            build_shared: ON
+            build_static: OFF
+          - variant: Static
+            build_shared: OFF
+            build_static: ON
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Configure selected library variant
+        run: >-
+          cmake
+          -S .
+          -B build/package
+          -DCMAKE_BUILD_TYPE=Release
+          -DOPENDOORS_BUILD_SHARED=${{ matrix.build_shared }}
+          -DOPENDOORS_BUILD_STATIC=${{ matrix.build_static }}
+          -DOPENDOORS_BUILD_EXAMPLES=OFF
+          -DOPENDOORS_WARNINGS_AS_ERRORS=ON
+
+      - name: Build and smoke-test selected variant
+        run: |
+          cmake --build build/package --parallel
+          ctest --test-dir build/package \
+            -R '^(shared_link_smoke|static_link_smoke|acceptance\.)' \
+            --output-on-failure
+
+      - name: Install OpenDoors package
+        run: >-
+          cmake
+          --install build/package
+          --prefix '${{ runner.temp }}/opendoors-install'
+
+      - name: Verify installed public headers
+        run: |
+          diff -u \
+            <(printf '%s\n' ODStat.h OpenDoor.h) \
+            <(find '${{ runner.temp }}/opendoors-install/include' \
+              -maxdepth 1 -type f -printf '%f\n' | sort)
+
+      - name: Build installed-package consumer
+        run: |
+          cmake \
+            -S tests/package_consumer \
+            -B build/consumer \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH='${{ runner.temp }}/opendoors-install' \
+            -DOPENDOORS_VARIANT=${{ matrix.variant }}
+          cmake --build build/consumer --parallel
+          ctest --test-dir build/consumer --output-on-failure
+
+      - name: Run installed-package acceptance suite
+        run: |
+          cmake \
+            -S tests/acceptance \
+            -B build/acceptance \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH='${{ runner.temp }}/opendoors-install' \
+            -DOPENDOORS_VARIANT=${{ matrix.variant }}
+          cmake --build build/acceptance --parallel
+          ctest --test-dir build/acceptance --output-on-failure
+
+  package-windows:
+    name: Installed package (Windows ${{ matrix.variant }})
+    runs-on: windows-2022
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: Shared
+            build_shared: ON
+            build_static: OFF
+            build_static_mt: OFF
+            runtime: MultiThreadedDLL
+          - variant: Static
+            build_shared: OFF
+            build_static: ON
+            build_static_mt: OFF
+            runtime: MultiThreadedDLL
+          - variant: StaticMT
+            build_shared: OFF
+            build_static: ON
+            build_static_mt: ON
+            runtime: MultiThreadedDLL
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Configure selected library variant
+        shell: pwsh
+        run: >-
+          cmake
+          -S .
+          -B build/package
+          -A x64
+          -DOPENDOORS_BUILD_SHARED=${{ matrix.build_shared }}
+          -DOPENDOORS_BUILD_STATIC=${{ matrix.build_static }}
+          -DOPENDOORS_BUILD_MSVC_STATIC_MT=${{ matrix.build_static_mt }}
+          -DOPENDOORS_BUILD_EXAMPLES=OFF
+          -DOPENDOORS_WARNINGS_AS_ERRORS=ON
+          -DCMAKE_MSVC_RUNTIME_LIBRARY=${{ matrix.runtime }}
+
+      - name: Build and smoke-test selected variant
+        shell: pwsh
+        run: |
+          cmake --build build/package --config Release --parallel
+          ctest --test-dir build/package -C Release `
+            -R '^(shared_link_smoke|static_link_smoke|acceptance\.)' `
+            --output-on-failure
+
+      - name: Install OpenDoors package
+        shell: pwsh
+        run: >-
+          cmake
+          --install build/package
+          --config Release
+          --prefix "$env:RUNNER_TEMP/opendoors-install"
+
+      - name: Verify installed public headers
+        shell: pwsh
+        run: |
+          $headers = Get-ChildItem -File `
+            "$env:RUNNER_TEMP/opendoors-install/include" |
+            Sort-Object Name |
+            ForEach-Object Name
+          $expected = @('ODStat.h', 'OpenDoor.h')
+          if (Compare-Object $expected $headers) {
+              throw "Unexpected installed headers: $($headers -join ', ')"
+          }
+
+      - name: Build installed-package consumer
+        shell: pwsh
+        run: |
+          $runtime = if ('${{ matrix.variant }}' -eq 'StaticMT') {
+              'MultiThreaded'
+          } else {
+              'MultiThreadedDLL'
+          }
+          cmake `
+            -S tests/package_consumer `
+            -B build/consumer `
+            -A x64 `
+            "-DCMAKE_PREFIX_PATH=$env:RUNNER_TEMP/opendoors-install" `
+            -DOPENDOORS_VARIANT=${{ matrix.variant }} `
+            "-DCMAKE_MSVC_RUNTIME_LIBRARY=$runtime"
+          cmake --build build/consumer --config Release --parallel
+          $env:PATH = "$env:RUNNER_TEMP\opendoors-install\bin;$env:PATH"
+          ctest --test-dir build/consumer -C Release --output-on-failure
+
+      - name: Run installed-package acceptance suite
+        shell: pwsh
+        run: |
+          $runtime = if ('${{ matrix.variant }}' -eq 'StaticMT') {
+              'MultiThreaded'
+          } else {
+              'MultiThreadedDLL'
+          }
+          cmake `
+            -S tests/acceptance `
+            -B build/acceptance `
+            -A x64 `
+            "-DCMAKE_PREFIX_PATH=$env:RUNNER_TEMP/opendoors-install" `
+            -DOPENDOORS_VARIANT=${{ matrix.variant }} `
+            "-DCMAKE_MSVC_RUNTIME_LIBRARY=$runtime"
+          cmake --build build/acceptance --config Release --parallel
+          $env:PATH = "$env:RUNNER_TEMP\opendoors-install\bin;$env:PATH"
+          ctest --test-dir build/acceptance -C Release --output-on-failure
+
+  dos:
+    name: DOS Open Watcom 16-bit
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Restore Open Watcom cache
+        id: watcom-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/watcom
+          key: open-watcom-${{ runner.os }}-${{ runner.arch }}-2.0-2026-08-01
+
+      - name: Set up Open Watcom
+        if: steps.watcom-cache.outputs.cache-hit != 'true'
+        uses: open-watcom/setup-watcom@v1
+        with:
+          version: '2.0'
+          tag: 2026-08-01-Build
+          target: dos
+          environment: false
+
+      - name: Save Open Watcom cache
+        if: >-
+          steps.watcom-cache.outputs.cache-hit != 'true' &&
+          (github.event_name != 'pull_request' ||
+          github.event.pull_request.head.repo.full_name == github.repository)
+        uses: actions/cache/save@v6
+        with:
+          path: ~/watcom
+          key: open-watcom-${{ runner.os }}-${{ runner.arch }}-2.0-2026-08-01
+
+      - name: Configure Open Watcom environment
+        run: |
+          echo "WATCOM=$HOME/watcom" >> "$GITHUB_ENV"
+          echo "INCLUDE=$HOME/watcom/h" >> "$GITHUB_ENV"
+          echo "$HOME/watcom/binl" >> "$GITHUB_PATH"
+
+      - name: Verify DOS tools and target
+        run: |
+          set -x
+          command -v wcc
+          command -v wcl
+          command -v wasm
+          command -v wlib
+          command -v wlink
+          command -v wmake
+
+          printf '%s\n' \
+            '#include <stdio.h>' \
+            'int main(void) { puts("Open Watcom DOS toolchain works"); return 0; }' \
+            > "$RUNNER_TEMP/hello.c"
+
+          wcl -bt=dos -ml \
+            -fe="$RUNNER_TEMP/hello.exe" \
+            "$RUNNER_TEMP/hello.c"
+
+          test -s "$RUNNER_TEMP/hello.exe"
+          test "$(od -An -tx1 -N2 "$RUNNER_TEMP/hello.exe" | tr -d ' ')" = '4d5a'
+          file "$RUNNER_TEMP/hello.exe"
+
+      - name: Configure OpenDoors DOS build
+        env:
+          CC: wcl
+        run: >-
+          cmake
+          -S dos
+          -B build/dos
+          -G 'Watcom WMake'
+          -D CMAKE_SYSTEM_NAME=DOS
+          -D CMAKE_SYSTEM_PROCESSOR=I86
+          -D CMAKE_BUILD_TYPE=Release
+          -D OPENDOORS_WARNINGS_AS_ERRORS=ON
+
+      - name: Build OpenDoors DOS library, examples, and tests
+        run: cmake --build build/dos
+
+      - name: Verify OpenDoors DOS outputs
+        run: |
+          test -s build/dos/ODoorl.lib
+          test -s build/dos/dos_link_smoke.exe
+          test -s build/dos/ex_chat.exe
+          test -s build/dos/ex_diag.exe
+          test -s build/dos/ex_hello.exe
+          test -s build/dos/ex_music.exe
+          test -s build/dos/ex_vote.exe
+          test -s build/dos/odvtest.exe
+          test -s build/dos/odtest.exe
+          test -s build/dos/odpers.exe
+          test -s build/dos/odapi.exe
+          test -s build/dos/odres.exe
+          test -s build/dos/odserial.exe
+          test "$(od -An -tx1 -N2 build/dos/dos_link_smoke.exe | tr -d ' ')" = '4d5a'
+          test "$(od -An -tx1 -N2 build/dos/ex_chat.exe | tr -d ' ')" = '4d5a'
+          test "$(od -An -tx1 -N2 build/dos/ex_diag.exe | tr -d ' ')" = '4d5a'
+          test "$(od -An -tx1 -N2 build/dos/ex_hello.exe | tr -d ' ')" = '4d5a'
+          test "$(od -An -tx1 -N2 build/dos/ex_music.exe | tr -d ' ')" = '4d5a'
+          test "$(od -An -tx1 -N2 build/dos/ex_vote.exe | tr -d ' ')" = '4d5a'
+          test "$(od -An -tx1 -N2 build/dos/odvtest.exe | tr -d ' ')" = '4d5a'
+          test "$(od -An -tx1 -N2 build/dos/odtest.exe | tr -d ' ')" = '4d5a'
+          test "$(od -An -tx1 -N2 build/dos/odpers.exe | tr -d ' ')" = '4d5a'
+          test "$(od -An -tx1 -N2 build/dos/odapi.exe | tr -d ' ')" = '4d5a'
+          test "$(od -An -tx1 -N2 build/dos/odserial.exe | tr -d ' ')" = '4d5a'
+          file build/dos/ODoorl.lib build/dos/dos_link_smoke.exe \
+            build/dos/ex_chat.exe build/dos/ex_diag.exe \
+            build/dos/ex_hello.exe build/dos/ex_music.exe \
+            build/dos/ex_vote.exe build/dos/odvtest.exe \
+            build/dos/odtest.exe build/dos/odpers.exe build/dos/odapi.exe \
+            build/dos/odres.exe build/dos/odserial.exe
+
+      - name: Install DOSBox runtime
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes dosbox xvfb xauth
+
+      - name: Run bounded DOS runtime tests
+        env:
+          SDL_AUDIODRIVER: dummy
+        run: |
+          set -o pipefail
+          rm -f build/dos/DOSPASS.OK
+          rm -f build/dos/DOSFAIL.TXT
+          rm -f build/dos/PERSPASS.OK
+          rm -f build/dos/PERSFAIL.TXT
+          rm -f build/dos/APIPASS.OK
+          rm -f build/dos/RESPASS.OK
+          rm -f build/dos/VOTEPASS.OK
+          timeout --signal=TERM --kill-after=5s 30s \
+            xvfb-run -a dosbox -noconsole \
+              -c "mount c $PWD/build/dos" \
+              -c 'c:' \
+              -c 'odtest.exe' \
+              -c 'odpers.exe' \
+              -c 'odapi.exe' \
+              -c 'odres.exe' \
+              -c 'if not errorlevel 1 echo Passed>RESPASS.OK' \
+              -c 'odvtest.exe' \
+              -c 'if not errorlevel 1 echo Passed>VOTEPASS.OK' \
+              -c 'exit' \
+            2>&1 | tee build/dos/dosbox.log
+          if ! test -s build/dos/DOSPASS.OK; then
+            cat build/dos/DOSFAIL.TXT || true
+            exit 1
+          fi
+          if ! test -s build/dos/PERSPASS.OK; then
+            cat build/dos/PERSFAIL.TXT || true
+            exit 1
+          fi
+          test -s build/dos/APIPASS.OK
+          test -s build/dos/RESPASS.OK
+          test -s build/dos/VOTEPASS.OK
+
+      - name: Upload OpenDoors DOS outputs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: opendoors-dos-openwatcom
+          path: |
+            build/dos/ODoorl.lib
+            build/dos/dos_link_smoke.exe
+            build/dos/odtest.exe
+            build/dos/odpers.exe
+            build/dos/odapi.exe
+            build/dos/odserial.exe
+            build/dos/DOSPASS.OK
+            build/dos/DOSFAIL.TXT
+            build/dos/PERSPASS.OK
+            build/dos/PERSFAIL.TXT
+            build/dos/APIPASS.OK
+            build/dos/RESPASS.OK
+            build/dos/VOTEPASS.OK
+            build/dos/dosbox.log
+            build/dos/ODFAIL.TXT
+            build/dos/dos-serial-odserial.log
+
+  dos32:
+    name: DOS Open Watcom 32-bit
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Restore Open Watcom cache
+        id: watcom-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/watcom
+          key: open-watcom-${{ runner.os }}-${{ runner.arch }}-2.0-2026-08-01
+
+      - name: Set up Open Watcom
+        if: steps.watcom-cache.outputs.cache-hit != 'true'
+        uses: open-watcom/setup-watcom@v1
+        with:
+          version: '2.0'
+          tag: 2026-08-01-Build
+          target: dos
+          environment: false
+
+      - name: Save Open Watcom cache
+        if: >-
+          steps.watcom-cache.outputs.cache-hit != 'true' &&
+          (github.event_name != 'pull_request' ||
+          github.event.pull_request.head.repo.full_name == github.repository)
+        uses: actions/cache/save@v6
+        with:
+          path: ~/watcom
+          key: open-watcom-${{ runner.os }}-${{ runner.arch }}-2.0-2026-08-01
+
+      - name: Configure Open Watcom environment
+        run: |
+          echo "WATCOM=$HOME/watcom" >> "$GITHUB_ENV"
+          echo "INCLUDE=$HOME/watcom/h" >> "$GITHUB_ENV"
+          echo "$HOME/watcom/binl" >> "$GITHUB_PATH"
+
+      - name: Configure OpenDoors DOS32 build
+        env:
+          CC: wcl386
+        run: >-
+          cmake
+          -S dos
+          -B build/dos32
+          -G 'Unix Makefiles'
+          -D CMAKE_SYSTEM_NAME=DOS
+          -D CMAKE_SYSTEM_PROCESSOR=I386
+          -D CMAKE_BUILD_TYPE=Release
+          -D OPENDOORS_WARNINGS_AS_ERRORS=ON
+
+      - name: Build libraries, examples, and tests
+        run: cmake --build build/dos32
+
+      - name: Verify DOS32 outputs
+        run: |
+          test -s build/dos32/ODOOR32R.lib
+          test -s build/dos32/ODOOR32S.lib
+          test -s build/dos32/dos32_link_smoke_r.exe
+          test -s build/dos32/dos32_link_smoke_s.exe
+          test -s build/dos32/dos32_abi_smoke_default.exe
+          test -s build/dos32/dos32_abi_smoke_hostile.exe
+          test -s build/dos32/od32test.exe
+          test -s build/dos32/od32tsts.exe
+          test -s build/dos32/OD32CHLD.exe
+          test -s build/dos32/od32pers.exe
+          test -s build/dos32/od32pss.exe
+          test -s build/dos32/odapir.exe
+          test -s build/dos32/odapis.exe
+          test -s build/dos32/odresr.exe
+          test -s build/dos32/odress.exe
+          test -s build/dos32/od32foss.exe
+          test -s build/dos32/od32uar.exe
+          test -s build/dos32/od32uas.exe
+          test -s build/dos32/od32for.exe
+          test -s build/dos32/od32fos.exe
+          test -s build/dos32/FOSSTSR.com
+          test -s build/dos32/ex_chat.exe
+          test -s build/dos32/ex_diag.exe
+          test -s build/dos32/ex_hello.exe
+          test -s build/dos32/ex_music.exe
+          test -s build/dos32/ex_vote.exe
+          test -s build/dos32/od32vot.exe
+
+      - name: Install DOSBox runtime
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes dosbox xvfb xauth
+
+      - name: Test with DOS/4GW
+        env:
+          SDL_AUDIODRIVER: dummy
+        run: |
+          set -o pipefail
+          cp "$WATCOM/binw/dos4gw.exe" build/dos32/DOS4GW.EXE
+          require_marker() {
+            if [[ ! -s "build/dos32/$1" ]]; then
+              echo "::error::DOS/4GW did not produce nonempty marker $1"
+              ls -la build/dos32
+              return 1
+            fi
+          }
+          timeout --signal=TERM --kill-after=5s 45s \
+            xvfb-run -a dosbox -noconsole \
+              -c "mount c $PWD/build/dos32" \
+              -c 'c:' \
+              -c 'od32foss.exe nofossil' \
+              -c 'fosstsr.com' \
+              -c 'od32foss.exe' \
+              -c 'exit' \
+            2>&1 | tee build/dos32/dos4gw-fossil.log
+          require_marker NOFSPASS.OK
+          require_marker FOSSPASS.OK
+          timeout --signal=TERM --kill-after=5s 45s \
+            xvfb-run -a dosbox -noconsole \
+              -c "mount c $PWD/build/dos32" \
+              -c 'c:' \
+              -c 'od32test.exe' \
+              -c 'ren D32PASS.OK D32RPASS.OK' \
+              -c 'od32tsts.exe' \
+              -c 'ren D32PASS.OK D32SPASS.OK' \
+              -c 'od32vot.exe' \
+              -c 'if not errorlevel 1 echo Passed>VOTEPASS.OK' \
+              -c 'exit' \
+            2>&1 | tee build/dos32/dos4gw-runtime.log
+          require_marker D32RPASS.OK
+          require_marker D32SPASS.OK
+          require_marker VOTEPASS.OK
+          timeout --signal=TERM --kill-after=5s 45s \
+            xvfb-run -a dosbox -noconsole \
+              -c "mount c $PWD/build/dos32" \
+              -c 'c:' \
+              -c 'od32pers.exe' \
+              -c 'ren PERSPASS.OK PERSRPAS.OK' \
+              -c 'od32pss.exe' \
+              -c 'ren PERSPASS.OK PERSSPAS.OK' \
+              -c 'odapir.exe' \
+              -c 'ren APIPASS.OK APIRPASS.OK' \
+              -c 'odapis.exe' \
+              -c 'ren APIPASS.OK APISPASS.OK' \
+              -c 'exit' \
+            2>&1 | tee build/dos32/dos4gw-personality.log
+          require_marker PERSRPAS.OK
+          require_marker PERSSPAS.OK
+          require_marker APIRPASS.OK
+          require_marker APISPASS.OK
+          timeout --signal=TERM --kill-after=5s 45s \
+            xvfb-run -a dosbox -noconsole \
+              -c "mount c $PWD/build/dos32" \
+              -c 'c:' \
+              -c 'odresr.exe' \
+              -c 'if not errorlevel 1 echo Passed>RESRPASS.OK' \
+              -c 'odress.exe' \
+              -c 'if not errorlevel 1 echo Passed>RESSPASS.OK' \
+              -c 'exit' \
+            2>&1 | tee build/dos32/dos4gw-reservation.log
+          require_marker RESRPASS.OK
+          require_marker RESSPASS.OK
+
+      - name: Configure native DOS/32A build
+        env:
+          CC: wcl386
+        run: >-
+          cmake
+          -S dos
+          -B build/dos32a
+          -G 'Unix Makefiles'
+          -D CMAKE_SYSTEM_NAME=DOS
+          -D CMAKE_SYSTEM_PROCESSOR=I386
+          -D CMAKE_BUILD_TYPE=Release
+          -D OPENDOORS_WARNINGS_AS_ERRORS=ON
+          -D OPENDOORS_DOS32_EXTENDER=DOS32A
+
+      - name: Build native DOS/32A programs
+        run: cmake --build build/dos32a
+
+      - name: Verify native DOS/32A outputs
+        run: |
+          test -s build/dos32a/ODOOR32R.lib
+          test -s build/dos32a/ODOOR32S.lib
+          test -s build/dos32a/FOSSTSR.com
+          test -s build/dos32a/od32foss.exe
+          test -s build/dos32a/od32uar.exe
+          test -s build/dos32a/od32uas.exe
+          test -s build/dos32a/od32for.exe
+          test -s build/dos32a/od32fos.exe
+          test -s build/dos32a/od32test.exe
+          test -s build/dos32a/od32tsts.exe
+          test -s build/dos32a/OD32CHLD.exe
+          test -s build/dos32a/od32pers.exe
+          test -s build/dos32a/od32pss.exe
+          test -s build/dos32a/odapir.exe
+          test -s build/dos32a/odapis.exe
+          test -s build/dos32a/odresr.exe
+          test -s build/dos32a/odress.exe
+          test -s build/dos32a/ex_chat.exe
+          test -s build/dos32a/ex_diag.exe
+          test -s build/dos32a/ex_hello.exe
+          test -s build/dos32a/ex_music.exe
+          test -s build/dos32a/ex_vote.exe
+          test -s build/dos32a/od32vot.exe
+
+      - name: Test with DOS/32A
+        env:
+          SDL_AUDIODRIVER: dummy
+        run: |
+          set -o pipefail
+          timeout --signal=TERM --kill-after=5s 45s \
+            xvfb-run -a dosbox -noconsole \
+              -c "mount c $PWD/build/dos32a" \
+              -c 'c:' \
+              -c 'od32chld.exe' \
+              -c 'exit' \
+            2>&1 | tee build/dos32a/dos32a-child.log
+          test -s build/dos32a/D32CHILD.OK
+          rm -f build/dos32a/D32CHILD.OK
+          timeout --signal=TERM --kill-after=5s 45s \
+            xvfb-run -a dosbox -noconsole \
+              -c "mount c $PWD/build/dos32a" \
+              -c 'c:' \
+              -c 'od32foss.exe nofossil' \
+              -c 'fosstsr.com' \
+              -c 'od32foss.exe' \
+              -c 'exit' \
+            2>&1 | tee build/dos32a/dos32a-fossil.log
+          timeout --signal=TERM --kill-after=5s 45s \
+            xvfb-run -a dosbox -noconsole \
+              -c "mount c $PWD/build/dos32a" \
+              -c 'c:' \
+              -c 'od32test.exe' \
+              -c 'ren D32PASS.OK D32RPASS.OK' \
+              -c 'od32tsts.exe' \
+              -c 'ren D32PASS.OK D32SPASS.OK' \
+              -c 'od32vot.exe' \
+              -c 'if not errorlevel 1 echo Passed>VOTEPASS.OK' \
+              -c 'exit' \
+            2>&1 | tee build/dos32a/dos32a-runtime.log
+          timeout --signal=TERM --kill-after=5s 45s \
+            xvfb-run -a dosbox -noconsole \
+              -c "mount c $PWD/build/dos32a" \
+              -c 'c:' \
+              -c 'od32pers.exe' \
+              -c 'ren PERSPASS.OK PERSRPAS.OK' \
+              -c 'od32pss.exe' \
+              -c 'ren PERSPASS.OK PERSSPAS.OK' \
+              -c 'odapir.exe' \
+              -c 'ren APIPASS.OK APIRPASS.OK' \
+              -c 'odapis.exe' \
+              -c 'ren APIPASS.OK APISPASS.OK' \
+              -c 'exit' \
+            2>&1 | tee build/dos32a/dos32a-personality.log
+          timeout --signal=TERM --kill-after=5s 45s \
+            xvfb-run -a dosbox -noconsole \
+              -c "mount c $PWD/build/dos32a" \
+              -c 'c:' \
+              -c 'odresr.exe' \
+              -c 'if not errorlevel 1 echo Passed>RESRPASS.OK' \
+              -c 'odress.exe' \
+              -c 'if not errorlevel 1 echo Passed>RESSPASS.OK' \
+              -c 'exit' \
+            2>&1 | tee build/dos32a/dos32a-reservation.log
+          test -s build/dos32a/NOFSPASS.OK
+          test -s build/dos32a/FOSSPASS.OK
+          test -s build/dos32a/D32RPASS.OK
+          test -s build/dos32a/D32SPASS.OK
+          test -s build/dos32a/PERSRPAS.OK
+          test -s build/dos32a/PERSSPAS.OK
+          test -s build/dos32a/APIRPASS.OK
+          test -s build/dos32a/APISPASS.OK
+          test -s build/dos32a/RESRPASS.OK
+          test -s build/dos32a/RESSPASS.OK
+          test -s build/dos32a/VOTEPASS.OK
+          for executable in od32test.exe ex_chat.exe ex_diag.exe \
+              ex_hello.exe ex_music.exe ex_vote.exe; do
+            grep -aFq 'DOS/32A' "build/dos32a/$executable"
+          done
+
+      - name: Upload OpenDoors DOS32 outputs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: opendoors-dos32-openwatcom
+          path: |
+            build/dos32/ODOOR32R.lib
+            build/dos32/ODOOR32S.lib
+            build/dos32/*.log
+            build/dos32/*PASS.OK
+            build/dos32/*FAIL.TXT
+            build/dos32a/*.exe
+            build/dos32a/*.EXE
+            build/dos32a/*.log
+            build/dos32a/*PASS.OK
+            build/dos32a/*FAIL.TXT

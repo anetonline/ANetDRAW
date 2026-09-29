@@ -1,0 +1,79 @@
+name: Regression tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unix:
+    name: ${{ matrix.os }} implementation regressions
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Configure static library and regression tests
+        run: >-
+          cmake
+          -S .
+          -B build/regression
+          -DCMAKE_BUILD_TYPE=Release
+          -DBUILD_TESTING=ON
+          -DOPENDOORS_BUILD_SHARED=OFF
+          -DOPENDOORS_BUILD_STATIC=ON
+          -DOPENDOORS_BUILD_EXAMPLES=OFF
+          -DOPENDOORS_WARNINGS_AS_ERRORS=ON
+
+      - name: Build
+        run: cmake --build build/regression --parallel
+
+      - name: Run implementation regressions
+        run: >-
+          ctest --test-dir build/regression
+          -E '^(shared_link_smoke|static_link_smoke|acceptance\.)'
+          --output-on-failure
+
+  windows:
+    name: Windows ${{ matrix.architecture }} implementation regressions
+    runs-on: windows-2022
+    strategy:
+      fail-fast: false
+      matrix:
+        architecture: [Win32, x64]
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Configure static library and regression tests
+        shell: pwsh
+        run: >-
+          cmake
+          -S .
+          -B build/regression
+          -A '${{ matrix.architecture }}'
+          -DBUILD_TESTING=ON
+          -DOPENDOORS_BUILD_SHARED=OFF
+          -DOPENDOORS_BUILD_STATIC=ON
+          -DOPENDOORS_BUILD_EXAMPLES=OFF
+          -DOPENDOORS_WARNINGS_AS_ERRORS=ON
+
+      - name: Build
+        shell: pwsh
+        run: cmake --build build/regression --config Release --parallel
+
+      - name: Run implementation regressions
+        shell: pwsh
+        run: >-
+          ctest
+          --test-dir build/regression
+          -C Release
+          -E '^(shared_link_smoke|static_link_smoke|acceptance\.)'
+          --output-on-failure

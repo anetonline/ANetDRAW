@@ -1,0 +1,48 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+if(@OPENDOORS_BUILD_STATIC@ AND NOT WIN32)
+    find_dependency(Threads)
+endif()
+
+include("${CMAKE_CURRENT_LIST_DIR}/OpenDoorsTargets.cmake")
+
+set(OpenDoors_Shared_FOUND FALSE)
+if(TARGET OpenDoors::Shared)
+    set(OpenDoors_Shared_FOUND TRUE)
+endif()
+
+set(OpenDoors_Static_FOUND FALSE)
+if(TARGET OpenDoors::Static)
+    set(OpenDoors_Static_FOUND TRUE)
+endif()
+
+set(OpenDoors_StaticMT_FOUND FALSE)
+if(TARGET OpenDoors::StaticMT)
+    set(OpenDoors_StaticMT_FOUND TRUE)
+endif()
+
+set(OpenDoors_SharedConsole_FOUND FALSE)
+if(TARGET OpenDoors::SharedConsole)
+    set(OpenDoors_SharedConsole_FOUND TRUE)
+endif()
+
+set(OpenDoors_StaticConsole_FOUND FALSE)
+if(TARGET OpenDoors::StaticConsole)
+    set(OpenDoors_StaticConsole_FOUND TRUE)
+endif()
+
+set(OpenDoors_StaticMTConsole_FOUND FALSE)
+if(TARGET OpenDoors::StaticMTConsole)
+    set(OpenDoors_StaticMTConsole_FOUND TRUE)
+endif()
+
+foreach(_OpenDoors_component IN LISTS OpenDoors_FIND_COMPONENTS)
+    if(NOT OpenDoors_${_OpenDoors_component}_FOUND)
+        set(OpenDoors_NOT_FOUND_MESSAGE
+            "The installed OpenDoors package does not provide the requested ${_OpenDoors_component} component")
+    endif()
+endforeach()
+
+check_required_components(OpenDoors)

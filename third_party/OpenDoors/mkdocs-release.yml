@@ -1,0 +1,11 @@
+INHERIT: mkdocs.yml
+
+# The release copy is opened directly from disk rather than served by a web
+# server. Keep all navigation file-relative and avoid remote font assets.
+use_directory_urls: false
+exclude_docs: |
+  requirements.txt
+
+theme:
+  name: material
+  font: false

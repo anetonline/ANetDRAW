@@ -1,0 +1,215 @@
+#!/bin/sh
+
+# Run CTest against Wine on a private display and preserve crash diagnostics.
+
+set -eu
+
+usage()
+{
+   echo "usage: tools/wine-ctest --display :N --wine PATH --prefix PATH --artifacts DIR [--dll-directory DIR] [ctest arguments ...]" >&2
+   exit 2
+}
+
+test_display=
+wine_command=
+wine_prefix=
+artifact_directory=
+dll_directory=
+
+while [ "$#" -gt 0 ]; do
+   case "$1" in
+      --display|--wine|--prefix|--artifacts|--dll-directory)
+         [ "$#" -ge 2 ] || usage
+         option=$1
+         value=$2
+         shift 2
+         case "$option" in
+            --display) test_display=$value ;;
+            --wine) wine_command=$value ;;
+            --prefix) wine_prefix=$value ;;
+            --artifacts) artifact_directory=$value ;;
+            --dll-directory) dll_directory=$value ;;
+         esac
+         ;;
+      *) break ;;
+   esac
+done
+
+[ -n "$test_display" ] || usage
+[ -n "$wine_command" ] || usage
+[ -n "$wine_prefix" ] || usage
+[ -n "$artifact_directory" ] || usage
+
+case "$test_display" in
+   :0|:0.0)
+      echo "tools/wine-ctest: refusing interactive X display: $test_display" >&2
+      exit 2
+      ;;
+   :[0-9]*) ;;
+   *)
+      echo "tools/wine-ctest: invalid X display: $test_display" >&2
+      exit 2
+      ;;
+esac
+
+[ -x "$wine_command" ] || {
+   echo "tools/wine-ctest: Wine executable not found: $wine_command" >&2
+   exit 1
+}
+[ -d "$wine_prefix" ] || {
+   echo "tools/wine-ctest: Wine prefix not found: $wine_prefix" >&2
+   exit 1
+}
+command -v Xvfb >/dev/null 2>&1 || {
+   echo "tools/wine-ctest: Xvfb is not installed" >&2
+   exit 1
+}
+command -v xdpyinfo >/dev/null 2>&1 || {
+   echo "tools/wine-ctest: xdpyinfo is not installed" >&2
+   exit 1
+}
+command -v ctest >/dev/null 2>&1 || {
+   echo "tools/wine-ctest: CTest is not installed" >&2
+   exit 1
+}
+
+mkdir -p "$artifact_directory"
+artifact_directory=$(cd "$artifact_directory" && pwd)
+runner_temporary=$(mktemp -d "${TMPDIR:-/tmp}/opendoors-wine-ctest.XXXXXX")
+registry_backup=$runner_temporary/aedebug.reg
+dump_baseline=$runner_temporary/dump-baseline
+xvfb_pid=
+debugger_configured=0
+
+wine_z_path()
+{
+   printf 'Z:'
+   printf '%s' "$1" | sed 's,/,\\,g'
+}
+
+if [ -n "$dll_directory" ]; then
+   [ -d "$dll_directory" ] || {
+      echo "tools/wine-ctest: DLL directory not found: $dll_directory" >&2
+      exit 1
+   }
+   dll_directory=$(cd "$dll_directory" && pwd)
+   dll_directory_win=$(wine_z_path "$dll_directory")
+   if [ -n "${WINEPATH-}" ]; then
+      WINEPATH=$dll_directory_win\;$WINEPATH
+   else
+      WINEPATH=$dll_directory_win
+   fi
+   export WINEPATH
+fi
+
+registry_backup_win=$(wine_z_path "$registry_backup")
+aedebug_key='HKLM\Software\Microsoft\Windows NT\CurrentVersion\AeDebug'
+
+restore_debugger()
+{
+   if [ "$debugger_configured" -eq 1 ]; then
+      if ! "$wine_command" reg import "$registry_backup_win" >/dev/null 2>&1; then
+         echo "tools/wine-ctest: warning: could not restore Wine crash debugger registry settings" >&2
+      fi
+      debugger_configured=0
+   fi
+}
+
+cleanup()
+{
+   restore_debugger
+   if [ -n "$xvfb_pid" ]; then
+      kill "$xvfb_pid" 2>/dev/null || true
+      wait "$xvfb_pid" 2>/dev/null || true
+      xvfb_pid=
+   fi
+   rm -rf "$runner_temporary"
+}
+trap cleanup EXIT
+trap 'exit 130' HUP INT TERM
+
+DISPLAY=$test_display
+WINEPREFIX=$wine_prefix
+export DISPLAY WINEPREFIX
+
+Xvfb "$test_display" -screen 0 1024x768x24 -nolisten tcp \
+   >"$runner_temporary/xvfb.log" 2>&1 &
+xvfb_pid=$!
+xvfb_attempt=0
+while ! xdpyinfo -display "$test_display" >/dev/null 2>&1; do
+   if ! kill -0 "$xvfb_pid" 2>/dev/null; then
+      echo "tools/wine-ctest: Xvfb failed to start on $test_display" >&2
+      exit 1
+   fi
+   xvfb_attempt=$((xvfb_attempt + 1))
+   if [ "$xvfb_attempt" -ge 50 ]; then
+      echo "tools/wine-ctest: timed out starting Xvfb on $test_display" >&2
+      exit 1
+   fi
+   sleep 0.1
+done
+
+if ! "$wine_command" reg export "$aedebug_key" "$registry_backup_win" /y \
+      >/dev/null 2>&1; then
+   echo "tools/wine-ctest: could not back up Wine crash debugger registry settings" >&2
+   exit 1
+fi
+debugger_configured=1
+"$wine_command" reg add "$aedebug_key" /v Auto /t REG_SZ /d 1 /f \
+   >/dev/null 2>&1
+"$wine_command" reg add "$aedebug_key" /v Debugger /t REG_SZ \
+   /d 'winedbg --minidump %ld %ld' /f >/dev/null 2>&1
+
+find "$wine_prefix"/drive_c/users -type f -name 'WD*.tmp' -print \
+   >"$dump_baseline" 2>/dev/null || true
+set +e
+ctest "$@"
+test_status=$?
+set -e
+
+# Restore before inspecting dumps so a debugger failure cannot recursively
+# invoke the temporary crash handler.
+restore_debugger
+
+dump_count=0
+for wine_dump in "$wine_prefix"/drive_c/users/*/Temp/WD*.tmp; do
+   [ -f "$wine_dump" ] || continue
+   if grep -F -x -q "$wine_dump" "$dump_baseline"; then
+      continue
+   fi
+   dump_count=$((dump_count + 1))
+   dump_stamp=$(date -u +%Y%m%dT%H%M%SZ)
+   dump_suffix=$dump_count
+   dump_path=$artifact_directory/wine-crash-$dump_stamp-$dump_suffix.mdmp
+   while [ -e "$dump_path" ]; do
+      dump_suffix=$((dump_suffix + 1))
+      dump_path=$artifact_directory/wine-crash-$dump_stamp-$dump_suffix.mdmp
+   done
+   diagnostic_path=${dump_path%.mdmp}.txt
+   mv "$wine_dump" "$dump_path"
+
+   dump_win=$(wine_z_path "$dump_path")
+   set +e
+   if command -v timeout >/dev/null 2>&1; then
+      timeout 20 "$wine_command" winedbg.exe --command bt "$dump_win" \
+         >"$diagnostic_path" 2>&1
+   else
+      "$wine_command" winedbg.exe --command bt "$dump_win" \
+         >"$diagnostic_path" 2>&1
+   fi
+   diagnostic_status=$?
+   set -e
+
+   echo "Wine crash minidump: $dump_path" >&2
+   echo "Wine crash diagnostic: $diagnostic_path" >&2
+   sed -n '1,240p' "$diagnostic_path" >&2
+   if [ "$diagnostic_status" -ne 0 ]; then
+      echo "tools/wine-ctest: winedbg diagnostic exited with $diagnostic_status" >&2
+   fi
+done
+
+if [ "$dump_count" -ne 0 ] && [ "$test_status" -eq 0 ]; then
+   test_status=1
+fi
+
+exit "$test_status"

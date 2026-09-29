@@ -1,0 +1,783 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  acceptance:
+    name: Full public acceptance suite
+    uses: ./.github/workflows/acceptance.yml
+
+  validate:
+    name: Validate release version
+    runs-on: ubuntu-latest
+    outputs:
+      asset_version: ${{ steps.version.outputs.asset_version }}
+      tagged: ${{ steps.version.outputs.tagged }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Validate version and tag
+        id: version
+        shell: bash
+        run: |
+          version=$(tr -d '\r\n' < VERSION)
+          python3 tools/check_version.py
+          if [[ "$GITHUB_REF_TYPE" == tag ]]; then
+            python3 tools/check_version.py --tag "$GITHUB_REF_NAME"
+            asset_version=${GITHUB_REF_NAME#v}
+            tagged=true
+          else
+            asset_version=${version}-dry-run
+            tagged=false
+          fi
+          echo "asset_version=$asset_version" >> "$GITHUB_OUTPUT"
+          echo "tagged=$tagged" >> "$GITHUB_OUTPUT"
+
+      - name: Enforce strict unit-test coverage policy
+        run: python3 unit/tools/check.py
+
+  unit-tests:
+    name: Full strict unit suite
+    needs: validate
+    uses: ./.github/workflows/unit-tests.yml
+    with:
+      full: true
+
+  windows-msvc:
+    name: MSVC ${{ matrix.architecture }} SDK
+    needs: validate
+    runs-on: windows-2022
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - architecture: x86
+            cmake_architecture: Win32
+          - architecture: x64
+            cmake_architecture: x64
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Configure, build, and test
+        shell: pwsh
+        run: |
+          cmake `
+            -S . `
+            -B build/release-msvc `
+            -A '${{ matrix.cmake_architecture }}' `
+            -DOPENDOORS_BUILD_MSVC_STATIC_MT=ON `
+            -DOPENDOORS_BUILD_EXAMPLES=OFF `
+            -DOPENDOORS_WARNINGS_AS_ERRORS=ON `
+            -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL
+          cmake --build build/release-msvc --config Release --parallel
+          ctest --test-dir build/release-msvc -C Release --output-on-failure
+
+      - name: Stage and test installed SDK
+        shell: pwsh
+        env:
+          ASSET_VERSION: ${{ needs.validate.outputs.asset_version }}
+        run: |
+          $name = "OpenDoors-$env:ASSET_VERSION-windows-msvc-${{ matrix.architecture }}"
+          $stage = Join-Path $PWD "build\release\$name"
+          cmake --install build/release-msvc --config Release --prefix $stage
+          python tools/stage_release.py metadata `
+            --prefix $stage `
+            --platform Windows `
+            --architecture '${{ matrix.architecture }}' `
+            --toolchain 'MSVC v143 (Visual Studio 2022)' `
+            --runtime '/MD shared and static; additional /MT static'
+
+          foreach ($variant in @('Shared', 'Static', 'StaticMT')) {
+              $runtime = if ($variant -eq 'StaticMT') {
+                  'MultiThreaded'
+              } else {
+                  'MultiThreadedDLL'
+              }
+              cmake `
+                -S tests/package_consumer `
+                -B "build/consumer-$variant" `
+                -A '${{ matrix.cmake_architecture }}' `
+                "-DCMAKE_PREFIX_PATH=$stage" `
+                "-DOPENDOORS_VARIANT=$variant" `
+                "-DCMAKE_MSVC_RUNTIME_LIBRARY=$runtime"
+              cmake --build "build/consumer-$variant" --config Release --parallel
+              $env:PATH = "$stage\bin;$env:PATH"
+              ctest --test-dir "build/consumer-$variant" -C Release `
+                --output-on-failure
+          }
+
+          $dll = Join-Path $stage 'bin\ODoors63.dll'
+          foreach ($required in @(
+              $dll,
+              (Join-Path $stage 'lib\ODoorW.lib'),
+              (Join-Path $stage 'lib\ODoors-static.lib'),
+              (Join-Path $stage 'lib\ODoors-static-mt.lib'))) {
+              if (-not (Test-Path -LiteralPath $required)) {
+                  throw "Missing SDK file: $required"
+              }
+          }
+          Compress-Archive -Path $stage -DestinationPath "$stage.zip"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-msvc-${{ matrix.architecture }}
+          path: build/release/*.zip
+          if-no-files-found: error
+
+  windows-mingw:
+    name: ${{ matrix.msystem }} SDK
+    needs: validate
+    runs-on: windows-2022
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - msystem: MINGW32
+            asset: mingw32-i686
+            architecture: i686
+            runtime: MSVCRT
+          - msystem: MINGW64
+            asset: mingw64-x86_64
+            architecture: x86_64
+            runtime: MSVCRT
+          - msystem: UCRT64
+            asset: ucrt64-x86_64
+            architecture: x86_64
+            runtime: UCRT
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.msystem }}
+          update: true
+          pacboy: >-
+            cmake:p
+            ninja:p
+            toolchain:p
+
+      - name: Configure, build, and test
+        shell: msys2 {0}
+        run: |
+          cmake \
+            -S . \
+            -B build/release-mingw \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DOPENDOORS_BUILD_EXAMPLES=OFF \
+            -DOPENDOORS_WARNINGS_AS_ERRORS=ON
+          cmake --build build/release-mingw --parallel
+          ctest --test-dir build/release-mingw --output-on-failure
+
+      - name: Stage and test installed SDK
+        shell: msys2 {0}
+        env:
+          ASSET_VERSION: ${{ needs.validate.outputs.asset_version }}
+        run: |
+          name="OpenDoors-${ASSET_VERSION}-windows-${{ matrix.asset }}"
+          stage="$PWD/build/release/$name"
+          cmake --install build/release-mingw --prefix "$stage"
+          python3 tools/stage_release.py metadata \
+            --prefix "$stage" \
+            --platform Windows \
+            --architecture '${{ matrix.architecture }}' \
+            --toolchain "GCC $(gcc -dumpfullversion) (${{ matrix.msystem }})" \
+            --runtime '${{ matrix.runtime }}'
+
+          test -s "$stage/bin/ODoors63.dll"
+          test -s "$stage/lib/libODoorW.dll.a"
+          test -s "$stage/lib/libODoors-static.a"
+          objdump -p "$stage/bin/ODoors63.dll" > build/mingw-objdump.txt
+          grep -q 'od_init' build/mingw-objdump.txt
+          grep -q 'od_control' build/mingw-objdump.txt
+          if grep -Eiq 'DLL Name: (msys-2\.0|libgcc|libstdc\+\+|libwinpthread).*\.dll' \
+              build/mingw-objdump.txt; then
+            grep -Ei 'DLL Name:' build/mingw-objdump.txt
+            exit 1
+          fi
+
+          for variant in Shared Static; do
+            cmake \
+              -S tests/package_consumer \
+              -B "build/mingw-consumer-$variant" \
+              -G Ninja \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_PREFIX_PATH="$stage" \
+              -DOPENDOORS_VARIANT="$variant"
+            cmake --build "build/mingw-consumer-$variant" --parallel
+            PATH="$stage/bin:$PATH" \
+              ctest --test-dir "build/mingw-consumer-$variant" \
+                --output-on-failure
+          done
+
+          cd build/release
+          cmake -E tar cf "$name.zip" --format=zip "$name"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-${{ matrix.asset }}
+          path: build/release/*.zip
+          if-no-files-found: error
+
+  macos:
+    name: macOS ${{ matrix.architecture }} SDK
+    needs: validate
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15-intel
+            architecture: x86_64
+            deployment: '10.13'
+          - runner: macos-15
+            architecture: arm64
+            deployment: '11.0'
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Report Xcode version
+        run: xcodebuild -version
+
+      - name: Configure, build, and test
+        run: |
+          cmake \
+            -S . \
+            -B build/release-macos \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_OSX_ARCHITECTURES=${{ matrix.architecture }} \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.deployment }} \
+            -DOPENDOORS_BUILD_EXAMPLES=OFF \
+            -DOPENDOORS_WARNINGS_AS_ERRORS=ON
+          cmake --build build/release-macos --parallel
+          ctest --test-dir build/release-macos --output-on-failure
+
+      - name: Stage and test installed SDK
+        env:
+          ASSET_VERSION: ${{ needs.validate.outputs.asset_version }}
+        run: |
+          name="OpenDoors-${ASSET_VERSION}-macos-${{ matrix.architecture }}-${{ matrix.deployment }}"
+          stage="$PWD/build/release/$name"
+          cmake --install build/release-macos --prefix "$stage"
+          python3 tools/stage_release.py metadata \
+            --prefix "$stage" \
+            --platform macOS \
+            --architecture '${{ matrix.architecture }}' \
+            --toolchain "$(clang --version | head -n 1)" \
+            --runtime 'macOS ${{ matrix.deployment }} or newer'
+
+          dylib="$stage/lib/libODoors.6.3.0.dylib"
+          test -s "$dylib"
+          test -s "$stage/lib/libODoors.a"
+          lipo "$dylib" -verify_arch '${{ matrix.architecture }}'
+          vtool -show-build "$dylib" | tee build/macos-build-version.txt
+          grep -Eq \
+            '(minos|version)[[:space:]]+${{ matrix.deployment }}([.]0)?([[:space:]]|$)' \
+            build/macos-build-version.txt
+          otool -D "$dylib" | grep -q 'libODoors.6.3.dylib'
+
+          for variant in Shared Static; do
+            cmake \
+              -S tests/package_consumer \
+              -B "build/macos-consumer-$variant" \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_PREFIX_PATH="$stage" \
+              -DCMAKE_OSX_ARCHITECTURES=${{ matrix.architecture }} \
+              -DCMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.deployment }} \
+              -DOPENDOORS_VARIANT="$variant"
+            cmake --build "build/macos-consumer-$variant" --parallel
+            ctest --test-dir "build/macos-consumer-$variant" \
+              --output-on-failure
+          done
+
+          cd build/release
+          cmake -E tar czf "$name.tar.gz" "$name"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-macos-${{ matrix.architecture }}
+          path: build/release/*.tar.gz
+          if-no-files-found: error
+
+  companion:
+    name: Examples and offline documentation
+    needs: validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.x'
+          cache: pip
+          cache-dependency-path: docs/requirements.txt
+
+      - run: python -m pip install -r docs/requirements.txt
+
+      - name: Build documentation and SDK
+        run: |
+          python tools/check_version.py
+          python tools/check_api_docs.py
+          mkdocs build --strict -f mkdocs-release.yml --site-dir build/site
+          if rg -l 'fonts\.(googleapis|gstatic)\.com' build/site; then
+            echo 'Offline documentation requires a remote font.'
+            exit 1
+          fi
+          cmake \
+            -S . \
+            -B build/companion-sdk \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DOPENDOORS_BUILD_EXAMPLES=OFF \
+            -DOPENDOORS_WARNINGS_AS_ERRORS=ON
+          cmake --build build/companion-sdk --parallel
+          cmake --install build/companion-sdk \
+            --prefix "$PWD/build/companion-install"
+
+      - name: Stage and test companion bundle
+        env:
+          ASSET_VERSION: ${{ needs.validate.outputs.asset_version }}
+        run: |
+          name="OpenDoors-${ASSET_VERSION}-examples-and-docs"
+          python tools/stage_release.py companion \
+            --site build/site \
+            --destination "build/release/$name"
+          for variant in Shared Static; do
+            cmake \
+              -S "build/release/$name/examples" \
+              -B "build/companion-$variant" \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DCMAKE_PREFIX_PATH="$PWD/build/companion-install" \
+              -DOPENDOORS_EXAMPLE_VARIANT="$variant"
+            cmake --build "build/companion-$variant" --parallel
+          done
+          cd build/release
+          cmake -E tar cf "$name.zip" --format=zip "$name"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-examples-docs
+          path: build/release/*.zip
+          if-no-files-found: error
+
+  dos-openwatcom:
+    name: Open Watcom DOS SDK
+    needs: validate
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Restore Open Watcom cache
+        id: watcom-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/watcom
+          key: open-watcom-${{ runner.os }}-${{ runner.arch }}-2.0-2026-08-01
+
+      - name: Set up Open Watcom
+        if: steps.watcom-cache.outputs.cache-hit != 'true'
+        uses: open-watcom/setup-watcom@v1
+        with:
+          version: '2.0'
+          tag: 2026-08-01-Build
+          target: dos
+          environment: false
+
+      - name: Save Open Watcom cache
+        if: steps.watcom-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ~/watcom
+          key: open-watcom-${{ runner.os }}-${{ runner.arch }}-2.0-2026-08-01
+
+      - name: Configure Open Watcom environment
+        run: |
+          echo "WATCOM=$HOME/watcom" >> "$GITHUB_ENV"
+          echo "INCLUDE=$HOME/watcom/h" >> "$GITHUB_ENV"
+          echo "$HOME/watcom/binl" >> "$GITHUB_PATH"
+
+      - name: Build and test DOS library
+        env:
+          CC: wcl
+        run: |
+          cmake \
+            -S dos \
+            -B build/dos \
+            -G 'Watcom WMake' \
+            -D CMAKE_SYSTEM_NAME=DOS \
+            -D CMAKE_SYSTEM_PROCESSOR=I86 \
+            -D CMAKE_BUILD_TYPE=Release \
+            -D OPENDOORS_WARNINGS_AS_ERRORS=ON
+          cmake --build build/dos
+          test -s build/dos/ODoorl.lib
+          test -s build/dos/odtest.exe
+          test -s build/dos/odpers.exe
+          test -s build/dos/odapi.exe
+          test -s build/dos/ex_vote.exe
+          test -s build/dos/odvtest.exe
+
+      - name: Run DOSBox tests
+        env:
+          SDL_AUDIODRIVER: dummy
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes dosbox xvfb xauth
+          set -o pipefail
+          timeout --signal=TERM --kill-after=5s 30s \
+            xvfb-run -a dosbox -noconsole \
+              -c "mount c $PWD/build/dos" \
+              -c 'c:' \
+              -c 'odtest.exe' \
+              -c 'odpers.exe' \
+              -c 'odapi.exe' \
+              -c 'odvtest.exe' \
+              -c 'if not errorlevel 1 echo Passed>VOTEPASS.OK' \
+              -c 'exit' \
+            2>&1 | tee build/dos/dosbox.log
+          test -s build/dos/DOSPASS.OK
+          test -s build/dos/PERSPASS.OK
+          test -s build/dos/APIPASS.OK
+          test -s build/dos/VOTEPASS.OK
+
+      - name: Stage release SDK
+        env:
+          ASSET_VERSION: ${{ needs.validate.outputs.asset_version }}
+        run: |
+          name="OpenDoors-${ASSET_VERSION}-dos-openwatcom-large"
+          python3 tools/stage_release.py dos \
+            --library build/dos/ODoorl.lib \
+            --destination "build/release/$name" \
+            --platform DOS \
+            --architecture i8086-large \
+            --toolchain 'Open Watcom 2.0 (2026-08-01)' \
+            --runtime 'DOS large memory model'
+          cd build/release
+          cmake -E tar cf "$name.zip" --format=zip "$name"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-dos-openwatcom
+          path: build/release/*.zip
+          if-no-files-found: error
+
+  dos-openwatcom32:
+    name: Open Watcom 32-bit DOS SDK
+    needs: validate
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Restore Open Watcom cache
+        id: watcom-cache
+        uses: actions/cache/restore@v6
+        with:
+          path: ~/watcom
+          key: open-watcom-${{ runner.os }}-${{ runner.arch }}-2.0-2026-08-01
+
+      - name: Set up Open Watcom
+        if: steps.watcom-cache.outputs.cache-hit != 'true'
+        uses: open-watcom/setup-watcom@v1
+        with:
+          version: '2.0'
+          tag: 2026-08-01-Build
+          target: dos
+          environment: false
+
+      - name: Save Open Watcom cache
+        if: steps.watcom-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ~/watcom
+          key: open-watcom-${{ runner.os }}-${{ runner.arch }}-2.0-2026-08-01
+
+      - name: Configure Open Watcom environment
+        run: |
+          echo "WATCOM=$HOME/watcom" >> "$GITHUB_ENV"
+          echo "INCLUDE=$HOME/watcom/h" >> "$GITHUB_ENV"
+          echo "$HOME/watcom/binl" >> "$GITHUB_PATH"
+
+      - name: Build DOS32 libraries, examples, and tests
+        env:
+          CC: wcl386
+        run: |
+          cmake \
+            -S dos \
+            -B build/dos32 \
+            -G 'Unix Makefiles' \
+            -D CMAKE_SYSTEM_NAME=DOS \
+            -D CMAKE_SYSTEM_PROCESSOR=I386 \
+            -D CMAKE_BUILD_TYPE=Release \
+            -D OPENDOORS_WARNINGS_AS_ERRORS=ON
+          cmake --build build/dos32
+          test -s build/dos32/ODOOR32R.lib
+          test -s build/dos32/ODOOR32S.lib
+          test -s build/dos32/od32test.exe
+          test -s build/dos32/odapir.exe
+          test -s build/dos32/odapis.exe
+          test -s build/dos32/od32tsts.exe
+          test -s build/dos32/OD32CHLD.exe
+          test -s build/dos32/od32foss.exe
+          test -s build/dos32/FOSSTSR.com
+          test -s build/dos32/od32pss.exe
+          test -s build/dos32/ex_vote.exe
+          test -s build/dos32/od32vot.exe
+
+      - name: Test DOS/4GW compatibility
+        env:
+          SDL_AUDIODRIVER: dummy
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes dosbox xvfb xauth
+          cp "$WATCOM/binw/dos4gw.exe" build/dos32/DOS4GW.EXE
+          timeout --signal=TERM --kill-after=5s 45s \
+            xvfb-run -a dosbox -noconsole \
+              -c "mount c $PWD/build/dos32" \
+              -c 'c:' \
+              -c 'od32foss.exe nofossil' \
+              -c 'fosstsr.com' \
+              -c 'od32foss.exe' \
+              -c 'exit'
+          timeout --signal=TERM --kill-after=5s 45s \
+            xvfb-run -a dosbox -noconsole \
+              -c "mount c $PWD/build/dos32" \
+              -c 'c:' \
+              -c 'od32test.exe' \
+              -c 'ren D32PASS.OK D32RPASS.OK' \
+              -c 'od32tsts.exe' \
+              -c 'ren D32PASS.OK D32SPASS.OK' \
+              -c 'od32vot.exe' \
+              -c 'if not errorlevel 1 echo Passed>VOTEPASS.OK' \
+              -c 'exit'
+          timeout --signal=TERM --kill-after=5s 45s \
+            xvfb-run -a dosbox -noconsole \
+              -c "mount c $PWD/build/dos32" \
+              -c 'c:' \
+              -c 'od32pers.exe' \
+              -c 'ren PERSPASS.OK PERSRPAS.OK' \
+              -c 'od32pss.exe' \
+              -c 'ren PERSPASS.OK PERSSPAS.OK' \
+              -c 'odapir.exe' \
+              -c 'ren APIPASS.OK APIRPASS.OK' \
+              -c 'odapis.exe' \
+              -c 'ren APIPASS.OK APISPASS.OK' \
+              -c 'exit'
+          test -s build/dos32/NOFSPASS.OK
+          test -s build/dos32/FOSSPASS.OK
+          test -s build/dos32/D32RPASS.OK
+          test -s build/dos32/D32SPASS.OK
+          test -s build/dos32/PERSRPAS.OK
+          test -s build/dos32/PERSSPAS.OK
+          test -s build/dos32/APIRPASS.OK
+          test -s build/dos32/APISPASS.OK
+          test -s build/dos32/VOTEPASS.OK
+
+      - name: Build and test native DOS/32A executables
+        env:
+          CC: wcl386
+          SDL_AUDIODRIVER: dummy
+        run: |
+          cmake \
+            -S dos \
+            -B build/dos32a \
+            -G 'Unix Makefiles' \
+            -D CMAKE_SYSTEM_NAME=DOS \
+            -D CMAKE_SYSTEM_PROCESSOR=I386 \
+            -D CMAKE_BUILD_TYPE=Release \
+            -D OPENDOORS_WARNINGS_AS_ERRORS=ON \
+            -D OPENDOORS_DOS32_EXTENDER=DOS32A
+          cmake --build build/dos32a
+          test -s build/dos32a/ODOOR32R.lib
+          test -s build/dos32a/ODOOR32S.lib
+          test -s build/dos32a/FOSSTSR.com
+          test -s build/dos32a/od32foss.exe
+          test -s build/dos32a/od32test.exe
+          test -s build/dos32a/od32tsts.exe
+          test -s build/dos32a/OD32CHLD.exe
+          test -s build/dos32a/od32pers.exe
+          test -s build/dos32a/od32pss.exe
+          test -s build/dos32a/odapir.exe
+          test -s build/dos32a/odapis.exe
+          test -s build/dos32a/ex_chat.exe
+          test -s build/dos32a/ex_diag.exe
+          test -s build/dos32a/ex_hello.exe
+          test -s build/dos32a/ex_music.exe
+          test -s build/dos32a/ex_vote.exe
+          test -s build/dos32a/od32vot.exe
+          timeout --signal=TERM --kill-after=5s 45s \
+            xvfb-run -a dosbox -noconsole \
+              -c "mount c $PWD/build/dos32a" \
+              -c 'c:' \
+              -c 'od32chld.exe' \
+              -c 'exit'
+          test -s build/dos32a/D32CHILD.OK
+          rm -f build/dos32a/D32CHILD.OK
+          timeout --signal=TERM --kill-after=5s 45s \
+            xvfb-run -a dosbox -noconsole \
+              -c "mount c $PWD/build/dos32a" \
+              -c 'c:' \
+              -c 'od32foss.exe nofossil' \
+              -c 'fosstsr.com' \
+              -c 'od32foss.exe' \
+              -c 'exit'
+          timeout --signal=TERM --kill-after=5s 45s \
+            xvfb-run -a dosbox -noconsole \
+              -c "mount c $PWD/build/dos32a" \
+              -c 'c:' \
+              -c 'od32test.exe' \
+              -c 'ren D32PASS.OK D32RPASS.OK' \
+              -c 'od32tsts.exe' \
+              -c 'ren D32PASS.OK D32SPASS.OK' \
+              -c 'od32vot.exe' \
+              -c 'if not errorlevel 1 echo Passed>VOTEPASS.OK' \
+              -c 'exit'
+          timeout --signal=TERM --kill-after=5s 45s \
+            xvfb-run -a dosbox -noconsole \
+              -c "mount c $PWD/build/dos32a" \
+              -c 'c:' \
+              -c 'od32pers.exe' \
+              -c 'ren PERSPASS.OK PERSRPAS.OK' \
+              -c 'od32pss.exe' \
+              -c 'ren PERSPASS.OK PERSSPAS.OK' \
+              -c 'odapir.exe' \
+              -c 'ren APIPASS.OK APIRPASS.OK' \
+              -c 'odapis.exe' \
+              -c 'ren APIPASS.OK APISPASS.OK' \
+              -c 'exit'
+          test -s build/dos32a/NOFSPASS.OK
+          test -s build/dos32a/FOSSPASS.OK
+          test -s build/dos32a/D32RPASS.OK
+          test -s build/dos32a/D32SPASS.OK
+          test -s build/dos32a/PERSRPAS.OK
+          test -s build/dos32a/PERSSPAS.OK
+          test -s build/dos32a/APIRPASS.OK
+          test -s build/dos32a/APISPASS.OK
+          test -s build/dos32a/VOTEPASS.OK
+          for executable in od32test.exe ex_chat.exe ex_diag.exe \
+              ex_hello.exe ex_music.exe ex_vote.exe; do
+            grep -aFq 'DOS/32A' "build/dos32a/$executable"
+          done
+
+      - name: Stage DOS32 release SDK
+        env:
+          ASSET_VERSION: ${{ needs.validate.outputs.asset_version }}
+        run: |
+          name="OpenDoors-${ASSET_VERSION}-dos32-openwatcom"
+          python3 tools/stage_release.py dos32 \
+            --register-library build/dos32/ODOOR32R.lib \
+            --stack-library build/dos32/ODOOR32S.lib \
+            --examples-directory build/dos32a \
+            --dos32a-license licenses/DOS32A.txt \
+            --watcom-license "$WATCOM/license.txt" \
+            --destination "build/release/$name" \
+            --platform DOS \
+            --architecture i386-flat \
+            --toolchain 'Open Watcom 2.0 (2026-08-01)' \
+            --runtime 'DOS/32A-linked LX examples; DOS/4GW and DOS/32A validated libraries'
+          cd build/release
+          cmake -E tar cf "$name.zip" --format=zip "$name"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-dos32-openwatcom
+          path: build/release/*.zip
+          if-no-files-found: error
+
+  dos-turboc:
+    name: Turbo C DOS SDK
+    needs: validate
+    uses: ./.github/workflows/turbo-c.yml
+    with:
+      asset_version: ${{ needs.validate.outputs.asset_version }}
+
+  collect:
+    name: Collect and publish release assets
+    needs:
+      - validate
+      - windows-msvc
+      - windows-mingw
+      - macos
+      - companion
+      - dos-openwatcom
+      - dos-openwatcom32
+      - dos-turboc
+      - acceptance
+      - unit-tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: release-*
+          path: dist
+          merge-multiple: true
+
+      - name: Verify collected assets
+        run: |
+          find dist -maxdepth 1 -type f -print -exec file {} \;
+          count=$(find dist -maxdepth 1 -type f | wc -l)
+          test "$count" -eq 11
+
+      - name: Upload combined dry-run artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: OpenDoors-${{ needs.validate.outputs.asset_version }}-release-assets
+          path: dist/*
+          if-no-files-found: error
+
+      - name: Attest release assets
+        if: needs.validate.outputs.tagged == 'true'
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: dist/*
+
+      - name: Create or update draft release
+        if: needs.validate.outputs.tagged == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$GITHUB_REF_NAME
+          title="OpenDoors ${tag#v}"
+          prerelease=false
+          if [[ "$tag" == *-rc* ]]; then
+            prerelease=true
+          fi
+
+          if gh release view "$tag" --json isDraft --jq .isDraft \
+              > /tmp/opendoors-release-draft.txt 2>/dev/null; then
+            if [[ $(cat /tmp/opendoors-release-draft.txt) != true ]]; then
+              echo "Refusing to replace assets on a published release."
+              exit 1
+            fi
+            gh release edit "$tag" \
+              --draft \
+              --prerelease="$prerelease" \
+              --title "$title" \
+              --notes-file release/RELEASE_NOTES.md
+            gh release upload "$tag" dist/* --clobber
+          else
+            options=(--verify-tag --draft --title "$title" \
+              --notes-file release/RELEASE_NOTES.md)
+            if [[ "$prerelease" == true ]]; then
+              options+=(--prerelease)
+            fi
+            gh release create "$tag" dist/* "${options[@]}"
+          fi
