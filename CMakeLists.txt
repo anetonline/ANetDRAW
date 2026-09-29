@@ -46,6 +46,8 @@ add_executable(anetdraw
     src/gallery.c
     src/tdf.c
     src/formats.c
+    src/imgimport.c
+    src/wall.c
     src/font8x16.c
 )
 target_link_libraries(anetdraw PRIVATE ${OPENDOORS_LINK_TARGET})

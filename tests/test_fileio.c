@@ -5,7 +5,8 @@
  * newline and TheDraw-style full rows followed by CR LF.
  *
  *   cc -O1 -g -fsanitize=address,undefined -o test_fileio \
- *      tests/test_fileio.c src/fileio.c src/canvas.c
+ *      tests/test_fileio.c src/fileio.c src/canvas.c \
+ *      src/formats.c src/font8x16.c
  */
 #include "../include/fileio.h"
 #include <stdio.h>

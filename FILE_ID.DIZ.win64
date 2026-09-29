@@ -1,7 +1,9 @@
--= ANetDRAW (C/OpenDoors) =-
-A real ANSI/ASCII art editor door --
-TheDraw, ACiDDraw and Moebius in one.
-Draw, shade, fill, save, download.
+-= ANetDRAW v0.2.0 (C/OpenDoors) =-
+ANSI + ASCII art studio: TheDraw, ACiDDraw,
+Moebius and PabloDraw in one. Mouse, 3700+
+TDF fonts, blocks, image import, ZMODEM,
+gallery, live shared wall. A BBS door AND a
+stand-alone ANSI editor for your own PC.
 Windows 64-bit build.
 By StingRay of A-Net Online
-https://a-net.online
+https://a-net-online.lol/ANetDRAW

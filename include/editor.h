@@ -11,6 +11,7 @@
 #include "fkeys.h"
 #include "fileio.h"
 #include "files.h"
+#include "wall.h"
 
 typedef enum {
     AD_TOOL_DRAW = 0,   /* type text / place glyphs; option: pen */
@@ -73,7 +74,14 @@ typedef struct {
     int dirty;
     int close_pending;
     int block_menu;
-    int pending_undo;   /* 1 undo / 2 redo, from a toolbox button */     /* a right-click asked for the Select menu */  /* the local window's close button was clicked */
+    int pending_undo;   /* 1 undo / 2 redo, from a toolbox button */
+    /* the shared wall (wall.h): on it, the canvas is everyone's */
+    int wall;
+    AdWall wallst;
+    AdCanvas wall_shadow;   /* the canvas as last shared, to find our changes */
+    AdWallPeer peers[AD_WALL_MAX_PEERS];
+    int npeers;
+    long wall_here_at;      /* when we last said where we are (time()) */     /* a right-click asked for the Select menu */  /* the local window's close button was clicked */
     char browse_dir[AD_PATH_MAX];
 
     /* clickable sidebar regions, rebuilt every paint */

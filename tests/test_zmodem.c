@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 /* ZMODEM sender test against a real receiver (lrzsz's rz), over a
  * socketpair. Checks byte-exact delivery of awkward files (every byte
  * value, ZDLE runs, CR, 0xFF, empty, multi-block), recovery from a line
@@ -30,6 +31,9 @@ typedef struct {
     unsigned char *log;     /* everything the sender wrote */
     size_t nlog, cap;
     long corrupt_at;        /* flip one byte at this output offset (-1 = never) */
+    long corrupt_in_at;     /* flip one received byte at this offset (-1 = never) */
+    long nin;
+    int swap_del;           /* a BBS swapping Delete/Backspace: 0x7f arrives as 0x08 */
     int progress_calls;
 } Link;
 
@@ -64,6 +68,9 @@ static int link_recv(void *ctx, int ms) {
     p.events = POLLIN;
     if (poll(&p, 1, ms) <= 0) return -1;
     if (read(l->fd, &c, 1) != 1) return -2;
+    if (l->corrupt_in_at >= 0 && l->nin == l->corrupt_in_at) c ^= 0x04;
+    if (l->swap_del && c == 0x7f) c = '\b';
+    l->nin++;
     return c;
 }
 
@@ -169,6 +176,7 @@ int main(int argc, char **argv) {
 
     memset(&l, 0, sizeof(l));
     l.corrupt_at = -1;
+        l.corrupt_in_at = -1;
     rc = run(rz, dir, files, 5, &l, &done, (char *)NULL, (char *)NULL);
     CHECK(rc == AD_ZM_OK && done == 5, "batch of 5 files sent (rc=%d, %s, done=%d)", rc, ad_zm_result_text(rc), done);
     for (i = 0; i < 5; i++) CHECK(same_file(dir, &files[i]), "%s arrives byte for byte", files[i].name);
@@ -198,6 +206,7 @@ int main(int argc, char **argv) {
         if (!mkdtemp(dir3) || !mkdtemp(dir4)) return 2;
         memset(&l, 0, sizeof(l));
         l.corrupt_at = -1;
+        l.corrupt_in_at = -1;
         rc = run(rz, dir3, files, 5, &l, &done, "-e", (char *)NULL);
         CHECK(rc == AD_ZM_OK && done == 5, "ESCCTL receiver: batch sent (rc=%d)", rc);
         for (i = 0; i < 5; i++) CHECK(same_file(dir3, &files[i]), "ESCCTL: %s intact", files[i].name);
@@ -210,6 +219,7 @@ int main(int argc, char **argv) {
         free(l.log);
         memset(&l, 0, sizeof(l));
         l.corrupt_at = -1;
+        l.corrupt_in_at = -1;
         rc = run(rz, dir4, &files[4], 1, &l, &done, "--errors", "20000");
         CHECK(rc == AD_ZM_OK && same_file(dir4, &files[4]), "receiver-side CRC errors every 20000 bytes recovered (rc=%d)", rc);
         free(l.log);
@@ -222,6 +232,7 @@ int main(int argc, char **argv) {
         socketpair(AF_UNIX, SOCK_STREAM, 0, sv);
         memset(&l, 0, sizeof(l));
         l.corrupt_at = -1;
+        l.corrupt_in_at = -1;
         l.fd = sv[0];
         io.ctx = &l; io.send = link_send; io.recv = link_recv; io.progress = NULL; io.log = NULL;
         if (write(sv[1], "\x1b", 1) != 1) return 2;
@@ -233,12 +244,99 @@ int main(int argc, char **argv) {
         /* and a hang-up mid-wait */
         memset(&l, 0, sizeof(l));
         l.corrupt_at = -1;
+        l.corrupt_in_at = -1;
         l.fd = sv[0];
         close(sv[1]);
         rc = ad_zm_send(&io, files, 1, &done);
         CHECK(rc == AD_ZM_HANGUP, "a dropped connection is reported as a hang-up (rc=%d)", rc);
         free(l.log);
         close(sv[0]);
+    }
+
+    /* ---------------- receiving: lrzsz's sz sends to ad_zm_receive() */
+    {
+        static const char *const OPTS[][3] = { { NULL }, { "-e", NULL }, { NULL } };
+        char sdir[] = "/tmp/anetdraw_zm_XXXXXX";
+        int k;
+        if (!mkdtemp(sdir)) return 2;
+        for (i = 0; i < 2; i++) {
+            char path[512];
+            FILE *fp;
+            snprintf(path, sizeof(path), "%s/%s", sdir, i == 0 ? "big.bin" : "every_byte.bin");
+            fp = fopen(path, "wb");
+            fwrite(i == 0 ? big : every, 1, i == 0 ? sizeof(big) : sizeof(every), fp);
+            fclose(fp);
+        }
+        for (k = 0; k < 5; k++) {
+            int sv[2], st;
+            pid_t pid;
+            AdZmIo io;
+            AdZmRecv got;
+            const char *file = k == 1 || k == 4 ? "every_byte.bin" : "big.bin";
+            const unsigned char *want = k == 1 || k == 4 ? every : big;
+            size_t wlen = k == 1 || k == 4 ? sizeof(every) : sizeof(big);
+            socketpair(AF_UNIX, SOCK_STREAM, 0, sv);
+            pid = fork();
+            if (pid == 0) {
+                char sz[600];
+                int fd = open("/dev/null", 1);
+                dup2(sv[1], 0);
+                dup2(sv[1], 1);
+                if (fd >= 0) dup2(fd, 2);
+                close(sv[0]);
+                if (chdir(sdir) != 0) _exit(98);
+                snprintf(sz, sizeof(sz), "%s", rz);
+                /* lsz lives next to lrz */
+                {
+                    char *slash = strrchr(sz, '/');
+                    if (slash) strcpy(slash + 1, "lsz");
+                    else strcpy(sz, "sz");
+                }
+                if (k == 1) execl(sz, sz, "-q", "-e", file, (char *)NULL);
+                else execl(sz, sz, "-q", file, (char *)NULL);
+                _exit(99);
+            }
+            close(sv[1]);
+            memset(&l, 0, sizeof(l));
+            l.corrupt_at = -1;
+            l.corrupt_in_at = k == 2 ? 30000 : -1;
+            l.swap_del = k == 4;
+            l.fd = sv[0];
+            io.ctx = &l; io.send = link_send; io.recv = link_recv; io.progress = NULL; io.log = NULL;
+            rc = ad_zm_receive(&io, k == 3 ? 50000 : 1000000, &got);
+            close(sv[0]);
+            waitpid(pid, &st, 0);
+            if (k == 3) {
+                CHECK(rc == AD_ZM_TOO_BIG && !got.data, "receive: a file over the limit is refused (rc=%d)", rc);
+            } else {
+                CHECK(rc == AD_ZM_OK && got.len == wlen && memcmp(got.data, want, wlen) == 0 && strcmp(got.name, file) == 0,
+                      "receive %s%s: rc=%d, %zu bytes, name %s", file,
+                      k == 1 ? " (sender escapes everything)" : k == 2 ? " (a byte corrupted on the way)"
+                      : k == 4 ? " (DEL arrives as backspace, Synchronet SWAP_DELETE)" : "",
+                      rc, got.len, got.name);
+            }
+            free(got.data);
+            free(l.log);
+            (void)OPTS;
+        }
+        /* nobody sends: Esc from a plain terminal cancels the wait */
+        {
+            int sv[2];
+            AdZmIo io;
+            AdZmRecv got;
+            socketpair(AF_UNIX, SOCK_STREAM, 0, sv);
+            memset(&l, 0, sizeof(l));
+            l.corrupt_at = l.corrupt_in_at = -1;
+            l.fd = sv[0];
+            io.ctx = &l; io.send = link_send; io.recv = link_recv; io.progress = NULL; io.log = NULL;
+            if (write(sv[1], "\x1b", 1) != 1) return 2;
+            rc = ad_zm_receive(&io, 1000, &got);
+            CHECK(rc == AD_ZM_CANCELLED && l.nlog > 0 && memmem(l.log, l.nlog, "\x18" "B01", 4),
+                  "receive: announces ZRINIT, and Esc cancels (rc=%d)", rc);
+            free(l.log);
+            close(sv[0]);
+            close(sv[1]);
+        }
     }
 
     printf("\n%d failure(s)\n", fails);

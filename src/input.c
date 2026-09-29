@@ -185,8 +185,13 @@ int ad_input_pending(void) {
 }
 
 AdKey ad_input_get(int local) {
+    return ad_input_get_timeout(local, -1);
+}
+
+AdKey ad_input_get_timeout(int local, int ms) {
     AdKey k;
     tODInputEvent ev;
+    int left = ms;
 
     if (g_qlen > 0) {
         k = g_queue[g_qhead];
@@ -198,7 +203,12 @@ AdKey ad_input_get(int local) {
 #ifdef _WIN32
     /* the local window hands over finished keys (see wingui.h) */
     if (ad_gui_active()) {
-        while (!ad_gui_get_key(&k, INPUT_POLL_MS)) {}
+        while (!ad_gui_get_key(&k, ms >= 0 && ms < INPUT_POLL_MS ? ms : INPUT_POLL_MS)) {
+            if (ms >= 0 && (left -= INPUT_POLL_MS) <= 0) {
+                k = blank_key();
+                return k;  /* AD_KEY_NONE: the wait ran out */
+            }
+        }
         return k;
     }
 #endif
@@ -215,7 +225,14 @@ AdKey ad_input_get(int local) {
             k.kind = AD_KEY_HANGUP;
             return k;
         }
-        if (!od_get_input(&ev, INPUT_POLL_MS, GETIN_RAWCTRL)) continue;
+        if (!od_get_input(&ev, ms >= 0 && left < INPUT_POLL_MS ? (left > 0 ? left : 0) : INPUT_POLL_MS,
+                          GETIN_RAWCTRL)) {
+            if (ms >= 0 && (left -= INPUT_POLL_MS) <= 0) {
+                k = blank_key();
+                return k;  /* AD_KEY_NONE: the wait ran out */
+            }
+            continue;
+        }
         if (!translate(&ev, &k)) {
             ad_trace("IN ignored %s 0x%02X", ev.EventType == EVENT_EXTENDED_KEY ? "ext" : "chr",
                      (unsigned char)ev.chKeyPress);

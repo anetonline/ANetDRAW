@@ -38,9 +38,13 @@ typedef struct {
     int n;
 } AdTdfIndex;
 
+#define AD_TDF_OUTLINE_STYLES  19
+#define AD_TDF_OUTLINE_DEFAULT 9   /* style 10: Roy/SAC's published table */
+
 typedef struct {
     char name[13];
     int type, spacing;
+    int outline_style;     /* outline fonts: 0..18 (ad_tdf_load sets the default) */
     unsigned short offs[94];
     unsigned char *data;   /* glyph data */
     size_t size;

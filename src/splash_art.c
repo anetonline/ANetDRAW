@@ -128,7 +128,7 @@ const AdSplashRow AD_SPLASH_ROWS[] = {
     "\xDF\xDF \x1B[0;1;35;40m\xDF\xDF\xDF \x1B[0;1;30;40m\xDF\xDF\xDF \x1B[0"
     ";37;40m\xDF\xDF\xDF \x1B[0;1;37;40m\xDF\xDF\xDF" },
   { 21, 8,
-    "\x1B[0;1;30;40mv0.1.0  \xB3  By StingRay of A-Net Online  \xB3  https:/"
+    "\x1B[0;1;30;40mv0.2.0  \xB3  By StingRay of A-Net Online  \xB3  https:/"
     "/a-net.online" },
   { 23, 0,
     "\x1B[0;34;40m\xC4\xC4\xC4\xC4\xC4\xC4\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD"

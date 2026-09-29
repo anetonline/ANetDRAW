@@ -198,6 +198,9 @@ def main():
     check(s.row(1).startswith("a  "), "0x08 backspace erases left: %r" % s.row(1)[:5])
     # ^E/^D must NOT be arrow keys (OpenDoors' WordStar mapping is off).
     s.send(b"\x04")
+    check(any("Lines & columns" in s.row(y) for y in range(24)),
+          "^D is not an arrow key: it opens Lines & columns")
+    s.send(b"\x1b", 1.0)   # close that menu
     check((s.screen.cursor.x, s.screen.cursor.y) == (1, 1), "^D does not move the cursor")
 
     # Scroll: 30 downs, row 1's content scrolls off, status bar intact.

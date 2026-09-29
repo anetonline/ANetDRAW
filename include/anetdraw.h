@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#define AD_VERSION "0.1.0"
+#define AD_VERSION "0.2.0"
 
 /* Screen size limits. 80 columns minimum: the status bar is laid out
    for it. The maximum covers a maximized local window on a big monitor. */
@@ -46,6 +46,7 @@ typedef struct {
     char user_key[96];     /* "<num>_<name>": owns this caller's gallery pieces */
     char gallery_dir[1024]; /* absolute: data_dir/gallery, shared by everyone */
     char fonts_dir[1024];   /* TheDraw fonts (--fonts, default "fonts") */
+    int wall_w, wall_h;     /* the shared wall's size for a new wall (--wall WxH, 80x25) */
 } AdDoor;
 
 /* door_init.c */

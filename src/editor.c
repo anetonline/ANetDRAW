@@ -19,11 +19,19 @@
 #include "../include/transfer.h"
 #include "../include/gallery.h"
 #include "../include/tdf.h"
+#include "../include/formats.h"
+#include "../include/imgimport.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#ifdef _WIN32
+#include <process.h>
+#define getpid _getpid
+#else
+#include <unistd.h>
+#endif
 #include <ctype.h>
 
 #define STATUS_ATTR   AD_ATTR(15, 1)
@@ -128,7 +136,15 @@ int ad_editor_init(AdEditor *e, int cols, int rows, int canvas_w) {
     return 1;
 }
 
+static int wall_sync(AdEditor *e);
+static int wall_presence(AdEditor *e, int force);
+
 void ad_editor_free(AdEditor *e) {
+    if (e->wall) {
+        wall_sync(e);
+        ad_wall_leave(&e->wallst);
+        ad_canvas_free(&e->wall_shadow);
+    }
     ad_undo_free(&e->undo);
     ad_clip_free(&e->clip);
     free(e->ov);
@@ -529,6 +545,17 @@ static void paint_view(AdEditor *e) {
             ad_screen_put(&e->screen, e->view_w, row, (unsigned char)"\x11TOOLS"[row],
                           AD_ATTR(14, 1));
     }
+    /* the others on the wall: their initial on their color, where their cursor is */
+    if (e->wall) {
+        int p;
+        for (p = 0; p < e->npeers; p++) {
+            int sx = e->peers[p].x - e->left, sy = e->peers[p].y - e->top;
+            if (sx >= 0 && sx < e->view_w && sx < e->canvas.w && sy >= 0 && sy < e->view_h) {
+                unsigned char g = (unsigned char)(e->peers[p].name[0] ? e->peers[p].name[0] : '?');
+                ad_screen_put(&e->screen, sx, sy, g, AD_ATTR(15, e->peers[p].color & 7));
+            }
+        }
+    }
 }
 
 /* Bottom row, 79 columns (column 80 of the last row is never written
@@ -678,8 +705,9 @@ static void paint_sidebar(AdEditor *e) {
 
     {
         char fn[64];
-        snprintf(fn, sizeof(fn), "%.*s%s", w - 4, e->path[0] ? base_name(e->path) : "Untitled",
-                 e->dirty ? " *" : "");
+        if (e->wall) snprintf(fn, sizeof(fn), "Shared wall -- %d here", e->npeers + 1);
+        else snprintf(fn, sizeof(fn), "%.*s%s", w - 4, e->path[0] ? base_name(e->path) : "Untitled",
+                      e->dirty ? " *" : "");
         sb_puts(e, x, 8, fn, e->dirty ? AD_ATTR(14, 0) : SB_DIM);
     }
 
@@ -767,7 +795,8 @@ static void paint_sidebar(AdEditor *e) {
     if (e->view_h >= 32) {
         static const struct { char cmd; const char *label; int row; } BTN[] = {
             { 'N', "New", 26 }, { 'O', "Open", 26 }, { 'S', "Save", 26 }, { 'A', "Save as", 26 },
-            { 'B', "Gallery", 27 }, { 'P', "Publish", 27 }, { 'D', "Download", 27 } };
+            { 'M', "Image", 26 },
+            { 'B', "Gallery", 27 }, { 'P', "Publish", 27 }, { 'D', "Download", 27 }, { 'U', "Upload", 27 } };
         int bx = x, brow = 26;
         size_t b;
         sb_puts(e, x, 25, "File", SB_HEAD);
@@ -1040,9 +1069,8 @@ static int help_screen(AdEditor *e, int local) {
         "^F ^B   next fg / bg color     ^U  pick up colors",
         "^E      iCE colors on/off      ^R  mirror off/H/V/both",
         "^T      tools menu             ^V  paste clipboard",
-        "^T T    big text in TheDraw fonts (then place it)",
-        "^T C    Colorize: drag to recolor, keeps the art",
-        "^D      insert / delete a line or column",
+        "^T T    TheDraw font text   ^T C  Colorize (recolor)",
+        "^D      insert/delete line or column  Esc J  wall",
         "^K      color picker           ^G  character picker",
         "^Z ^Y   undo / redo",
         "Tab     tool option (pen, box style, fill mode...)",
@@ -1386,6 +1414,122 @@ static int color_picker(AdEditor *e, int local) {
 /* All 256 CP437 glyphs, 32 x 8. Enter makes the glyph the brush (and
    places it in the Draw tool); F1-F10 put it in that slot of the
    current F-key set. */
+/* ------------------------------------------------------------ F-key sets (per caller) */
+
+static void fkeys_path(const AdEditor *e, char *out, size_t outsz) {
+    ad_path_join(e->door->user_dir, "fkeys.txt", out, outsz);
+}
+
+/* fkeys.txt: one line per set, 10 glyphs as two hex digits each. A
+   missing or damaged line keeps that set's default. */
+static void fkeys_load(AdEditor *e) {
+    char path[AD_PATH_MAX], line[128];
+    FILE *f;
+    int set = 0;
+    if (!e->door || !e->door->user_dir[0]) return;
+    fkeys_path(e, path, sizeof(path));
+    f = fopen(path, "r");
+    if (!f) return;
+    while (set < AD_FKEY_NUM_SETS && fgets(line, sizeof(line), f)) {
+        unsigned char g[AD_FKEY_PER_SET];
+        int i, ok = 1;
+        for (i = 0; i < AD_FKEY_PER_SET && ok; i++) {
+            unsigned v;
+            if (sscanf(line + i * 3, "%2x", &v) != 1) ok = 0;
+            else g[i] = (unsigned char)v;
+        }
+        if (ok) memcpy(e->fkeys[set], g, sizeof(g));
+        set++;
+    }
+    fclose(f);
+}
+
+static void fkeys_save(AdEditor *e) {
+    char path[AD_PATH_MAX], err[120];
+    char buf[AD_FKEY_NUM_SETS * (AD_FKEY_PER_SET * 3 + 1) + 1];
+    size_t n = 0;
+    int s_, i;
+    if (!e->door || !e->door->user_dir[0]) return;
+    for (s_ = 0; s_ < AD_FKEY_NUM_SETS; s_++) {
+        for (i = 0; i < AD_FKEY_PER_SET; i++)
+            n += (size_t)snprintf(buf + n, sizeof(buf) - n, "%02X%c", e->fkeys[s_][i], i + 1 < AD_FKEY_PER_SET ? ' ' : '\n');
+    }
+    fkeys_path(e, path, sizeof(path));
+    if (!ad_write_file(path, (const unsigned char *)buf, n, err, sizeof(err)))
+        set_message(e, "Couldn't keep your F-key sets: %.40s", err);
+}
+
+/* E: edit the F-key sets -- the 10 slots on top, all 256 glyphs below. */
+static int fkey_editor(AdEditor *e, int local) {
+    static int sel = 0xB0;
+    int width = 32 * 2 + 3, height = 8 + 7, changed = 0, i;
+    for (;;) {
+        AdKey k;
+        int col0 = (e->screen.w - width) / 2, row0 = (e->view_h - height) / 2;
+        char buf[80];
+        if (row0 < 0) row0 = 0;
+        paint_all(e);
+        frame(e, col0, row0, width, height, "Edit F-key sets");
+        snprintf(buf, sizeof(buf), "\x11 Set %02d \x10   PgUp/PgDn: other sets   R: reset this set", e->fset + 1);
+        ad_screen_puts(&e->screen, col0 + 2, row0 + 1, buf, POPUP_KEY);
+        for (i = 0; i < AD_FKEY_PER_SET; i++) {
+            int x = col0 + 2 + i * 6;
+            snprintf(buf, sizeof(buf), "F%-2d", i + 1);
+            ad_screen_puts(&e->screen, x, row0 + 3, buf, POPUP_ATTR);
+            ad_screen_put(&e->screen, x + 3, row0 + 3, e->fkeys[e->fset][i], AD_ATTR(15, 0));
+        }
+        for (i = 0; i < 256; i++)
+            ad_screen_put(&e->screen, col0 + 2 + (i % 32) * 2, row0 + 5 + i / 32, (unsigned char)i,
+                          i == sel ? AD_ATTR(0, 7) : AD_ATTR(15, 1));
+        snprintf(buf, sizeof(buf), " Pick a glyph, then F1-F10 or click a slot  #%03d  Esc=done ", sel);
+        ad_screen_puts(&e->screen, col0 + 2, row0 + height - 1, buf, POPUP_KEY);
+        ad_screen_flush(&e->screen, col0 + 2 + (sel % 32) * 2, row0 + 5 + sel / 32);
+        k = popup_key(e, local);
+        switch (k.kind) {
+            case AD_KEY_HANGUP: ad_screen_full_redraw(&e->screen); if (changed) fkeys_save(e); return 0;
+            case AD_KEY_ESCAPE: case AD_KEY_ENTER:
+                ad_screen_full_redraw(&e->screen);
+                if (changed) { fkeys_save(e); set_message(e, "F-key sets saved"); }
+                return 1;
+            case AD_KEY_LEFT: sel = (sel + 255) % 256; break;
+            case AD_KEY_RIGHT: sel = (sel + 1) % 256; break;
+            case AD_KEY_UP: sel = (sel + 256 - 32) % 256; break;
+            case AD_KEY_DOWN: sel = (sel + 32) % 256; break;
+            case AD_KEY_PGUP: e->fset = (e->fset + AD_FKEY_NUM_SETS - 1) % AD_FKEY_NUM_SETS; break;
+            case AD_KEY_PGDN: e->fset = (e->fset + 1) % AD_FKEY_NUM_SETS; break;
+            case AD_KEY_FN:
+                if (k.fn >= 1 && k.fn <= 10) { e->fkeys[e->fset][k.fn - 1] = (unsigned char)sel; changed = 1; }
+                else if (k.fn == 11) e->fset = (e->fset + AD_FKEY_NUM_SETS - 1) % AD_FKEY_NUM_SETS;
+                else if (k.fn == 12) e->fset = (e->fset + 1) % AD_FKEY_NUM_SETS;
+                break;
+            case AD_KEY_CHAR:
+                if ((k.ch & ~0x20) == 'R') {
+                    memcpy(e->fkeys[e->fset], AD_FKEY_SETS[e->fset], AD_FKEY_PER_SET);
+                    changed = 1;
+                } else if (k.ch >= '1' && k.ch <= '9') {
+                    e->fkeys[e->fset][k.ch - '1'] = (unsigned char)sel; changed = 1;
+                } else if (k.ch == '0') {
+                    e->fkeys[e->fset][9] = (unsigned char)sel; changed = 1;
+                }
+                break;
+            case AD_KEY_MOUSE:
+                if (k.mbutton == 2) { ad_screen_full_redraw(&e->screen); if (changed) fkeys_save(e); return 1; }
+                if (k.mbutton != 0) break;
+                if (k.my == row0 + 1 && k.mx >= col0 + 2 && k.mx <= col0 + 3)
+                    e->fset = (e->fset + AD_FKEY_NUM_SETS - 1) % AD_FKEY_NUM_SETS;
+                else if (k.my == row0 + 1 && k.mx >= col0 + 10 && k.mx <= col0 + 11)
+                    e->fset = (e->fset + 1) % AD_FKEY_NUM_SETS;
+                else if (k.my == row0 + 3 && k.mx >= col0 + 2 && k.mx < col0 + 2 + AD_FKEY_PER_SET * 6) {
+                    e->fkeys[e->fset][(k.mx - col0 - 2) / 6] = (unsigned char)sel;
+                    changed = 1;
+                } else if (k.my >= row0 + 5 && k.my < row0 + 13 && k.mx >= col0 + 2 && (k.mx - col0 - 2) / 2 < 32)
+                    sel = (k.my - row0 - 5) * 32 + (k.mx - col0 - 2) / 2;
+                break;
+            default: break;
+        }
+    }
+}
+
 static int char_picker(AdEditor *e, int local) {
     static int sel = 0xDB;
     int width = 32 * 2 + 3, height = 8 + 3;
@@ -1428,6 +1572,7 @@ static int char_picker(AdEditor *e, int local) {
             case AD_KEY_FN:
                 if (k.fn >= 1 && k.fn <= 10) {
                     e->fkeys[e->fset][k.fn - 1] = (unsigned char)sel;
+                    fkeys_save(e);
                     set_message(e, "Set %02d F%d is now glyph #%03d", e->fset + 1, k.fn, sel);
                 }
                 break;
@@ -1591,6 +1736,7 @@ static AdTdfIndex g_fonts;
 static int g_fonts_scanned = 0, g_font_sel = 0;
 static char g_font_text[48] = "ANetDRAW";
 static char g_font_find[16] = "";
+static int g_outline_style = AD_TDF_OUTLINE_DEFAULT;
 
 static int contains_nocase(const char *n, const char *f) {
     size_t nl = strlen(n), fl = strlen(f), k, j;
@@ -1665,6 +1811,7 @@ static void font_tool(AdEditor *e, int local) {
             ad_tdf_free(&font);
             loaded = ad_tdf_load(&g_fonts, g_font_sel, &font) ? g_font_sel : -2;
         }
+        font.outline_style = g_outline_style;
         preview_ok = nvis && loaded >= 0 && ad_tdf_render(&font, g_font_text, cur_attr(e), &preview);
 
         paint_all(e);
@@ -1702,6 +1849,11 @@ static void font_tool(AdEditor *e, int local) {
             int py0 = row0 + 2 + list_rows, x, y;
             for (x = 1; x < width - 1; x++) ad_screen_put(&e->screen, col0 + x, py0, 0xC4, POPUP_FRAME);
             ad_screen_puts(&e->screen, col0 + 3, py0, " Preview ", POPUP_KEY);
+            if (loaded >= 0 && font.type == AD_TDF_OUTLINE) {
+                char st[48];
+                snprintf(st, sizeof(st), " Outline style \x11 %2d \x10 (Left/Right) ", g_outline_style + 1);
+                ad_screen_puts(&e->screen, col0 + 14, py0, st, POPUP_KEY);
+            }
             for (y = 0; y < prev_rows; y++)
                 for (x = 1; x < width - 1; x++) {
                     AdCell c = { ' ', AD_ATTR(7, 0) };
@@ -1731,6 +1883,11 @@ static void font_tool(AdEditor *e, int local) {
             case AD_KEY_HOME: sel_pos = 0; break;
             case AD_KEY_END: sel_pos = nvis - 1; break;
             case AD_KEY_TAB: focus_find = !focus_find; break;
+            case AD_KEY_LEFT: case AD_KEY_RIGHT:
+                if (loaded >= 0 && font.type == AD_TDF_OUTLINE)
+                    g_outline_style = (g_outline_style + AD_TDF_OUTLINE_STYLES + (k.kind == AD_KEY_RIGHT ? 1 : -1))
+                                      % AD_TDF_OUTLINE_STYLES;
+                break;
             case AD_KEY_BACKSPACE: {
                 char *s = focus_find ? g_font_find : g_font_text;
                 size_t n = strlen(s);
@@ -1747,6 +1904,12 @@ static void font_tool(AdEditor *e, int local) {
             case AD_KEY_MOUSE:
                 if (k.mbutton == 2) { done = 1; preview_ok = 0; break; }
                 if (k.mwheel) { sel_pos += 3 * k.mwheel; break; }
+                if (k.mbutton == 0 && k.my == row0 + 2 + list_rows && loaded >= 0 && font.type == AD_TDF_OUTLINE &&
+                    k.mx >= col0 + 28 && k.mx <= col0 + 35) {
+                    g_outline_style = (g_outline_style + AD_TDF_OUTLINE_STYLES + (k.mx < col0 + 32 ? -1 : 1))
+                                      % AD_TDF_OUTLINE_STYLES;
+                    break;
+                }
                 if (k.mbutton == 0 && k.my >= row0 + 2 && k.my < row0 + 2 + list_rows && scroll + k.my - row0 - 2 < nvis) {
                     int idx = scroll + (k.my - row0 - 2);
                     if (idx != sel_pos) { sel_pos = idx; break; }
@@ -1862,6 +2025,8 @@ static int ask_ync(AdEditor *e, int local, const char *question) {
    ".." to go up); a caller only ever sees the files in their own folder
    and can only type a plain file name. save_mode adds a name field.
    Returns 1 with the chosen path in out, 0 cancel, -1 hangup. */
+static int g_browse_images = 0;  /* browser() lists images (Import image) */
+
 static int browser(AdEditor *e, int local, int save_mode, char *out, size_t outsz) {
     const AdDoor *d = e->door;
     int sysop = d->sysop;
@@ -1885,10 +2050,10 @@ static int browser(AdEditor *e, int local, int save_mode, char *out, size_t outs
 
         if (reload) {
             ad_free_dir(&list);
-            if (!ad_list_dir(dir, sysop, &list) && sysop) {
+            if (!(g_browse_images ? ad_list_images : ad_list_dir)(dir, sysop, &list) && sysop) {
                 /* unreadable folder: fall back to the data folder */
                 snprintf(dir, sizeof(dir), "%s", d->data_dir);
-                ad_list_dir(dir, sysop, &list);
+                (g_browse_images ? ad_list_images : ad_list_dir)(dir, sysop, &list);
             }
             have_up = sysop && strcmp(dir, "/") != 0 && !(strlen(dir) == 3 && dir[1] == ':');
             sel = scroll = 0;
@@ -1903,7 +2068,7 @@ static int browser(AdEditor *e, int local, int save_mode, char *out, size_t outs
         if (sel >= scroll + list_rows) scroll = sel - list_rows + 1;
 
         paint_all(e);
-        frame(e, col0, row0, width, height, save_mode ? "Save drawing" : "Open drawing");
+        frame(e, col0, row0, width, height, save_mode ? "Save drawing" : g_browse_images ? "Import an image" : "Open drawing");
         if (sysop) {
             size_t n = strlen(dir);
             snprintf(line, sizeof(line), "%.*s", width - 4, n > (size_t)(width - 4) ? dir + n - (width - 4) : dir);
@@ -1916,7 +2081,7 @@ static int browser(AdEditor *e, int local, int save_mode, char *out, size_t outs
             char item[128];
             unsigned char a;
             if (idx >= total) {
-                snprintf(item, sizeof(item), "%-*s", width - 4, (i == 0 && total == 0) ? "  (no drawings here yet)" : "");
+                snprintf(item, sizeof(item), "%-*s", width - 4, (i == 0 && total == 0) ? g_browse_images ? "  (no images here)" : "  (no drawings here yet)" : "");
                 ad_screen_puts(&e->screen, col0 + 2, y, item, AD_ATTR(7, 1));
                 continue;
             }
@@ -2043,29 +2208,49 @@ chosen:
 }
 
 /* Returns 1 saved, 0 not saved (cancelled / failed), -1 hangup. */
-/* TheDraw-style save options (see AdSauce): clear the screen first, and
-   a display speed. Returns 1 save, 0 cancel, -1 hangup. */
+/* The file name gets the chosen format's extension (replacing one of
+   ours, or added). */
+static void set_format_ext(char *path, size_t sz, int fmt) {
+    const char *base = base_name(path);
+    char *dot = strrchr(path, '.');
+    if (dot && dot >= base && ad_fmt_known_ext(base)) *dot = 0;
+    if (strlen(path) + strlen(ad_fmt_ext(fmt)) < sz) strcat(path, ad_fmt_ext(fmt));
+}
+
+/* TheDraw-style save options (see AdSauce): the format, clearing the
+   screen first, and a display speed. Returns 1 save, 0 cancel, -1 hangup. */
 static int save_options(AdEditor *e, int local) {
-    int clear = e->sauce.clear_screen, speed = e->sauce.speed, row = 0;
-    int width = 58, height = 9;
+    int fmt = e->sauce.format, clear = e->sauce.clear_screen, speed = e->sauce.speed, row = 0;
+    int width = 60, height = 10;
     if (speed < 0 || speed >= AD_SPEED_COUNT) speed = 0;
+    if (fmt < 0 || fmt >= AD_FMT_COUNT) fmt = AD_FMT_ANSI;
     for (;;) {
         AdKey k;
-        char buf[80], sp[24];
+        char buf[96], sp[24];
         int col0 = (e->screen.w - width) / 2, row0 = (e->view_h - height) / 2;
+        /* clearing and speed are display codes: ANSI and the BBS formats */
+        int display = fmt == AD_FMT_ANSI || fmt == AD_FMT_PCBOARD || fmt == AD_FMT_PIPE || fmt == AD_FMT_CTRLA;
+        unsigned char dim = display ? POPUP_ATTR : AD_ATTR(8, 1);
         if (row0 < 0) row0 = 0;
         if (speed) snprintf(sp, sizeof(sp), "%ld bps", AD_SPEEDS[speed]);
         else snprintf(sp, sizeof(sp), "full speed");
         paint_all(e);
         frame(e, col0, row0, width, height, "Save options");
-        snprintf(buf, sizeof(buf), " C  Clear the screen first      %-3s ", clear ? "Yes" : "No");
+        snprintf(buf, sizeof(buf), " F  Format       \x11 %-24s \x10 ", ad_fmt_name(fmt));
         ad_screen_puts(&e->screen, col0 + 2, row0 + 2, buf, row == 0 ? AD_ATTR(0, 3) : POPUP_ATTR);
-        snprintf(buf, sizeof(buf), " S  Display speed      \x11 %-12s \x10 ", sp);
-        ad_screen_puts(&e->screen, col0 + 2, row0 + 3, buf, row == 1 ? AD_ATTR(0, 3) : POPUP_ATTR);
-        if (row != 0) ad_screen_put(&e->screen, col0 + 3, row0 + 2, 'C', POPUP_KEY);
-        if (row != 1) ad_screen_put(&e->screen, col0 + 3, row0 + 3, 'S', POPUP_KEY);
-        ad_screen_puts(&e->screen, col0 + 2, row0 + 5, "A speed draws it like a modem would. SyncTERM and most", AD_ATTR(7, 1));
-        ad_screen_puts(&e->screen, col0 + 2, row0 + 6, "BBS terminals honor it; the rest just show it at once.", AD_ATTR(7, 1));
+        snprintf(buf, sizeof(buf), " C  Clear the screen first   %-3s", clear ? "Yes" : "No");
+        ad_screen_puts(&e->screen, col0 + 2, row0 + 3, buf, row == 1 ? AD_ATTR(0, 3) : dim);
+        snprintf(buf, sizeof(buf), " S  Display speed  \x11 %-12s \x10 ", sp);
+        ad_screen_puts(&e->screen, col0 + 2, row0 + 4, buf, row == 2 ? AD_ATTR(0, 3) : dim);
+        if (row != 0) ad_screen_put(&e->screen, col0 + 3, row0 + 2, 'F', POPUP_KEY);
+        if (row != 1 && display) ad_screen_put(&e->screen, col0 + 3, row0 + 3, 'C', POPUP_KEY);
+        if (row != 2 && display) ad_screen_put(&e->screen, col0 + 3, row0 + 4, 'S', POPUP_KEY);
+        snprintf(buf, sizeof(buf), "Saves as %s. ", ad_fmt_ext(fmt));
+        ad_screen_puts(&e->screen, col0 + 2, row0 + 6, buf, AD_ATTR(7, 1));
+        ad_screen_puts(&e->screen, col0 + 2 + (int)strlen(buf), row0 + 6,
+                       display ? "A speed draws it like a modem would." : "Clear screen and speed don't apply.",
+                       AD_ATTR(7, 1));
+        ad_screen_puts(&e->screen, col0 + 2, row0 + 7, "SyncTERM and most BBS terminals honor the speed.", AD_ATTR(7, 1));
         ad_screen_puts(&e->screen, col0 + 2, row0 + height - 1, " Enter=save  Esc=cancel ", POPUP_KEY);
         ad_screen_flush(&e->screen, col0 + 3, row0 + 2 + row);
         k = popup_key(e, local);
@@ -2073,26 +2258,35 @@ static int save_options(AdEditor *e, int local) {
             case AD_KEY_HANGUP: ad_screen_full_redraw(&e->screen); return -1;
             case AD_KEY_ESCAPE: ad_screen_full_redraw(&e->screen); return 0;
             case AD_KEY_ENTER:
+                e->sauce.format = fmt;
                 e->sauce.clear_screen = clear;
                 e->sauce.speed = speed;
                 ad_screen_full_redraw(&e->screen);
                 return 1;
-            case AD_KEY_UP: case AD_KEY_DOWN: case AD_KEY_TAB: row = !row; break;
-            case AD_KEY_LEFT: if (row) speed = (speed + AD_SPEED_COUNT - 1) % AD_SPEED_COUNT; else clear = !clear; break;
-            case AD_KEY_RIGHT: if (row) speed = (speed + 1) % AD_SPEED_COUNT; else clear = !clear; break;
+            case AD_KEY_UP: row = (row + 2) % 3; break;
+            case AD_KEY_DOWN: case AD_KEY_TAB: row = (row + 1) % 3; break;
+            case AD_KEY_LEFT: case AD_KEY_RIGHT: {
+                int d = k.kind == AD_KEY_RIGHT ? 1 : -1;
+                if (row == 0) fmt = (fmt + AD_FMT_COUNT + d) % AD_FMT_COUNT;
+                else if (row == 1) clear = !clear;
+                else speed = (speed + AD_SPEED_COUNT + d) % AD_SPEED_COUNT;
+                break;
+            }
             case AD_KEY_CHAR:
-                if ((k.ch & ~0x20) == 'C' || (k.ch == ' ' && row == 0)) { clear = !clear; row = 0; }
-                else if ((k.ch & ~0x20) == 'S' || (k.ch == ' ' && row == 1)) { speed = (speed + 1) % AD_SPEED_COUNT; row = 1; }
-                else if ((k.ch & ~0x20) == 'Y' && row == 0) clear = 1;
-                else if ((k.ch & ~0x20) == 'N' && row == 0) clear = 0;
+                if ((k.ch & ~0x20) == 'F' || (k.ch == ' ' && row == 0)) { fmt = (fmt + 1) % AD_FMT_COUNT; row = 0; }
+                else if ((k.ch & ~0x20) == 'C' || (k.ch == ' ' && row == 1)) { clear = !clear; row = 1; }
+                else if ((k.ch & ~0x20) == 'S' || (k.ch == ' ' && row == 2)) { speed = (speed + 1) % AD_SPEED_COUNT; row = 2; }
+                else if ((k.ch & ~0x20) == 'Y' && row == 1) clear = 1;
+                else if ((k.ch & ~0x20) == 'N' && row == 1) clear = 0;
                 break;
             case AD_KEY_MOUSE:
                 if (k.mbutton == 2) { ad_screen_full_redraw(&e->screen); return 0; }
-                if (k.mbutton == 0 && k.my == row0 + 2) { row = 0; clear = !clear; }
-                else if (k.mbutton == 0 && k.my == row0 + 3) {
-                    row = 1;
-                    /* left arrow half steps down, the rest steps up */
-                    speed = (speed + (k.mx < col0 + 27 ? AD_SPEED_COUNT - 1 : 1)) % AD_SPEED_COUNT;
+                if (k.mbutton == 0 && k.my >= row0 + 2 && k.my <= row0 + 4) {
+                    int d = k.mx < col0 + 24 ? -1 : 1;  /* left half steps back */
+                    row = k.my - row0 - 2;
+                    if (row == 0) fmt = (fmt + AD_FMT_COUNT + d) % AD_FMT_COUNT;
+                    else if (row == 1) clear = !clear;
+                    else speed = (speed + AD_SPEED_COUNT + d) % AD_SPEED_COUNT;
                 }
                 break;
             default: break;
@@ -2119,6 +2313,11 @@ static int do_save(AdEditor *e, int local, int save_as) {
     if (save_as || !e->path[0]) {
         int r = browser(e, local, 1, path, sizeof(path));
         if (r <= 0) return r;
+        /* as TheDraw did: which format, and how should it display? (kept
+           with the drawing, so a plain Save doesn't ask again) */
+        r = save_options(e, local);
+        if (r <= 0) return r;
+        set_format_ext(path, sizeof(path), e->sauce.format);
         if (strcmp(path, e->path) != 0 && ad_file_exists(path)) {
             char q[120];
             snprintf(q, sizeof(q), "%.60s exists. Replace it? (Y/N)", base_name(path));
@@ -2126,10 +2325,6 @@ static int do_save(AdEditor *e, int local, int save_as) {
             if (r < 0) return -1;
             if (r != 'Y') return 0;
         }
-        /* as TheDraw did: how should it display? (kept with the drawing,
-           so a plain Save doesn't ask again) */
-        r = save_options(e, local);
-        if (r <= 0) return r;
     } else {
         snprintf(path, sizeof(path), "%s", e->path);
     }
@@ -2332,7 +2527,8 @@ static int do_download(AdEditor *e) {
         meta = e->sauce;
         e->sauce = keep;
     }
-    len = ad_ans_encode(&e->canvas, &meta, &data);
+    set_format_ext(name, sizeof(name), meta.format);
+    len = ad_fmt_encode(&e->canvas, &meta, meta.format, &data);
     if (!data) {
         set_message(e, "Out of memory");
         return 1;
@@ -2457,7 +2653,12 @@ static int gallery_load(AdEditor *e, const AdGalleryItem *it, AdCanvas *c, AdSau
 static int gallery_open_copy(AdEditor *e, int local, const AdGalleryItem *it) {
     AdCanvas c;
     AdSauce meta;
-    int r = ok_to_discard(e, local, "open another");
+    int r;
+    if (e->wall) {
+        set_message(e, "That would replace the wall -- leave it first (Esc, J)");
+        return 0;
+    }
+    r = ok_to_discard(e, local, "open another");
     if (r <= 0) return r < 0 ? -1 : 0;
     if (!gallery_load(e, it, &c, &meta)) {
         set_message(e, "Couldn't open that piece");
@@ -2665,6 +2866,318 @@ static int gallery_screen(AdEditor *e, int local) {
     }
 }
 
+/* ------------------------------------------------------------ the shared wall */
+
+/* Our changes since the last sync go out; everyone else's come in.
+   Returns whether anything changed on screen. */
+static int wall_sync(AdEditor *e) {
+    int x, y, n = 0, got;
+    AdWallOp *ops;
+    if (!e->wall) return 0;
+    ops = (AdWallOp *)malloc((size_t)e->canvas.w * e->canvas.h * sizeof(AdWallOp));
+    if (ops) {
+        for (y = 0; y < e->canvas.h; y++)
+            for (x = 0; x < e->canvas.w; x++) {
+                AdCell c = ad_canvas_get(&e->canvas, x, y), o = ad_canvas_get(&e->wall_shadow, x, y);
+                if (c.ch == o.ch && c.attr == o.attr) continue;
+                ops[n].x = (unsigned short)x;
+                ops[n].y = (unsigned short)y;
+                ops[n].ch = c.ch;
+                ops[n].attr = c.attr;
+                n++;
+                ad_canvas_set(&e->wall_shadow, x, y, c.ch, c.attr);
+            }
+        if (n) ad_wall_publish(&e->wallst, ops, n);
+        free(ops);
+    }
+    got = ad_wall_poll(&e->wallst, &e->canvas, &e->wall_shadow);
+    e->dirty = 0;  /* the wall is always saved */
+    return got != 0;
+}
+
+/* Tell the others where we are (every 2 seconds, or when forced) and see
+   who's here. Returns whether the list changed. */
+static int wall_presence(AdEditor *e, int force) {
+    long now = (long)time(NULL);
+    AdWallPeer p[AD_WALL_MAX_PEERS];
+    int n, i, j, changed = 0;
+    if (!e->wall) return 0;
+    if (force || now - e->wall_here_at >= 2) {
+        ad_wall_here(&e->wallst, e->door->user_name, e->cx, e->cy);
+        e->wall_here_at = now;
+    }
+    n = ad_wall_peers(&e->wallst, p, AD_WALL_MAX_PEERS);
+    for (i = 0; i < n; i++) {           /* who came */
+        for (j = 0; j < e->npeers && strcmp(e->peers[j].name, p[i].name) != 0; j++) {}
+        if (j == e->npeers) { set_message(e, "%.30s joined the wall", p[i].name); changed = 1; }
+        else if (e->peers[j].x != p[i].x || e->peers[j].y != p[i].y) changed = 1;
+    }
+    for (j = 0; j < e->npeers; j++) {   /* who left */
+        for (i = 0; i < n && strcmp(e->peers[j].name, p[i].name) != 0; i++) {}
+        if (i == n) { set_message(e, "%.30s left the wall", e->peers[j].name); changed = 1; }
+    }
+    memcpy(e->peers, p, sizeof(p));
+    e->npeers = n;
+    return changed;
+}
+
+static int wall_join(AdEditor *e, int local) {
+    AdCanvas c;
+    char me[32], err[160];
+    int r = ok_to_discard(e, local, "join the wall");
+    if (r <= 0) return r < 0 ? 0 : 1;
+    /* node and process: unique even if two sessions share a node number */
+    snprintf(me, sizeof(me), "node%d-%ld", e->door->node, (long)getpid());
+    if (!ad_canvas_init(&c, e->door->wall_w, e->door->wall_h) ||
+        !ad_wall_open(&e->wallst, e->door->data_dir, e->door->wall_w, e->door->wall_h, me, &c, err, sizeof(err))) {
+        set_message(e, "Couldn't open the wall: %.50s", err);
+        return 1;
+    }
+    adopt_canvas(e, &c);
+    ad_canvas_free(&e->wall_shadow);
+    if (!ad_canvas_init(&e->wall_shadow, e->canvas.w, e->canvas.h) ||
+        !ad_canvas_resize(&e->wall_shadow, e->canvas.w, e->canvas.h)) {
+        set_message(e, "Out of memory");
+        return 1;
+    }
+    {
+        int x, y;
+        for (y = 0; y < e->canvas.h; y++)
+            for (x = 0; x < e->canvas.w; x++) {
+                AdCell cell = ad_canvas_get(&e->canvas, x, y);
+                ad_canvas_set(&e->wall_shadow, x, y, cell.ch, cell.attr);
+            }
+    }
+    memset(&e->sauce, 0, sizeof(e->sauce));
+    snprintf(e->sauce.title, sizeof(e->sauce.title), "The Wall");
+    e->path[0] = 0;
+    e->dirty = 0;
+    e->wall = 1;
+    e->npeers = 0;
+    wall_presence(e, 1);
+    set_message(e, "You're on the shared wall -- everyone here draws on it together (Esc, J leaves)");
+    if (e->npeers) set_message(e, "You're on the wall with %d other%s -- Esc, J leaves", e->npeers, e->npeers == 1 ? "" : "s");
+    return 1;
+}
+
+static void wall_leave(AdEditor *e) {
+    AdCanvas c;
+    if (!e->wall) return;
+    wall_sync(e);
+    ad_wall_leave(&e->wallst);
+    e->wall = 0;
+    e->npeers = 0;
+    ad_canvas_free(&e->wall_shadow);
+    if (ad_canvas_init(&c, e->door->canvas_w, AD_CANVAS_MIN_H)) adopt_canvas(e, &c);
+    memset(&e->sauce, 0, sizeof(e->sauce));
+    e->path[0] = 0;
+    e->dirty = 0;
+    set_message(e, "You left the wall -- a new drawing");
+}
+
+/* ------------------------------------------------------------ upload & image import */
+
+/* Width / dither / iCE for an image, then it becomes the drawing.
+   Returns 0 on hangup. */
+static int import_image_data(AdEditor *e, int local, const unsigned char *data, size_t len, const char *name) {
+    int widths[8], nw = 0, wi = 0, dither = 1, ice = 1, row = 0, i;
+    int width = 56, height = 10;
+    {
+        int fit = e->screen.w - (e->sb_room ? SIDEBAR_MIN + 1 : 0);
+        static const int STD[] = { 40, 60, 80, 100, 132, 160 };
+        for (i = 0; i < 6; i++) widths[nw++] = STD[i];
+        if (fit > 0 && fit <= AD_CANVAS_MAX_W && fit != 80 && fit != 132 && fit != 160) widths[nw++] = fit;
+        for (i = 0; i < nw; i++) if (widths[i] == 80) wi = i;
+    }
+    for (;;) {
+        AdKey k;
+        char buf[80];
+        int col0 = (e->screen.w - width) / 2, row0 = (e->view_h - height) / 2;
+        if (row0 < 0) row0 = 0;
+        paint_all(e);
+        frame(e, col0, row0, width, height, "Import an image");
+        snprintf(buf, sizeof(buf), "%.50s", name);
+        ad_screen_puts(&e->screen, col0 + 2, row0 + 1, buf, AD_ATTR(11, 1));
+        snprintf(buf, sizeof(buf), " W  Width          \x11 %3d columns \x10 ", widths[wi]);
+        ad_screen_puts(&e->screen, col0 + 2, row0 + 3, buf, row == 0 ? AD_ATTR(0, 3) : POPUP_ATTR);
+        snprintf(buf, sizeof(buf), " D  Dither         %-3s", dither ? "Yes" : "No");
+        ad_screen_puts(&e->screen, col0 + 2, row0 + 4, buf, row == 1 ? AD_ATTR(0, 3) : POPUP_ATTR);
+        snprintf(buf, sizeof(buf), " I  iCE colors     %-3s", ice ? "Yes" : "No");
+        ad_screen_puts(&e->screen, col0 + 2, row0 + 5, buf, row == 2 ? AD_ATTR(0, 3) : POPUP_ATTR);
+        ad_screen_puts(&e->screen, col0 + 2, row0 + 7, "Two pixels per character, in the 16 colors.", AD_ATTR(7, 1));
+        ad_screen_puts(&e->screen, col0 + 2, row0 + height - 1, " Enter=import  Esc=cancel ", POPUP_KEY);
+        ad_screen_flush(&e->screen, col0 + 3, row0 + 3 + row);
+        k = popup_key(e, local);
+        switch (k.kind) {
+            case AD_KEY_HANGUP: ad_screen_full_redraw(&e->screen); return 0;
+            case AD_KEY_ESCAPE: ad_screen_full_redraw(&e->screen); set_message(e, "Import cancelled"); return 1;
+            case AD_KEY_UP: row = (row + 2) % 3; break;
+            case AD_KEY_DOWN: case AD_KEY_TAB: row = (row + 1) % 3; break;
+            case AD_KEY_LEFT: case AD_KEY_RIGHT: {
+                int d = k.kind == AD_KEY_RIGHT ? 1 : -1;
+                if (row == 0) wi = (wi + nw + d) % nw;
+                else if (row == 1) dither = !dither;
+                else ice = !ice;
+                break;
+            }
+            case AD_KEY_CHAR:
+                if ((k.ch & ~0x20) == 'W') { wi = (wi + 1) % nw; row = 0; }
+                else if ((k.ch & ~0x20) == 'D') { dither = !dither; row = 1; }
+                else if ((k.ch & ~0x20) == 'I') { ice = !ice; row = 2; }
+                break;
+            case AD_KEY_MOUSE:
+                if (k.mbutton == 2) { ad_screen_full_redraw(&e->screen); return 1; }
+                if (k.mbutton == 0 && k.my >= row0 + 3 && k.my <= row0 + 5) {
+                    row = k.my - row0 - 3;
+                    if (row == 0) wi = (wi + (k.mx < col0 + 24 ? nw - 1 : 1)) % nw;
+                    else if (row == 1) dither = !dither;
+                    else ice = !ice;
+                }
+                break;
+            case AD_KEY_ENTER: {
+                AdCanvas c;
+                char err[160];
+                int iw = 0, ih = 0;
+                ad_screen_full_redraw(&e->screen);
+                if (!ad_canvas_init(&c, widths[wi], AD_CANVAS_MIN_H)) { set_message(e, "Out of memory"); return 1; }
+                if (!ad_image_to_canvas(data, len, widths[wi], ice, dither, &c, &iw, &ih, err, sizeof(err))) {
+                    ad_canvas_free(&c);
+                    set_message(e, "Couldn't import it: %.60s", err);
+                    return 1;
+                }
+                adopt_canvas(e, &c);
+                memset(&e->sauce, 0, sizeof(e->sauce));
+                {
+                    char t[64];
+                    char *dot;
+                    snprintf(t, sizeof(t), "%.63s", name);
+                    dot = strrchr(t, '.');
+                    if (dot) *dot = 0;
+                    snprintf(e->sauce.title, sizeof(e->sauce.title), "%.35s", t);
+                }
+                e->path[0] = 0;
+                e->dirty = 1;
+                set_message(e, "Imported %dx%d image as %dx%d -- Save as to keep it", iw, ih, e->canvas.w, e->canvas.h);
+                return 1;
+            }
+            default: break;
+        }
+    }
+}
+
+/* Reads a whole local file (the sysop's image). */
+static unsigned char *read_file(const char *path, size_t max, size_t *len) {
+    FILE *f = fopen(path, "rb");
+    long n;
+    unsigned char *b;
+    *len = 0;
+    if (!f) return NULL;
+    if (fseek(f, 0, SEEK_END) != 0 || (n = ftell(f)) < 0 || (size_t)n > max || fseek(f, 0, SEEK_SET) != 0) {
+        fclose(f);
+        return NULL;
+    }
+    b = (unsigned char *)malloc((size_t)n + 1);
+    if (b && fread(b, 1, (size_t)n, f) != (size_t)n) { free(b); b = NULL; }
+    fclose(f);
+    if (b) *len = (size_t)n;
+    return b;
+}
+
+#define UPLOAD_MAX (8L * 1024 * 1024)
+
+/* U: the caller uploads a drawing (kept in their folder, then opened) or
+   an image (imported). Returns 0 on hangup. */
+static int do_upload(AdEditor *e, int local) {
+    AdZmRecv got;
+    int rc, r;
+    if (e->door->local) {
+        set_message(e, "Uploads come from a caller's terminal -- use Open here");
+        return 1;
+    }
+    r = ok_to_discard(e, local, "upload another");
+    if (r <= 0) return r < 0 ? 0 : 1;
+    set_message(e, "Start the ZMODEM upload in your terminal now (a drawing or an image; Esc cancels)");
+    paint_all(e);
+    flush_at_cursor(e);
+    rc = ad_xfer_receive(e->door, UPLOAD_MAX, &got);
+    ad_dout("\x1b[0m");
+    ad_screen_full_redraw(&e->screen);
+    if (rc == AD_ZM_HANGUP) return 0;
+    if (rc != AD_ZM_OK) {
+        set_message(e, "%s", rc == AD_ZM_NO_RECEIVER ? "No upload started"
+                            : rc == AD_ZM_CANCELLED ? "Upload cancelled"
+                            : rc == AD_ZM_FAILED ? "Upload failed" : ad_zm_result_text(rc));
+        return 1;
+    }
+    if (ad_image_name(got.name)) {
+        r = import_image_data(e, local, got.data, got.len, got.name);
+        free(got.data);
+        return r;
+    }
+    {
+        char clean[AD_NAME_MAX + 8], path[AD_PATH_MAX], err[160];
+        AdCanvas c;
+        AdSauce meta;
+        int n;
+        if (!ad_safe_filename(got.name, clean, sizeof(clean))) snprintf(clean, sizeof(clean), "upload.ans");
+        ad_path_join(e->door->user_dir, clean, path, sizeof(path));
+        /* never over an existing drawing: name-2, name-3, ... */
+        for (n = 2; ad_file_exists(path) && n < 100; n++) {
+            char alt[AD_NAME_MAX + 16];
+            const char *dot = strrchr(clean, '.');
+            snprintf(alt, sizeof(alt), "%.*s-%d%s", (int)(dot ? dot - clean : (long)strlen(clean)), clean, n, dot ? dot : "");
+            ad_path_join(e->door->user_dir, alt, path, sizeof(path));
+        }
+        if (!ad_canvas_init(&c, AD_CANVAS_W, AD_CANVAS_MIN_H)) { free(got.data); set_message(e, "Out of memory"); return 1; }
+        if (!ad_fmt_decode(got.data, got.len, ad_fmt_from_path(clean), &c, &meta, err, sizeof(err))) {
+            ad_canvas_free(&c);
+            free(got.data);
+            set_message(e, "That isn't a drawing ANetDRAW can open: %.40s", err);
+            return 1;
+        }
+        if (!ad_write_file(path, got.data, got.len, err, sizeof(err))) {
+            set_message(e, "Couldn't keep it: %.50s", err);
+            free(got.data);
+            ad_canvas_free(&c);
+            return 1;
+        }
+        free(got.data);
+        adopt_canvas(e, &c);
+        e->sauce = meta;
+        snprintf(e->path, sizeof(e->path), "%s", path);
+        e->dirty = 0;
+        set_message(e, "Uploaded %.40s (%dx%d)", base_name(path), e->canvas.w, e->canvas.h);
+        return 1;
+    }
+}
+
+/* M: image import. The sysop picks a file on disk; a caller uploads it. */
+static int do_import(AdEditor *e, int local) {
+    char path[AD_PATH_MAX];
+    unsigned char *data;
+    size_t len;
+    int r;
+    if (!e->door->sysop) {
+        set_message(e, "Upload your image (PNG, JPEG, GIF or BMP) -- it's imported when it arrives");
+        return do_upload(e, local);
+    }
+    r = ok_to_discard(e, local, "import an image");
+    if (r <= 0) return r < 0 ? 0 : 1;
+    g_browse_images = 1;
+    r = browser(e, local, 0, path, sizeof(path));
+    g_browse_images = 0;
+    if (r < 0) return 0;
+    if (r == 0) return 1;
+    data = read_file(path, 32L * 1024 * 1024, &len);
+    if (!data) {
+        set_message(e, "Couldn't read that file");
+        return 1;
+    }
+    r = import_image_data(e, local, data, len, base_name(path));
+    free(data);
+    return r;
+}
+
 /* Esc's last stop: the main menu. Returns 0 when the artist quits. */
 static int main_menu(AdEditor *e, int local) {
     static const char *const LINES[] = {
@@ -2673,9 +3186,11 @@ static int main_menu(AdEditor *e, int local) {
         "S Save            A Save as...",
         "I SAUCE info...   C Canvas size...",
         "B Browse gallery  P Publish to gallery",
-        "D Download this drawing (ZMODEM)",
+        "D Download        U Upload (ZMODEM)",
+        "M Image import    E Edit F-keys",
         "K Colors          G Characters",
         "T Tools           H Help",
+        "J Shared wall (draw together)",
         "W Toolbox on/off  Q Quit",
         "",
         "  Esc = back to drawing",
@@ -2687,10 +3202,15 @@ static int main_menu(AdEditor *e, int local) {
     AdKey k;
 
     /* the title bar names the file, with * if it has unsaved changes */
-    snprintf(title, sizeof(title), "%.28s%s", e->path[0] ? base_name(e->path) : "Untitled",
+    snprintf(title, sizeof(title), "%.28s%s", e->wall ? "The shared wall" : e->path[0] ? base_name(e->path) : "Untitled",
              e->dirty ? " *" : "");
     memcpy(lines, LINES, sizeof(lines));
     lines[0] = title;
+    if (e->wall) {
+        int i;
+        for (i = 0; i < n; i++)
+            if (LINES[i][0] == 'J') lines[i] = "J Leave the shared wall";
+    }
     paint_all(e);
     popup(e, lines, n, width);
     flush_at_cursor(e);
@@ -2717,6 +3237,14 @@ static int main_menu(AdEditor *e, int local) {
    button). Returns 0 when the session should end. */
 static int menu_command(AdEditor *e, int local, char c) {
     int r;
+    if (e->wall && strchr("NOCUM", c & ~0x20)) {
+        set_message(e, "That would replace the wall -- leave it first (Esc, J)");
+        return 1;
+    }
+    if ((c & ~0x20) == 'J') {
+        if (e->wall) { wall_leave(e); return 1; }
+        return wall_join(e, local);
+    }
     switch (c & ~0x20) {
         case 'N': return do_new(e, local);
         case 'O': return do_open(e, local);
@@ -2726,6 +3254,9 @@ static int menu_command(AdEditor *e, int local, char c) {
         case 'C': return canvas_dialog(e, local);
         case 'W': toggle_sidebar(e); return 1;
         case 'D': return do_download(e);
+        case 'U': return do_upload(e, local);
+        case 'M': return do_import(e, local);
+        case 'E': return fkey_editor(e, local);
         case 'B': return gallery_screen(e, local);
         case 'P': return do_publish(e, local);
         case 'K': return color_picker(e, local);
@@ -3154,6 +3685,7 @@ static int handle_key(AdEditor *e, AdKey k, int local) {
 void ad_editor_run(AdEditor *e, const AdDoor *door) {
     int skipped = 0;  /* redraws skipped in the current input burst */
     e->door = door;
+    fkeys_load(e);  /* this caller's own F-key sets, if they made any */
     /* xterm button-event mouse tracking + SGR coordinates -- terminals
        without mouse support just ignore these; see input.h */
     if (door->mouse) ad_dout("\x1b[?1002h\x1b[?1006h");
@@ -3169,8 +3701,14 @@ void ad_editor_run(AdEditor *e, const AdDoor *door) {
     refresh(e);
 
     for (;;) {
-        AdKey k = ad_input_get(door->local);
+        /* on the shared wall, wake up 4 times a second to trade changes */
+        AdKey k = e->wall ? ad_input_get_timeout(door->local, 250) : ad_input_get(door->local);
         int skipped_before = skipped;
+        if (k.kind == AD_KEY_NONE) {
+            int a = wall_sync(e), b = wall_presence(e, 0);
+            if (a || b) refresh(e);
+            continue;
+        }
         /* a message lasts until the next key or click -- not until the
            release of the click that produced it */
         if (!(k.kind == AD_KEY_MOUSE && k.mrelease)) e->message[0] = 0;
@@ -3221,6 +3759,11 @@ void ad_editor_run(AdEditor *e, const AdDoor *door) {
             if (r != 0) return;
         }
         clamp_cursor(e);
+        if (e->wall) {
+            /* share this key's changes and take everyone else's */
+            wall_sync(e);
+            wall_presence(e, 0);
+        }
         /* Mouse drags (and fast typing) arrive in bursts over a real
            network link. When more input is already waiting, apply it
            before drawing: one screen update for the whole burst instead

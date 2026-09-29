@@ -139,6 +139,20 @@ static int WriteFixedDoor32Sys(const char *src_path) {
     return 1;
 }
 
+#ifdef _WIN32
+/* Any dropfile OpenDoors looks for in the current folder. */
+static int dropfile_here(void) {
+    static const char *const NAMES[] = { "DOOR32.SYS", "DOOR.SYS", "DORINFO1.DEF", "CHAIN.TXT",
+                                         "EXITINFO.BBS", "SFDOORS.DAT", "CALLINFO.BBS", NULL };
+    int i;
+    for (i = 0; NAMES[i]; i++) {
+        FILE *f = fopen(NAMES[i], "rb");
+        if (f) { fclose(f); return 1; }
+    }
+    return 0;
+}
+#endif
+
 static void FixUpDropFileArgIfNeeded(int argc, char *argv[]) {
     int i;
     for (i = 1; i < argc - 1; i++) {
@@ -289,6 +303,22 @@ int ad_door_init(AdDoor *d, int argc, char **argv) {
     sweep_stale_od_temp_files("/tmp", "door32.sys");
 #endif
 
+#ifdef _WIN32
+    /* Started with no arguments at all (double-clicked, or a Start-menu
+       shortcut) and no dropfile here: the stand-alone editor, as if -L
+       were given. Windows only -- there local mode is ANetDRAW's own
+       window on this machine's desktop, which no caller can reach. On
+       Linux local mode is stdio, which a misconfigured BBS would hand
+       straight to the caller (with sysop rights), so -L stays explicit. */
+    if (argc == 1 && !dropfile_here()) {
+        static char *local_argv[3];
+        local_argv[0] = argv[0];
+        local_argv[1] = "-L";
+        local_argv[2] = NULL;
+        argc = 2;
+        argv = local_argv;
+    }
+#endif
     FixUpDropFileArgIfNeeded(argc, argv);
     /* ANetDRAW links OpenDoors::StaticConsole on Windows (see
        CMakeLists.txt), which defines OD_WINDOWS_CONSOLE -- that makes
@@ -332,6 +362,8 @@ int ad_door_init(AdDoor *d, int argc, char **argv) {
     d->node = (int)od_control.od_node;
     d->mouse = 1;
     d->canvas_w = AD_CANVAS_W;
+    d->wall_w = 80;
+    d->wall_h = 25;
     {
         int i, want_cols = 0, want_rows = 0, sysop_level = 0, use_console = 0;
         const char *data_arg = "anetdraw_data";
@@ -346,8 +378,15 @@ int ad_door_init(AdDoor *d, int argc, char **argv) {
             if (i + 1 < argc && strcmp(argv[i], "--sysop-level") == 0) sysop_level = atoi(argv[i + 1]);
             if (i + 1 < argc && strcmp(argv[i], "--data") == 0) data_arg = argv[i + 1];
             if (i + 1 < argc && strcmp(argv[i], "--fonts") == 0) fonts_arg = argv[i + 1];
+            if (i + 1 < argc && strcmp(argv[i], "--wall") == 0 &&
+                sscanf(argv[i + 1], "%dx%d", &d->wall_w, &d->wall_h) != 2)
+                d->wall_w = d->wall_h = 0;
         }
         if (d->canvas_w < 1 || d->canvas_w > AD_CANVAS_MAX_W) d->canvas_w = AD_CANVAS_W;
+        if (d->wall_w < 20 || d->wall_w > AD_CANVAS_MAX_W || d->wall_h < 5 || d->wall_h > 500) {
+            d->wall_w = 80;
+            d->wall_h = 25;
+        }
 
         /* Screen size, first answer wins:
            1. --cols / --rows (sysop override)

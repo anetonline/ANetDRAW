@@ -50,6 +50,9 @@ typedef struct {
 /* Blocks until a key arrives or the caller hangs up. local = 1 skips
    the carrier check (local sessions have no carrier). */
 AdKey ad_input_get(int local);
+/* The same, but gives up after about ms milliseconds (ms < 0: never) and
+   returns AD_KEY_NONE -- for the shared wall, which polls between keys. */
+AdKey ad_input_get_timeout(int local, int ms);
 /* Nonzero when more input is already waiting (read-ahead or queued in
    OpenDoors) -- the editor skips redrawing between events that arrive
    in one burst and draws once for the lot. */

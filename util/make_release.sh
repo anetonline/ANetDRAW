@@ -23,7 +23,7 @@ package_platform() {
     mkdir -p "$pkgdir/docs"
 
     cp -f "$builddir/$gamebin" "$pkgdir/"
-    cp -f README.md "$pkgdir/" 2>/dev/null || true
+    cp -f README.md RELEASE.md "$pkgdir/" 2>/dev/null || true
     cp -f docs/*.md docs/*.txt "$pkgdir/docs/" 2>/dev/null || true
     # the gallery starts with the sample pieces (util/make_samples.py)
     mkdir -p "$pkgdir/anetdraw_data/gallery"

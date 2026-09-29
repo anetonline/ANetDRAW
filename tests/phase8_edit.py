@@ -113,6 +113,22 @@ def main():
           "the Block menu lists the new commands")
     d.send(ESC, 0.6)
 
+    # ---------------- E: edit an F-key set, kept for next time
+    for _ in range(4):
+        d.send(ESC, 0.8)
+        if any("Q Quit" in d.row(y) for y in range(25)):
+            break
+    d.send(b"e", 1.0)
+    check(any("Edit F-key sets" in d.row(y) for y in range(25)), "E opens Edit F-key sets")
+    # pick glyph #1 (the smiley): Home of the grid is #0xB0, so go to row 0 col 1 with the mouse
+    rows = [d.row(y) for y in range(25)]
+    gy = next(y for y, r in enumerate(rows) if "F1" in r and "F10" in r) + 2
+    gx = rows[gy - 2].index("F1")
+    d.send(press(0, gx + 2, gy) + release(0, gx + 2, gy), 0.5)   # glyph #1
+    d.send(b"\x1bOP", 0.8)                                        # F1 = that glyph
+    d.send(ESC, 1.0)
+    ffile = os.path.join(root, "data", "users", "1_test_artist", "fkeys.txt")
+    check(os.path.isfile(ffile) and "F-key sets saved" in d.status(), "the F-key sets are saved: %r" % d.status()[16:50])
     for _ in range(5):                 # back out: mark > tool > main menu
         d.send(ESC, 1.0)
         if any("Q Quit" in d.row(y) for y in range(25)):
@@ -120,6 +136,15 @@ def main():
     d.send(b"q", 1.0)
     d.send(b"n" if "Save your drawing" in d.status() else b"y", 1.5)
     d.proc.wait(5)
+    # a new session: F1 now places the smiley in the saved set
+    d2 = Door(binary, extra_args=("--data", os.path.join(root, "data")))
+    d2.read(d2.startup_secs)
+    d2.send(b" ", 1.0)
+    d2.send(b"\x1bOP", 0.8)
+    check(d2.cell(0, 0).data == "\u263a", "next visit, F1 places the saved glyph: %r" % d2.cell(0, 0).data)
+    d2.sock.close()
+    d2.proc.wait(5)
+
     print("\n%d failure(s)" % len(FAILS))
     sys.exit(1 if FAILS else 0)
 

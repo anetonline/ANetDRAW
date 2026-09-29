@@ -49,6 +49,8 @@ typedef struct {
    Hidden (dot) entries are skipped. Returns 0 if the directory can't be
    read. */
 int  ad_list_dir(const char *dir, int want_dirs, AdDirList *out);
+/* The same, listing image files (.png .jpg .jpeg .gif .bmp) instead. */
+int  ad_list_images(const char *dir, int want_dirs, AdDirList *out);
 void ad_free_dir(AdDirList *l);
 
 #endif /* ANETDRAW_FILES_H */

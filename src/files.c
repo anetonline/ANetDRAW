@@ -42,9 +42,17 @@ int ad_safe_filename(const char *in, char *out, size_t outsz) {
     while (n > 0 && (out[n - 1] == ' ' || out[n - 1] == '.')) n--;
     out[n] = 0;
     if (n == 0) return 0;
-    if (!has_ext(out, ".ans")) {
-        if (n + 4 >= outsz) return 0;
-        strcat(out, ".ans");
+    {
+        /* keep one of the extensions ANetDRAW reads/writes (Save then
+           sets the chosen format's); anything else gets .ans */
+        static const char *const KEEP[] = { ".ans", ".asc", ".bin", ".xb", ".pcb", ".pip", ".msg", ".png", ".ice", ".txt" };
+        size_t i, keep = 0;
+        for (i = 0; i < sizeof(KEEP) / sizeof(KEEP[0]); i++)
+            if (has_ext(out, KEEP[i])) keep = 1;
+        if (!keep) {
+            if (n + 4 >= outsz) return 0;
+            strcat(out, ".ans");
+        }
     }
     return 1;
 }
@@ -128,7 +136,8 @@ int ad_file_exists(const char *path) {
 }
 
 static int art_file(const char *name) {
-    static const char *const EXT[] = { ".ans", ".asc", ".txt", ".ice", ".diz", ".nfo" };
+    static const char *const EXT[] = { ".ans", ".asc", ".txt", ".ice", ".diz", ".nfo",
+                                       ".bin", ".xb", ".pcb", ".pip", ".msg" };
     size_t i;
     for (i = 0; i < sizeof(EXT) / sizeof(EXT[0]); i++)
         if (has_ext(name, EXT[i])) return 1;
@@ -143,6 +152,24 @@ static int cmp_entry(const void *a, const void *b) {
 #else
     return strcasecmp(x->name, y->name);
 #endif
+}
+
+static int image_file(const char *name) {
+    static const char *const EXT[] = { ".png", ".jpg", ".jpeg", ".gif", ".bmp" };
+    size_t i;
+    for (i = 0; i < sizeof(EXT) / sizeof(EXT[0]); i++)
+        if (has_ext(name, EXT[i])) return 1;
+    return 0;
+}
+
+static int g_list_images = 0;
+
+int ad_list_images(const char *dir, int want_dirs, AdDirList *out) {
+    int r;
+    g_list_images = 1;
+    r = ad_list_dir(dir, want_dirs, out);
+    g_list_images = 0;
+    return r;
 }
 
 int ad_list_dir(const char *dir, int want_dirs, AdDirList *out) {
@@ -163,7 +190,9 @@ int ad_list_dir(const char *dir, int want_dirs, AdDirList *out) {
         ad_path_join(dir, de->d_name, full, sizeof(full));
         if (stat(full, &st) != 0) continue;
         is_dir = S_ISDIR(st.st_mode);
-        if (is_dir ? !want_dirs : (!S_ISREG(st.st_mode) || !art_file(de->d_name))) continue;
+        if (is_dir ? !want_dirs
+                   : (!S_ISREG(st.st_mode) || !(g_list_images ? image_file(de->d_name) : art_file(de->d_name))))
+            continue;
         if (out->n == cap) {
             AdDirEntry *ne;
             if (cap >= 5000) break;  /* enough for any browser page */

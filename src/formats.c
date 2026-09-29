@@ -172,9 +172,12 @@ static AdCell pcb_safe(AdCell c) {
 static size_t enc_bbs(const AdCanvas *c, const AdSauce *meta, int fmt, unsigned char **out) {
     static const char CTRLA_FG[8] = { 'K', 'B', 'G', 'C', 'R', 'M', 'Y', 'W' };  /* PC order */
     Buf b = { NULL, 0, 0, 0 };
-    int rows = ad_save_rows(c), x, y, cur = -1;
+    int x, y, cur = -1, ew, rows;
     char seq[32];
     int clear = meta && meta->clear_screen;
+    /* a display file stops at its last used row: blank lines after it
+       would only scroll the caller's screen */
+    ad_canvas_extent(c, &ew, &rows);
     if (fmt == AD_FMT_PCBOARD) { bputs(&b, "@X07"); if (clear) bputs(&b, "@CLS@"); cur = 0x07; }
     if (fmt == AD_FMT_PIPE) { bputs(&b, "|07|16"); if (clear) bputs(&b, "|CL"); cur = 0x07; }
     if (fmt == AD_FMT_CTRLA) { bputs(&b, "\x01N"); if (clear) bputs(&b, "\x01L"); cur = 0x07; }
@@ -204,7 +207,7 @@ static size_t enc_bbs(const AdCanvas *c, const AdSauce *meta, int fmt, unsigned 
                     bputc(&b, 0x01);
                     bputc(&b, (unsigned char)CTRLA_FG[fg & 7]);
                     if (bg & 7) { bputc(&b, 0x01); bputc(&b, (unsigned char)('0' + PC_TO_ANSI[bg & 7])); }
-                    if (bg > 7) bputs(&b, c->ice ? "\x01E" : "\x01I");
+                    if (bg > 7) bputs(&b, c->ice ? "\x01" "E" : "\x01" "I");
                 }
                 cur = cell.attr;
             }

@@ -14,15 +14,30 @@ static int od_send(void *ctx, const unsigned char *buf, size_t len) {
     return 0;
 }
 
+/* The byte OpenDoors folded into a "doorway" pair, still to hand out. */
+static int g_pending = -1;
+
 static int od_recv(void *ctx, int ms) {
     tODInputEvent ev;
     (void)ctx;
+    if (g_pending >= 0) {
+        int c = g_pending;
+        g_pending = -1;
+        return c;
+    }
     for (;;) {
         if (!od_carrier()) return -2;
         /* GETIN_RAW: no escape-sequence matching, every byte as it came */
         if (!od_get_input(&ev, (tODMilliSec)ms, GETIN_RAW)) return -1;
+        if (!ev.bFromRemote) continue;  /* a local sysop key: not part of the transfer */
         if (ev.EventType == EVENT_CHARACTER) return (unsigned char)ev.chKeyPress;
-        /* a local sysop key during a remote transfer: ignore it */
+        /* OpenDoors' "doorway mode" (ODGetIn.c): a NUL byte means the next
+           byte is an extended key, and the pair comes back as one
+           EVENT_EXTENDED_KEY. In GETIN_RAW nothing else makes one, so it
+           is always that pair -- binary ZMODEM data full of NULs (a header
+           like 04 00 00 00 00) would otherwise lose bytes and fail its CRC. */
+        g_pending = (unsigned char)ev.chKeyPress;
+        return 0;
     }
 }
 
@@ -46,6 +61,7 @@ int ad_xfer_send(const AdDoor *door, const AdZmFile *files, int n, int *done) {
     io.recv = od_recv;
     io.progress = NULL;  /* the terminal draws its own transfer window */
     io.log = zm_log;
+    g_pending = -1;
     ad_trace("ZMODEM start: %d file(s), first %s (%ld bytes)", n, n ? files[0].name : "-",
              n ? files[0].len : 0L);
     rc = ad_zm_send(&io, files, n, done);
@@ -53,6 +69,32 @@ int ad_xfer_send(const AdDoor *door, const AdZmFile *files, int n, int *done) {
 
     od_control.od_cp437_to_utf8_out = utf8;
     /* leftovers: the receiver's last ZFIN, cancel bytes, stray mouse reports */
+    for (i = 0; i < 200 && od_carrier() && od_get_input(&ev, 300, GETIN_RAW); i++) {}
+    ad_input_flush();
+    if (door->mouse) ad_dout("\x1b[?1002h\x1b[?1006h");
+    return rc;
+}
+
+int ad_xfer_receive(const AdDoor *door, size_t max_bytes, AdZmRecv *got) {
+    AdZmIo io;
+    tODInputEvent ev;
+    BOOL utf8 = od_control.od_cp437_to_utf8_out;
+    int rc, i;
+
+    if (door->mouse) ad_dout("\x1b[?1002l\x1b[?1006l");
+    ad_input_flush();
+    od_control.od_cp437_to_utf8_out = FALSE;
+    io.ctx = NULL;
+    io.send = od_send;
+    io.recv = od_recv;
+    io.progress = NULL;
+    io.log = zm_log;
+    g_pending = -1;
+    ad_trace("ZMODEM receive start (limit %lu bytes)", (unsigned long)max_bytes);
+    rc = ad_zm_receive(&io, max_bytes, got);
+    ad_trace("ZMODEM receive end: rc=%d (%s), %s %lu bytes", rc, ad_zm_result_text(rc), got->name,
+             (unsigned long)got->len);
+    od_control.od_cp437_to_utf8_out = utf8;
     for (i = 0; i < 200 && od_carrier() && od_get_input(&ev, 300, GETIN_RAW); i++) {}
     ad_input_flush();
     if (door->mouse) ad_dout("\x1b[?1002h\x1b[?1006h");

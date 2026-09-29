@@ -37,7 +37,8 @@ enum {
     AD_ZM_CANCELLED,    /* the caller cancelled (Ctrl-X x5, Esc or Ctrl-C) */
     AD_ZM_SKIPPED,      /* the receiver declined the file (it may already have it) */
     AD_ZM_FAILED,       /* too many errors */
-    AD_ZM_HANGUP
+    AD_ZM_HANGUP,
+    AD_ZM_TOO_BIG       /* receive: the file is over the size limit */
 };
 
 /* Sends the files as one batch. Returns an AD_ZM_* code; *files_done
@@ -46,5 +47,17 @@ enum {
 int ad_zm_send(const AdZmIo *io, const AdZmFile *files, int nfiles, int *files_done);
 
 const char *ad_zm_result_text(int rc);
+
+/* Receives one file (an upload from the caller): sends ZRINIT until a
+   sender starts (about 90 seconds), takes the first file and skips any
+   others. On AD_ZM_OK, out->data (malloc'd, free it) holds out->len
+   bytes and out->name the sender's file name (no path). AD_ZM_NO_RECEIVER
+   here means nobody started sending. */
+typedef struct {
+    char name[256];
+    unsigned char *data;
+    size_t len;
+} AdZmRecv;
+int ad_zm_receive(const AdZmIo *io, size_t max_bytes, AdZmRecv *out);
 
 #endif

@@ -10,5 +10,7 @@
 #include "zmodem.h"
 
 int ad_xfer_send(const AdDoor *door, const AdZmFile *files, int n, int *done);
+/* An upload from the caller (see ad_zm_receive). */
+int ad_xfer_receive(const AdDoor *door, size_t max_bytes, AdZmRecv *got);
 
 #endif

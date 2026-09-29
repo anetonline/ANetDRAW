@@ -53,8 +53,16 @@ def main():
         "B": (2, 2, [[(0xDB, 0x0A), (0xDC, 0x0A)], [(0xDB, 0x0A)]]),
     })
     block = font("Testblock", 1, 0, {"A": (2, 1, [[0xB1, 0xB2]]), "b": (1, 1, [[0xDB]])})
+    # an outline font: 'A' is a 3x3 box drawn with the style letters
+    #   E A F      (corners E F / K L... per TheDraw's letter codes)
+    #   C O D
+    #   I B J
+    outline = font("Testoutline", 0, 1, {"A": (3, 3, [[ord("E"), ord("A"), ord("F")],
+                                                     [ord("C"), ord("O"), ord("D")],
+                                                     [ord("I"), ord("B"), ord("J")]])})
     # two fonts in one file, as TheDraw stores them
     open(os.path.join(fonts, "TEST.TDF"), "wb").write(MAGIC + color + block)
+    open(os.path.join(fonts, "OUTLINE.TDF"), "wb").write(MAGIC + outline)
     open(os.path.join(fonts, "junk.tdf"), "wb").write(b"not a font")
 
     # ---------------- no fonts installed
@@ -74,7 +82,7 @@ def main():
     d.send(ctrl("T"), 0.8)
     check(screen_has(d, "T Text"), "^T menu offers T Text")
     d.send(b"t", 1.2)
-    check(screen_has(d, "TheDraw fonts") and screen_has(d, "2 fonts"), "font browser lists both fonts in the file")
+    check(screen_has(d, "TheDraw fonts") and screen_has(d, "3 fonts"), "font browser lists every font in every file")
     check(screen_has(d, "Testblock") and screen_has(d, "Testcolor"), "both font names show (sorted)")
     d.send(BKSP * 20, 0.4)
     d.send(b"AB", 0.8)
@@ -101,6 +109,24 @@ def main():
     check(d.cell(4, 1).data == "█" and d.cell(4, 1).fg == "green", "second row of 'B' too")
     # the spacing column (x=3 row 0) and B's missing second cell stay untouched
     check(d.cell(3, 0).data == " " and d.cell(5, 1).data == " ", "spacing and transparent cells stay blank")
+
+    # outline styles: Left/Right step through TheDraw's 19, the preview follows
+    d.send(ctrl("T"), 0.8)
+    d.send(b"t", 1.2)
+    d.send(b"\t", 0.3)
+    d.send(BKSP * 10, 0.3)
+    d.send(b"outline", 0.6)
+    d.send(b"\t", 0.3)
+    d.send(BKSP * 20, 0.3)
+    d.send(b"A", 0.6)
+    check(screen_has(d, "Outline style") and screen_has(d, "10"), "an outline font shows its style (10 by default)")
+    prev = next(y for y in range(25) if "Preview" in d.row(y))
+    top10 = d.row(prev + 1)[1:6]
+    d.send(b"\x1b[D" * 9, 0.8)          # style 1: all single lines
+    top1 = d.row(prev + 1)[1:6]
+    check("\u2554" in top10 or "\u2552" in top10 or "\u2550" in top10, "style 10 draws double lines: %r" % top10)
+    check("\u250c" in top1 and "\u2500" in top1 and "\u2550" not in top1, "style 1 draws single lines: %r" % top1)
+    d.send(ESC, 0.8)
 
     # block font uses the current colors; lower case falls back to upper case
     d.send(ctrl("T"), 0.8)

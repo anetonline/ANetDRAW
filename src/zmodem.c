@@ -4,6 +4,7 @@
 #include "../include/zmodem.h"
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #define ZPAD '*'
@@ -29,7 +30,10 @@
 #define ZFERR 12
 #define ZCRC 13
 #define ZCHALLENGE 14
+#define ZCOMPL 15
 #define ZCAN 16
+#define ZFREECNT 17
+#define ZCOMMAND 18
 
 /* data subpacket ends */
 #define ZCRCE 'h'
@@ -40,6 +44,9 @@
 #define ZRUB1 'm'
 
 /* ZRINIT ZF0 bits */
+#define CANFDX  0x01
+#define CANOVIO 0x02
+#define ZSINIT  2
 #define CANFC32 0x20
 #define ESCCTL 0x40
 /* ZFILE ZF0: binary conversion */
@@ -65,7 +72,13 @@ typedef struct {
     int escctl;         /* receiver wants every control character escaped */
     unsigned bufsize;   /* receiver buffer (0 = full streaming) */
     int peek;           /* one byte read ahead while streaming, or -1 */
-    int init;           /* still waiting for a receiver: keys cancel */
+    int init;           /* still waiting for the other side: keys cancel */
+    int rx_crc32;       /* the last header came as ZBIN32: its data uses CRC-32 */
+    int rx_escctl;      /* receiving: we asked for every control byte escaped, so a
+                           raw one is line noise (telnet CR NUL padding etc.) --
+                           except a backspace: senders don't escape DEL (0x7f),
+                           and a BBS whose caller has "swap Delete/Backspace"
+                           set (Synchronet's SWAP_DELETE) turns it into 0x08 */
     unsigned char hdr[5];
 } Zm;
 
@@ -263,6 +276,10 @@ static int zdl_byte(Zm *z, int ms) {
         c = get_byte(z, ms);
         if (c < 0) return c == -2 ? H_HANGUP : H_TIMEOUT;
         if (c == XON || c == XOFF || c == (XON | 0x80) || c == (XOFF | 0x80)) continue;
+        if (z->rx_escctl && c != ZDLE && (c & 0x60) == 0) {
+            if (c == '\b') return 0x7f;  /* see rx_escctl */
+            continue;                   /* noise */
+        }
         if (c != ZDLE) return c;
         for (;;) {
             c = get_byte(z, ms);
@@ -313,6 +330,7 @@ static int get_header_raw(Zm *z, int ms) {
     c = get_byte(z, ms);
     if (c < 0) return c == -2 ? H_HANGUP : H_TIMEOUT;
     c &= 0x7f;
+    z->rx_crc32 = (c == ZBIN32);
     if (c == ZHEX) {
         unsigned short crc = 0;
         unsigned char b[7];
@@ -577,6 +595,254 @@ const char *ad_zm_result_text(int rc) {
     case AD_ZM_CANCELLED: return "Download cancelled";
     case AD_ZM_SKIPPED: return "Your terminal skipped the file (already there?)";
     case AD_ZM_HANGUP: return "Connection lost";
+    case AD_ZM_TOO_BIG: return "That file is too big";
     default: return "Download failed";
     }
+}
+
+/* ================================================================ receive */
+
+/* One ZDLE-decoded data byte, or a subpacket end: returns 0 with the byte
+   in *c, 1 with the ZCRCx end in *c, or a negative H_*. */
+static int zdl_data(Zm *z, int ms, int *c) {
+    int b, cans = 0;
+    for (;;) {
+        b = get_byte(z, ms);
+        if (b < 0) return b == -2 ? H_HANGUP : H_TIMEOUT;
+        if (b == XON || b == XOFF || b == (XON | 0x80) || b == (XOFF | 0x80)) continue;
+        if (z->rx_escctl && b != ZDLE && (b & 0x60) == 0) {
+            if (b == '\b') { *c = 0x7f; return 0; }  /* see rx_escctl */
+            continue;                               /* noise */
+        }
+        if (b != ZDLE) { *c = b; return 0; }
+        for (;;) {
+            b = get_byte(z, ms);
+            if (b < 0) return b == -2 ? H_HANGUP : H_TIMEOUT;
+            if (b == ZDLE) { if (++cans >= 4) return H_CANCEL; continue; }
+            if (b == XON || b == XOFF || b == (XON | 0x80) || b == (XOFF | 0x80)) continue;
+            if (b == ZCRCE || b == ZCRCG || b == ZCRCQ || b == ZCRCW) { *c = b; return 1; }
+            if (b == ZRUB0) { *c = 0x7f; return 0; }
+            if (b == ZRUB1) { *c = 0xff; return 0; }
+            if ((b & 0x60) == 0x40) { *c = b ^ 0x40; return 0; }
+            return H_GARBAGE;
+        }
+    }
+}
+
+#define SUBPKT_MAX 8192
+
+/* Reads one data subpacket into buf. Returns its end (ZCRCE/G/Q/W) with
+   *n bytes, or a negative H_* (H_BADCRC on a checksum mismatch). */
+static int read_subpacket(Zm *z, unsigned char *buf, size_t *n, int ms) {
+    int c, r, i, end;
+    int crc32 = z->rx_crc32;
+    unsigned long crc = crc32 ? 0xffffffffUL : 0;
+    *n = 0;
+    for (;;) {
+        r = zdl_data(z, ms, &c);
+        if (r < 0) return r;
+        if (r == 1) { end = c; break; }
+        if (*n >= SUBPKT_MAX) return H_GARBAGE;
+        buf[(*n)++] = (unsigned char)c;
+        crc = crc32 ? crc32_step(crc, (unsigned char)c) : crc16_step((unsigned short)crc, (unsigned char)c);
+    }
+    crc = crc32 ? crc32_step(crc, (unsigned char)end) : crc16_step((unsigned short)crc, (unsigned char)end);
+    {
+        unsigned long got = 0;
+        int nb = crc32 ? 4 : 2;
+        for (i = 0; i < nb; i++) {
+            r = zdl_data(z, ms, &c);
+            if (r != 0) return r < 0 ? r : H_GARBAGE;
+            if (crc32) got |= (unsigned long)c << (8 * i);
+            else got = got << 8 | (unsigned long)c;
+        }
+        if (crc32 ? ((~crc & 0xffffffffUL) != got) : ((crc & 0xffff) != got)) return H_BADCRC;
+    }
+    return end;
+}
+
+static void send_pos(Zm *z, int type, unsigned long pos) {
+    unsigned char h[5];
+    set_pos(h, type, pos);
+    send_hex_header(z, h);
+}
+
+static void send_zrinit(Zm *z) {
+    unsigned char h[5];
+    memset(h, 0, sizeof(h));
+    h[0] = ZRINIT;
+    /* ZF0; buffer size 0 = stream away. ESCCTL: the sender escapes every
+       control byte, so nothing CR-, LF- or NUL-shaped travels raw -- the
+       door may sit behind a telnet socket (OpenDoors decodes CR NUL / CR
+       LF on input), a BBS relay (ANetBBS's treats ^] q as "abort the
+       door") or a PTY. SyncTERM and lrzsz both honor it. */
+    h[4] = CANFDX | CANOVIO | CANFC32 | ESCCTL;
+    send_hex_header(z, h);
+}
+
+/* The file name from a ZFILE subpacket: the last path part, printable. */
+static void zfile_name(const unsigned char *buf, size_t n, char *out, size_t outsz) {
+    size_t i, start = 0, o = 0;
+    for (i = 0; i < n && buf[i]; i++)
+        if (buf[i] == '/' || buf[i] == '\\') start = i + 1;
+    for (i = start; i < n && buf[i] && o + 1 < outsz; i++)
+        if (buf[i] >= 0x20 && buf[i] < 0x7f) out[o++] = (char)buf[i];
+    out[o] = 0;
+}
+
+int ad_zm_receive(const AdZmIo *io, size_t max_bytes, AdZmRecv *out) {
+    Zm z;
+    unsigned char *pkt = (unsigned char *)malloc(SUBPKT_MAX + 16);
+    int t, tries = 0, errors = 0, junk = 0, have_file = 0, done_file = 0, too_big = 0, rc = AD_ZM_FAILED;
+    unsigned long pos = 0;
+    size_t cap = 0;
+
+    crc32_init();
+    memset(&z, 0, sizeof(z));
+    memset(out, 0, sizeof(*out));
+    z.io = io;
+    z.peek = -1;
+    z.init = 1;
+    z.rx_escctl = 1;
+    if (!pkt) return AD_ZM_FAILED;
+
+    send_zrinit(&z);
+    for (;;) {
+        t = get_header(&z, 10000);
+        if (t == H_HANGUP || z.dead) { rc = AD_ZM_HANGUP; break; }
+        if (t == H_CANCEL) { rc = AD_ZM_CANCELLED; break; }
+        if (t == H_TIMEOUT) {
+            /* nobody sending yet (a person may be picking the file):
+               ask again, for a minute and a half */
+            if (!have_file && ++tries < 9) { send_zrinit(&z); continue; }
+            if (have_file && ++errors <= MAX_ERRORS) { send_pos(&z, ZRPOS, pos); continue; }
+            rc = have_file ? AD_ZM_FAILED : AD_ZM_NO_RECEIVER;
+            break;
+        }
+        if (t == H_GARBAGE) {
+            /* after a ZRPOS the sender streams on for a while before it
+               turns around: skip it quietly (without asking again each
+               time), but not forever */
+            if (++junk > 2000) break;
+            continue;
+        }
+        if (t < 0) {  /* a header with a bad CRC */
+            if (++errors > MAX_ERRORS * 2) break;
+            if (have_file && !done_file) send_pos(&z, ZRPOS, pos);
+            continue;
+        }
+        z.init = 0;
+        switch (t) {
+            case ZRQINIT:
+                send_zrinit(&z);
+                break;
+            case ZSINIT: {
+                size_t n;
+                read_subpacket(&z, pkt, &n, 5000);  /* the attention string: not needed */
+                send_pos(&z, ZACK, 0);
+                break;
+            }
+            case ZFILE: {
+                size_t n;
+                int r = read_subpacket(&z, pkt, &n, 5000);
+                if (r < 0) { send_zrinit(&z); break; }
+                if (have_file) { send_pos(&z, ZSKIP, 0); break; }  /* one file per upload */
+                pkt[n < SUBPKT_MAX ? n : SUBPKT_MAX - 1] = 0;
+                zfile_name(pkt, n, out->name, sizeof(out->name));
+                {
+                    const char *info = (const char *)pkt + strlen((const char *)pkt) + 1;
+                    long size = (const unsigned char *)info < pkt + n ? atol(info) : 0;
+                    if (size > 0 && (size_t)size > max_bytes) {
+                        too_big = 1;
+                        send_pos(&z, ZSKIP, 0);
+                        zlog(&z, "rx ZFILE %s: %ld bytes is too big", out->name, size);
+                        break;
+                    }
+                    cap = size > 0 ? (size_t)size : 4096;
+                }
+                out->data = (unsigned char *)malloc(cap + 1);
+                if (!out->data) { rc = AD_ZM_FAILED; goto finish; }
+                have_file = 1;
+                pos = 0;
+                zlog(&z, "rx ZFILE %s", out->name);
+                send_pos(&z, ZRPOS, 0);
+                break;
+            }
+            case ZDATA: {
+                unsigned long at = get_pos(z.hdr);
+                if (!have_file || done_file) break;
+                if (at != pos) { send_pos(&z, ZRPOS, pos); break; }
+                for (;;) {
+                    size_t n;
+                    int end = read_subpacket(&z, pkt, &n, 10000);
+                    if (end == H_CANCEL) { rc = AD_ZM_CANCELLED; goto finish; }
+                    if (end == H_HANGUP) { rc = AD_ZM_HANGUP; goto finish; }
+                    if (end < 0) {
+                        /* a line error: back to the last good byte */
+                        zlog(&z, "rx subpacket error %d at %lu", end, pos);
+                        if (++errors > MAX_ERRORS) { rc = AD_ZM_FAILED; goto finish; }
+                        send_pos(&z, ZRPOS, pos);
+                        break;
+                    }
+                    if (pos + n > max_bytes) {
+                        too_big = 1;
+                        send_abort(&z);
+                        rc = AD_ZM_FAILED;
+                        goto finish;
+                    }
+                    if (pos + n > cap) {
+                        size_t nc = cap * 2 > pos + n ? cap * 2 : pos + n;
+                        unsigned char *nd;
+                        if (nc > max_bytes) nc = max_bytes;
+                        nd = (unsigned char *)realloc(out->data, nc + 1);
+                        if (!nd) { rc = AD_ZM_FAILED; goto finish; }
+                        out->data = nd;
+                        cap = nc;
+                    }
+                    memcpy(out->data + pos, pkt, n);
+                    pos += (unsigned long)n;
+                    if (io->progress) io->progress(io->ctx, (long)pos, 0);
+                    if (end == ZCRCW) { send_pos(&z, ZACK, pos); break; }
+                    if (end == ZCRCQ) send_pos(&z, ZACK, pos);
+                    if (end == ZCRCE) break;
+                }
+                break;
+            }
+            case ZEOF:
+                if (!have_file || done_file) { send_zrinit(&z); break; }
+                if (get_pos(z.hdr) != pos) break;  /* data still in flight: wait */
+                done_file = 1;
+                out->len = pos;
+                zlog(&z, "rx ZEOF: %lu bytes", pos);
+                send_zrinit(&z);  /* ready for the next (it will be skipped) */
+                break;
+            case ZFIN:
+                send_pos(&z, ZFIN, 0);
+                /* "OO" from the sender, if it bothers */
+                {
+                    int k;
+                    for (k = 0; k < 2 && get_byte(&z, 1000) == 'O'; k++) {}
+                }
+                rc = done_file ? AD_ZM_OK : too_big ? AD_ZM_TOO_BIG : AD_ZM_FAILED;
+                goto finish;
+            case ZFREECNT:
+                send_pos(&z, ZACK, 0x7fffffffUL);
+                break;
+            case ZCOMMAND:
+                send_pos(&z, ZCOMPL, 0);  /* never run */
+                break;
+            default:
+                break;
+        }
+    }
+finish:
+    free(pkt);
+    if (rc != AD_ZM_OK) {
+        if (rc != AD_ZM_HANGUP && rc != AD_ZM_CANCELLED) send_abort(&z);
+        if (rc == AD_ZM_FAILED && too_big) rc = AD_ZM_TOO_BIG;
+        free(out->data);
+        out->data = NULL;
+        out->len = 0;
+    }
+    return rc;
 }
