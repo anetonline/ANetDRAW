@@ -1,3 +1,5 @@
+<img width="1280" height="800" alt="image" src="https://github.com/user-attachments/assets/5f20e262-168f-4b6d-934f-c09fed58e5f4" />
+
 # ANetDRAW
 
 **The ANSI + ASCII art studio — as a BBS door, or on your own computer.**
